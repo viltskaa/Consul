@@ -5,13 +5,15 @@ import com.example.consul.dto.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class wildberriesApi {
+@Component
+public class WB_Api {
     private final HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -20,7 +22,7 @@ public class wildberriesApi {
     private final link adReportUrl = link.create(
             "https://advert-api.wb.ru/adv/v1/upd?dateFrom=<arg>&dateTo=<arg>");
 
-    public wildberriesApi(@NotNull String apiKey) {
+    public void setApi(@NotNull String apiKey) {
         headers.add("Authorization", apiKey);
         headers.add("Accept", "application/json");
     }
