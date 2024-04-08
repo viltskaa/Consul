@@ -1,16 +1,15 @@
 package com.example.consul.api;
 
-import com.google.gson.Gson;
+import com.example.consul.dto.WB_AdReport;
+import com.example.consul.dto.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class wildberriesApi {
     private final HttpHeaders headers = new HttpHeaders();
@@ -27,28 +26,40 @@ public class wildberriesApi {
     }
 
     @Nullable
-    public Object[] getDetailReport(@NotNull String dateFrom,
-                                    @NotNull String dateTo) {
+    public List<WB_DetailReport> getDetailReport(@NotNull String dateFrom,
+                                                 @NotNull String dateTo) throws NullPointerException {
         if (dateTo.isEmpty() || dateFrom.isEmpty()) return null;
 
-        HttpEntity<Object[]> request = new HttpEntity<>(headers);
-        ResponseEntity<Object[]> response = restTemplate
-                .exchange(detailReportUrl.setArgs(
-                                dateFrom, dateTo).build(),
+        HttpEntity<WB_DetailReport[]> request = new HttpEntity<>(headers);
+        ResponseEntity<WB_DetailReport[]> response = restTemplate
+                .exchange(detailReportUrl.setArgs(dateFrom, dateTo).build(),
                         HttpMethod.GET, request,
-                        Object[].class);
+                        WB_DetailReport[].class);
         if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
+            return Arrays.asList(
+                    Objects.requireNonNull(response.getBody())
+            );
         } else {
             return null;
         }
     }
 
     @Nullable
-    public Object[] getAdReport(@NotNull String dateFrom,
-                                @NotNull String dateTo) {
+    public List<WB_AdReport> getAdReport(@NotNull String dateFrom,
+                                         @NotNull String dateTo) throws NullPointerException {
         if (dateTo.isEmpty() || dateFrom.isEmpty()) return null;
 
-        return null;
+        HttpEntity<WB_AdReport[]> request = new HttpEntity<>(headers);
+        ResponseEntity<WB_AdReport[]> response = restTemplate
+                .exchange(detailReportUrl.setArgs(dateFrom, dateTo).build(),
+                        HttpMethod.GET, request,
+                        WB_AdReport[].class);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return Arrays.asList(
+                    Objects.requireNonNull(response.getBody())
+            );
+        } else {
+            return null;
+        }
     }
 }
