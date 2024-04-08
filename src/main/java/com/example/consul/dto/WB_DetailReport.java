@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+// https://openapi.wildberries.ru/statistics/api/ru/#tag/Statistika/paths/~1api~1v3~1supplier~1reportDetailByPeriod/get
 @Getter
 @Setter
 @Data
