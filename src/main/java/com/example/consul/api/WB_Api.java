@@ -5,9 +5,11 @@ import com.example.consul.dto.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.*;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -20,11 +22,17 @@ public class WB_Api {
     private final link detailReportUrl = link.create(
             "https://statistics-api.wildberries.ru/api/v3/supplier/reportDetailByPeriod?dateFrom=<arg>&dateTo=<arg>");
     private final link adReportUrl = link.create(
-            "https://advert-api.wb.ru/adv/v1/upd?dateFrom=<arg>&dateTo=<arg>");
+            "https://advert-api.wb.ru/adv/v1/upd?from=<arg>&to=<arg>");
+
+    public WB_Api() {
+        restTemplate.getMessageConverters()
+                .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+    }
 
     public void setApi(@NotNull String apiKey) {
         headers.add("Authorization", apiKey);
         headers.add("Accept", "application/json");
+        headers.setContentType(MediaType.valueOf("text/csv; charset=UTF-8"));
     }
 
     @Nullable
@@ -51,9 +59,10 @@ public class WB_Api {
                                          @NotNull String dateTo) throws NullPointerException {
         if (dateTo.isEmpty() || dateFrom.isEmpty()) return null;
 
+        String url = adReportUrl.setArgs(dateFrom, dateTo).build();
         HttpEntity<WB_AdReport[]> request = new HttpEntity<>(headers);
         ResponseEntity<WB_AdReport[]> response = restTemplate
-                .exchange(detailReportUrl.setArgs(dateFrom, dateTo).build(),
+                .exchange(url,
                         HttpMethod.GET, request,
                         WB_AdReport[].class);
         if (response.getStatusCode() == HttpStatus.OK) {
