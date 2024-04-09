@@ -21,17 +21,23 @@ public class WB_Service {
         wbApi.setApiKey(apiKey);
     }
 
-    public List<WB_DetailReport> getDetailReport() {
+    public List<WB_DetailReport> getDetailReport(
+            @NotNull String dateFrom,
+            @NotNull String dateTo
+    ) {
         try {
-            return wbApi.getDetailReport("2024-01-22", "2024-01-28");
+            return wbApi.getDetailReport(dateFrom, dateTo);
         } catch (NullPointerException exception) {
             return new ArrayList<>();
         }
     }
 
-    public List<WB_AdReport> getAdReport() {
+    public List<WB_AdReport> getAdReport(
+            @NotNull String dateFrom,
+            @NotNull String dateTo
+    ) {
         try {
-            return wbApi.getAdReport("2024-01-22", "2024-01-28");
+            return wbApi.getAdReport(dateFrom, dateTo);
         } catch (NullPointerException exception) {
             return new ArrayList<>();
         }
