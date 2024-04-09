@@ -1,4 +1,4 @@
-package com.example.consul.api;
+package com.example.consul.api.utils;
 
 import org.jetbrains.annotations.NotNull;
 

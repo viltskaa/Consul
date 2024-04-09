@@ -1,5 +1,6 @@
 package com.example.consul.api;
 
+import com.example.consul.api.utils.link;
 import com.example.consul.dto.WB_AdReport;
 import com.example.consul.dto.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ import java.util.Objects;
 
 @Component
 public class WB_Api {
-    private final HttpHeaders headers = new HttpHeaders();
+    private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final link detailReportUrl = link.create(
@@ -30,6 +31,7 @@ public class WB_Api {
     }
 
     public void setApiKey(@NotNull String apiKey) {
+        headers = new HttpHeaders();
         headers.add("Authorization", apiKey);
         headers.add("Accept", "application/json");
         headers.setContentType(MediaType.valueOf("text/csv; charset=UTF-8"));
