@@ -20,7 +20,7 @@ public class WB_Api {
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final link detailReportUrl = link.create(
-            "https://statistics-api.wildberries.ru/api/v3/supplier/reportDetailByPeriod?dateFrom=<arg>&dateTo=<arg>");
+            "https://statistics-api.wildberries.ru/api/<arg>/supplier/reportDetailByPeriod?dateFrom=<arg>&dateTo=<arg>");
     private final link adReportUrl = link.create(
             "https://advert-api.wb.ru/adv/v1/upd?from=<arg>&to=<arg>");
 
@@ -42,7 +42,7 @@ public class WB_Api {
 
         HttpEntity<WB_DetailReport[]> request = new HttpEntity<>(headers);
         ResponseEntity<WB_DetailReport[]> response = restTemplate
-                .exchange(detailReportUrl.setArgs(dateFrom, dateTo).build(),
+                .exchange(detailReportUrl.setArgs("v1",dateFrom, dateTo).build(),
                         HttpMethod.GET, request,
                         WB_DetailReport[].class);
         if (response.getStatusCode() == HttpStatus.OK) {

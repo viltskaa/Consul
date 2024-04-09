@@ -15,7 +15,7 @@ public class WB_DetailReport {
     String create_dt;
     String currency_name;
     String suppliercontract_code;
-    Integer rrd_id;
+    Long rrd_id;
     Integer gi_id;
     String subject_name;
     Integer nm_id;
@@ -34,7 +34,7 @@ public class WB_DetailReport {
     String order_dt;
     String sale_dt;
     String rr_dt;
-    Integer shk_id;
+    Long shk_id;
     Double retail_price_withdisc_rub;
     Integer delivery_amount;
     Integer return_amount;
@@ -42,7 +42,7 @@ public class WB_DetailReport {
     String gi_box_type_name;
     Double product_discount_for_report;
     Double supplier_promo;
-    Integer rid;
+    Long rid;
     Double ppvz_spp_prc;
     Double ppvz_kvw_prc_base;
     Double ppvz_kvw_prc;
