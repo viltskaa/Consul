@@ -14,4 +14,7 @@ public class WB_dataProcessing {
                 .map(WB_DetailReportShort::of)
                 .collect(Collectors.groupingBy(WB_DetailReportShort::getSa_name));
     }
+
+    // todo Суммация WB_AdReport по цене, с фильтром "!= пробный"
+    // todo Собрать детализацию в таблицу
 }
