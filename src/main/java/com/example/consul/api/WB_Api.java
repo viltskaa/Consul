@@ -29,7 +29,7 @@ public class WB_Api {
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
-    public void setApi(@NotNull String apiKey) {
+    public void setApiKey(@NotNull String apiKey) {
         headers.add("Authorization", apiKey);
         headers.add("Accept", "application/json");
         headers.setContentType(MediaType.valueOf("text/csv; charset=UTF-8"));
