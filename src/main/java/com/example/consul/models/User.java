@@ -11,6 +11,7 @@ import java.util.HashSet;
 
 @Getter
 @Setter
+@Table(name="users")
 @Entity
 public class User implements UserDetails {
     @Id

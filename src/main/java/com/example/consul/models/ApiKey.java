@@ -10,6 +10,7 @@ import lombok.Setter;
 public class ApiKey {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Integer id;
-    private String key;
+    private Long id;
+    private String name;
+    private String parameter;
 }
