@@ -17,8 +17,8 @@ public class WB_Service {
         this.wbApi = wbApi;
     }
 
-    public void setApi(@NotNull String apiKey) {
-        wbApi.setApi(apiKey);
+    public void setApiKey(@NotNull String apiKey) {
+        wbApi.setApiKey(apiKey);
     }
 
     public List<WB_DetailReport> getDetailReport() {
