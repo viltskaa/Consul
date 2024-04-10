@@ -14,4 +14,6 @@ public class WB_dataProcessing {
                 .map(WB_DetailReportShort::of)
                 .collect(Collectors.groupingBy(WB_DetailReportShort::getSa_name));
     }
+
+
 }
