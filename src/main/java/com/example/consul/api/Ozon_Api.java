@@ -1,9 +1,7 @@
 package com.example.consul.api;
 
-import com.example.consul.api.utils.link;
 import com.example.consul.dto.OZON_DetailReport;
 import com.example.consul.dto.Ozon_TransactionReport;
-import com.example.consul.dto.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.*;
@@ -54,6 +52,24 @@ public class Ozon_Api {
 
         ResponseEntity<Ozon_TransactionReport[]> response = restTemplate
                 .postForEntity(transactionReportUrl, request, Ozon_TransactionReport[].class );
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return Arrays.asList(
+                    Objects.requireNonNull(response.getBody())
+            );
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    public List<OZON_DetailReport> getDetailReport(@NotNull String date){
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        map.add("date", date);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<OZON_DetailReport[]> response = restTemplate
+                .postForEntity(detailReportUrl, request, OZON_DetailReport[].class );
         if (response.getStatusCode() == HttpStatus.OK) {
             return Arrays.asList(
                     Objects.requireNonNull(response.getBody())
