@@ -1,7 +1,9 @@
 package com.example.consul.api;
 
+import com.example.consul.api.utils.Filter;
 import com.example.consul.dto.Ozon_DetailReport;
 import com.example.consul.dto.Ozon_TransactionReport;
+import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.*;
@@ -12,6 +14,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -40,17 +43,10 @@ public class Ozon_Api {
     @Nullable
     public List<Ozon_TransactionReport> getTransactionReport(@NotNull String from,
                                                              @NotNull String to,
-                                                             @NotNull String operation_type,
+                                                             @NotNull ArrayList<String> operation_type,
                                                              @NotNull String transaction_type){
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        map.add("from", from);
-        map.add("to", to);
-        MultiValueMap<String, MultiValueMap<String, String>> map2= new LinkedMultiValueMap<>();
-        map2.add("date",map);
-        MultiValueMap<String, MultiValueMap<String, MultiValueMap<String, String>>> map3= new LinkedMultiValueMap<>();
-        map3.add("filter",map2);
-
-        HttpEntity<MultiValueMap<String, MultiValueMap<String, MultiValueMap<String, String>>>> request = new HttpEntity<>(map3, headers);
+        HttpEntity<String> request = new HttpEntity<>
+                (new Gson().toJson(new Filter(from, to, operation_type, transaction_type)), headers);
 
         ResponseEntity<Ozon_TransactionReport[]> response = restTemplate
                 .postForEntity(transactionReportUrl, request, Ozon_TransactionReport[].class );
