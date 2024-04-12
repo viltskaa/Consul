@@ -1,11 +1,13 @@
 package com.example.consul.dto;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class OZON_DetailReport {
+@Data
+public class Ozon_DetailReport {
     Integer row_number;
     Long product_id;
     String product_name;
