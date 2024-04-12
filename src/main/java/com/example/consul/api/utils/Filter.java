@@ -18,7 +18,7 @@ public class Filter {
         this.transactionType = transactionType;
     }
 
-    class Date {
+    static class Date {
         private String from;
         private String to;
 
