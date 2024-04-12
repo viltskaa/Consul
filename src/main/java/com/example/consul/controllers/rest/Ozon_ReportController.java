@@ -21,8 +21,8 @@ public class Ozon_ReportController {
     public List<Ozon_TransactionReport> getTransactionReport(
             @RequestParam String from,
             @RequestParam String to,
-            @RequestParam ArrayList<String> operation_type,
-            @RequestParam String transaction_type,
+            @RequestParam(value = "") ArrayList<String> operation_type,
+            @RequestParam(value = "all") String transaction_type,
             @RequestParam String apiKey,
             @RequestParam String clientId
     ) {
