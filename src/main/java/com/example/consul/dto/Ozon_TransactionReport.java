@@ -16,7 +16,7 @@ public class Ozon_TransactionReport {
         this.result = result;
     }
 
-    public class Result{
+    public static class Result{
         private List<Operation> operations;
 
         public Result(List<Operation> operations) {
@@ -24,7 +24,7 @@ public class Ozon_TransactionReport {
         }
     }
 
-    public class Posting{
+    public static class Posting{
         private String delivery_schema;
         private String order_date;
         private String posting_number;
@@ -38,7 +38,7 @@ public class Ozon_TransactionReport {
         }
     }
 
-    public class Item{
+    public static class Item{
         private String name;
         private Long sku;
 
@@ -48,7 +48,7 @@ public class Ozon_TransactionReport {
         }
     }
 
-    public class Service{
+    public static class Service{
         private String name;
         private Double price;
 
@@ -58,7 +58,7 @@ public class Ozon_TransactionReport {
         }
     }
 
-    public class Operation{
+    public static class Operation{
         private Long operation_id;
         private String operation_type;
         private String operation_date;
