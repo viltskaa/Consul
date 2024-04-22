@@ -26,7 +26,5 @@ class ConsulApplicationTests {
 
                 sum += row.getPrice() * row.getSale_qty();
         }
-        System.out.println(sum);
     }
-
 }

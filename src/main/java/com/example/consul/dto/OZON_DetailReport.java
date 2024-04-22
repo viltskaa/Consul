@@ -107,5 +107,27 @@ public class OZON_DetailReport {
             this.return_price_seller = return_price_seller;
             this.return_qty = return_qty;
         }
+
+        public static Row of(Row row) {
+            return new Row(row.getRow_number(),
+                    row.getProduct_id(),
+                    row.getProduct_name(),
+                    row.getBarcode(),
+                    row.getOffer_id(),
+                    row.getCommission_percent(),
+                    row.getPrice(),
+                    row.getPrice_sale(),
+                    row.getSale_amount(),
+                    row.getSale_commission(),
+                    row.getSale_discount(),
+                    row.getSale_price_seller(),
+                    row.getSale_qty(),
+                    row.getReturn_sale(),
+                    row.getReturn_amount(),
+                    row.getReturn_commission(),
+                    row.getReturn_discount(),
+                    row.getReturn_price_seller(),
+                    row.getReturn_qty());
+        }
     }
 }
