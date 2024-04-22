@@ -4,13 +4,15 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 @Data
-public class Ozon_TransactionReport {
+public class OZON_TransactionReport {
     private Result result;
 
-    public Ozon_TransactionReport(Result result) {
+    public OZON_TransactionReport(Result result) {
         this.result = result;
     }
 
