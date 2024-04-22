@@ -1,18 +1,16 @@
 package com.example.consul.api;
 
-import com.example.consul.dto.OZON_PerformanceCampaign;
+import com.example.consul.dto.OZON_PerformanceCampaigns;
 import com.example.consul.dto.OZON_PerformanceTokenResult;
 import org.jetbrains.annotations.NotNull;
 import com.example.consul.api.utils.Link;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
+@Component
 public class OZON_PerformanceApi {
     private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
@@ -45,8 +43,8 @@ public class OZON_PerformanceApi {
         }
     }
 
-    public List<OZON_PerformanceCampaign> getCampaigns(@NotNull String dateFrom,
-                                                       @NotNull String dateTo) {
+    public OZON_PerformanceCampaigns getCampaigns(@NotNull String dateFrom,
+                                                  @NotNull String dateTo) {
         String url = "https://performance.ozon.ru:443/api/client/statistics/campaign/product/json";
         setHeaders();
 
@@ -58,12 +56,10 @@ public class OZON_PerformanceApi {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-        ResponseEntity<OZON_PerformanceCampaign[]> response = restTemplate
-                .postForEntity(url, request, OZON_PerformanceCampaign[].class);
+        ResponseEntity<OZON_PerformanceCampaigns> response = restTemplate
+                .postForEntity(url, request, OZON_PerformanceCampaigns.class);
         if (response.getStatusCode() == HttpStatus.OK) {
-            return Arrays.asList(
-                    Objects.requireNonNull(response.getBody())
-            );
+            return response.getBody();
         } else {
             return null;
         }
