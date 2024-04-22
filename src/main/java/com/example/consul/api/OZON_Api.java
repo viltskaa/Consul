@@ -14,10 +14,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class OZON_Api {
@@ -37,9 +34,9 @@ public class OZON_Api {
         headers.add("Api-Key", apiKey);
         headers.add("Client-Id", clientId);
         headers.add("Content-Type", "application/json");
-        headers.setContentType(MediaType.valueOf("text/csv; charset=UTF-8"));
     }
 
+    // Финансовые отчеты => Список транзакций
     @Nullable
     public List<OZON_TransactionReport> getTransactionReport(@NotNull String from,
                                                              @NotNull String to,
@@ -59,19 +56,19 @@ public class OZON_Api {
         }
     }
 
+    // Финансовые отчеты => Отчёт о реализации товаров
     @Nullable
-    public List<OZON_DetailReport> getDetailReport(@NotNull String date){
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        map.add("date", date);
+    public OZON_DetailReport getDetailReport(@NotNull String date){
+        Map<String, String> map= new HashMap<>();
+        map.put("date", date);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
 
-        ResponseEntity<OZON_DetailReport[]> response = restTemplate
-                .postForEntity(detailReportUrl, request, OZON_DetailReport[].class );
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(detailReportUrl, request, String.class );
+
         if (response.getStatusCode() == HttpStatus.OK) {
-            return Arrays.asList(
-                    Objects.requireNonNull(response.getBody())
-            );
+            return new Gson().fromJson(response.getBody(), OZON_DetailReport.class);
         } else {
             return null;
         }
