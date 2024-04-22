@@ -37,6 +37,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.springframework.data:spring-data-jpa:3.2.4'
     implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'org.apache.poi:poi:5.2.3'
 }
 
 tasks.named('test') {
