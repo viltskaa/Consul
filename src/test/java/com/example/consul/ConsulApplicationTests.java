@@ -1,10 +1,12 @@
 package com.example.consul;
 
 import com.example.consul.api.OZON_Api;
+import com.example.consul.document.Excel;
 import com.example.consul.dto.OZON_DetailReport;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.IOException;
 import java.util.List;
 
 @SpringBootTest
@@ -26,5 +28,11 @@ class ConsulApplicationTests {
 
                 sum += row.getPrice() * row.getSale_qty();
         }
+    }
+
+    @Test
+    void ExcelFile() throws IOException {
+        Excel excel = new Excel();
+        excel.createExcel("test.xls");
     }
 }
