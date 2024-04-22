@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @Data
-public class Ozon_TransactionReport {
+public class OZON_TransactionReport {
     Double amount;
     String operation_type_name;
     String type;

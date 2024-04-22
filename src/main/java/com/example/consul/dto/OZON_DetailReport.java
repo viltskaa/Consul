@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-public class Ozon_DetailReport {
+public class OZON_DetailReport {
     Integer row_number; // Номер строки в отчёте
     Long product_id; // Идентификатор товара
     String product_name; // Наименование товара

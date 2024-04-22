@@ -1,8 +1,8 @@
 package com.example.consul.api;
 
 import com.example.consul.api.utils.Filter;
-import com.example.consul.dto.Ozon_DetailReport;
-import com.example.consul.dto.Ozon_TransactionReport;
+import com.example.consul.dto.OZON_DetailReport;
+import com.example.consul.dto.OZON_TransactionReport;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
-public class Ozon_Api {
+public class OZON_Api {
     private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
     private final String detailReportUrl = "https://api-seller.ozon.ru/v1/finance/realization";
 
-    public Ozon_Api() {
+    public OZON_Api() {
         restTemplate.getMessageConverters()
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
@@ -41,15 +41,15 @@ public class Ozon_Api {
     }
 
     @Nullable
-    public List<Ozon_TransactionReport> getTransactionReport(@NotNull String from,
+    public List<OZON_TransactionReport> getTransactionReport(@NotNull String from,
                                                              @NotNull String to,
                                                              @NotNull ArrayList<String> operation_type,
                                                              @NotNull String transaction_type){
         HttpEntity<String> request = new HttpEntity<>
                 (new Gson().toJson(new Filter(from, to, operation_type, transaction_type)), headers);
 
-        ResponseEntity<Ozon_TransactionReport[]> response = restTemplate
-                .postForEntity(transactionReportUrl, request, Ozon_TransactionReport[].class );
+        ResponseEntity<OZON_TransactionReport[]> response = restTemplate
+                .postForEntity(transactionReportUrl, request, OZON_TransactionReport[].class );
         if (response.getStatusCode() == HttpStatus.OK) {
             return Arrays.asList(
                     Objects.requireNonNull(response.getBody())
@@ -60,14 +60,14 @@ public class Ozon_Api {
     }
 
     @Nullable
-    public List<Ozon_DetailReport> getDetailReport(@NotNull String date){
+    public List<OZON_DetailReport> getDetailReport(@NotNull String date){
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add("date", date);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-        ResponseEntity<Ozon_DetailReport[]> response = restTemplate
-                .postForEntity(detailReportUrl, request, Ozon_DetailReport[].class );
+        ResponseEntity<OZON_DetailReport[]> response = restTemplate
+                .postForEntity(detailReportUrl, request, OZON_DetailReport[].class );
         if (response.getStatusCode() == HttpStatus.OK) {
             return Arrays.asList(
                     Objects.requireNonNull(response.getBody())

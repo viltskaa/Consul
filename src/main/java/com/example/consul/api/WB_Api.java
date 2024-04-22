@@ -1,6 +1,6 @@
 package com.example.consul.api;
 
-import com.example.consul.api.utils.link;
+import com.example.consul.api.utils.Link;
 import com.example.consul.dto.WB_AdReport;
 import com.example.consul.dto.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
@@ -20,9 +20,9 @@ public class WB_Api {
     private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final link detailReportUrl = link.create(
+    private final Link detailReportUrl = Link.create(
             "https://statistics-api.wildberries.ru/api/<arg>/supplier/reportDetailByPeriod?dateFrom=<arg>&dateTo=<arg>");
-    private final link adReportUrl = link.create(
+    private final Link adReportUrl = Link.create(
             "https://advert-api.wb.ru/adv/v1/upd?from=<arg>&to=<arg>");
 
     public WB_Api() {

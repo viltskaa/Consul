@@ -1,7 +1,7 @@
 package com.example.consul.controllers.rest;
 
-import com.example.consul.dto.Ozon_TransactionReport;
-import com.example.consul.services.Ozon_Service;
+import com.example.consul.dto.OZON_TransactionReport;
+import com.example.consul.services.OZON_Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -10,15 +10,15 @@ import java.util.List;
 @RestController
 @CrossOrigin
 @RequestMapping(path = "/ozonReport")
-public class Ozon_ReportController {
-    private final Ozon_Service ozonService;
+public class OZON_ReportController {
+    private final OZON_Service ozonService;
 
-    public Ozon_ReportController(Ozon_Service ozonService) {
+    public OZON_ReportController(OZON_Service ozonService) {
         this.ozonService = ozonService;
     }
 
     @GetMapping(path = "/transaction")
-    public List<Ozon_TransactionReport> getTransactionReport(
+    public List<OZON_TransactionReport> getTransactionReport(
             @RequestParam String from,
             @RequestParam String to,
             @RequestParam(value = "") ArrayList<String> operation_type,
