@@ -19,7 +19,7 @@ import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
 
 public class Excel {
 
-    public CellStyle createBaseStyle(Workbook workbook){
+    public CellStyle createBaseStyle(Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
         style.setWrapText(true);
         style.setAlignment(CENTER);
@@ -35,7 +35,7 @@ public class Excel {
         return style;
     }
 
-    public CellStyle createExpenseStyle(Workbook workbook){
+    public CellStyle createExpenseStyle(Workbook workbook) {
         CellStyle styleExpense = workbook.createCellStyle();
         styleExpense.setWrapText(true);
         styleExpense.setAlignment(CENTER);
@@ -52,11 +52,11 @@ public class Excel {
         return styleExpense;
     }
 
-    public void setTableTitle(CellStyle style, Row header, Sheet sheet, int columnInd, String titleName){
+    public void setTableTitle(CellStyle style, Row header, Sheet sheet, int columnInd, String titleName) {
         Cell cell = header.createCell(columnInd);
         cell.setCellValue(titleName);
         cell.setCellStyle(style);
-        sheet.setColumnWidth(columnInd,15*256);
+        sheet.setColumnWidth(columnInd, 15 * 256);
     }
 
     @SuppressWarnings("deprecation")
@@ -66,12 +66,12 @@ public class Excel {
         final OZON_dataProcessing ozonDP = new OZON_dataProcessing();
 
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
-        OZON_DetailReport report =  api.getDetailReport("2024-01");
+        OZON_DetailReport report = api.getDetailReport("2024-01");
 
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
 
         Workbook workbook = new HSSFWorkbook();
-        Sheet sheet= workbook.createSheet("Январь");
+        Sheet sheet = workbook.createSheet("Январь");
 
         CellStyle style = createBaseStyle(workbook);
         CellStyle styleExpense = createExpenseStyle(workbook);

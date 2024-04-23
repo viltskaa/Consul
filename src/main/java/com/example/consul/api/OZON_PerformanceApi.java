@@ -1,16 +1,21 @@
 package com.example.consul.api;
 
-import com.example.consul.dto.OZON.OZON_PerformanceCampaigns;
-import com.example.consul.dto.OZON.OZON_PerformanceTokenResult;
-import com.example.consul.dto.OZON.OZON_campaignProductsInfo;
+import com.example.consul.dto.OZON.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
 import com.example.consul.api.utils.Link;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -48,20 +53,16 @@ public class OZON_PerformanceApi {
     public OZON_PerformanceCampaigns getCampaigns(@NotNull String token,
                                                   @NotNull String dateFrom,
                                                   @NotNull String dateTo) {
-        String url = "https://performance.ozon.ru:443/api/client/statistics/campaign/product/json";
+        String url = Link
+                .create("https://performance.ozon.ru:443/api/client/statistics/campaign/product/json?dateFrom=<arg>&dateTo=<arg>")
+                .setArgs(dateFrom, dateTo).build();
         setHeaders();
-
-        Map<String, String> map = new HashMap<>();
-
-        map.put("dateFrom", dateFrom);
-        map.put("dateTo", dateTo);
-        map.put("campaigns", "[]");
-
         headers.setBearerAuth(token);
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
+
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity(url, request, String.class);
+                .exchange(url, HttpMethod.GET, request, String.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_PerformanceCampaigns.class);
         } else {
@@ -69,20 +70,63 @@ public class OZON_PerformanceApi {
         }
     }
 
-    public OZON_campaignProductsInfo getCampaignInfo(@NotNull String token,
-                                                     @NotNull Integer campaignId) {
-        String url = Link.create("https://performance.ozon.ru:443/api/client/campaign/<arg>/v2/products")
-                .setArgs(campaignId.toString())
-                .build();
+    public OZON_PerformanceStatistic getPerformanceStatisticByCampaignId(@NotNull String token,
+                                                                         @NotNull List<String> campaignId,
+                                                                         @NotNull String dateFrom,
+                                                                         @NotNull String dateTo) {
+        String url = "https://performance.ozon.ru:443/api/client/statistics/json";
         setHeaders();
-
         headers.setBearerAuth(token);
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(null, headers);
+
+        Map<String, String> map = new HashMap<>();
+
+        map.put("campaigns", new Gson().toJson(campaignId));
+        map.put("dateFrom", dateFrom);
+        map.put("dateTo", dateTo);
+        map.put("groupBy", "START_OF_MONTH");
+
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<String> response = restTemplate
                 .postForEntity(url, request, String.class);
         if (response.getStatusCode() == HttpStatus.OK) {
-            return new Gson().fromJson(response.getBody(), OZON_campaignProductsInfo.class);
+            return new Gson().fromJson(
+                    response.getBody(),
+                    OZON_PerformanceStatistic.class
+            );
+        } else {
+            return null;
+        }
+    }
+
+    public List<OZON_PerformanceReport> getPerformanceReportByUUID(@NotNull String token,
+                                                                   @NotNull String UUID) {
+        String url = Link.create("https://performance.ozon.ru:443/api/client/statistics/report?UUID=<arg>")
+                .setArgs(UUID)
+                .build();
+        setHeaders();
+
+        headers.setBearerAuth(token);
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate
+                .exchange(url, HttpMethod.GET, request, String.class);
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            Type type = new TypeToken<LinkedTreeMap<String, Object>>() {
+            }.getType();
+            LinkedTreeMap<String, Object> test = new Gson().fromJson(response.getBody(), type);
+            List<OZON_PerformanceReport> reports = new ArrayList<>();
+
+            for (String key : test.keySet()) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                OZON_PerformanceReport report = objectMapper
+                        .convertValue(test.get(key), new TypeReference<>() {
+                        });
+                report.setId(key);
+                reports.add(report);
+            }
+
+            return reports;
         } else {
             return null;
         }

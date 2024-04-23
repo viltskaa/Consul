@@ -2,10 +2,7 @@ package com.example.consul.services;
 
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
-import com.example.consul.dto.OZON.OZON_PerformanceCampaigns;
-import com.example.consul.dto.OZON.OZON_PerformanceTokenExpires;
-import com.example.consul.dto.OZON.OZON_PerformanceTokenResult;
-import com.example.consul.dto.OZON.OZON_TransactionReport;
+import com.example.consul.dto.OZON.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -42,10 +39,19 @@ public class OZON_Service {
         }
     }
 
+    public OZON_SkuProductsReport getTransactionReport(@NotNull List<Long> skus) {
+        try {
+            return ozonApi.getProductInfo(skus);
+        } catch (NullPointerException exception) {
+            return null;
+        }
+    }
+
     public String getPerformanceToken(@NotNull String clientId,
                                       @NotNull String clientSecret) {
         try {
-            if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+            if (!performanceKey.containsKey(clientId) ||
+                    (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired())) {
                 OZON_PerformanceTokenResult token = ozonPerformanceApi.getToken(clientId, clientSecret);
                 performanceKey.put(
                         clientId, OZON_PerformanceTokenExpires.of(token)
@@ -67,6 +73,32 @@ public class OZON_Service {
                     performanceKey.get(clientId).getAccess_token(),
                     dateFrom,
                     dateTo);
+        } else {
+            return null;
+        }
+    }
+
+    public OZON_PerformanceStatistic getPerformanceStatisticByCampaignId(@NotNull String clientId,
+                                                                         @NotNull List<String> campaignId,
+                                                                         @NotNull String dateFrom,
+                                                                         @NotNull String dateTo) {
+        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+            return ozonPerformanceApi.getPerformanceStatisticByCampaignId(
+                    performanceKey.get(clientId).getAccess_token(),
+                    campaignId,
+                    dateFrom,
+                    dateTo);
+        } else {
+            return null;
+        }
+    }
+
+    public List<OZON_PerformanceReport> getPerformanceReportByUUID(@NotNull String clientId, @NotNull String UUID) {
+        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+            return ozonPerformanceApi.getPerformanceReportByUUID(
+                    performanceKey.get(clientId).getAccess_token(),
+                    UUID
+            );
         } else {
             return null;
         }

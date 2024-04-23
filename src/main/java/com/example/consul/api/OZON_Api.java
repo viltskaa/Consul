@@ -2,6 +2,7 @@ package com.example.consul.api;
 
 import com.example.consul.api.utils.Filter;
 import com.example.consul.dto.OZON.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
@@ -18,9 +19,6 @@ import java.util.*;
 public class OZON_Api {
     private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
-
-    private final String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
-    private final String detailReportUrl = "https://api-seller.ozon.ru/v1/finance/realization";
 
     public OZON_Api() {
         restTemplate.getMessageConverters()
@@ -40,6 +38,8 @@ public class OZON_Api {
                                                              @NotNull String to,
                                                              @NotNull ArrayList<String> operation_type,
                                                              @NotNull String transaction_type){
+        String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
+
         HttpEntity<String> request = new HttpEntity<>
                 (new Gson().toJson(new Filter(from, to, operation_type, transaction_type)), headers);
 
@@ -57,6 +57,8 @@ public class OZON_Api {
     // Финансовые отчеты => Отчёт о реализации товаров
     @Nullable
     public OZON_DetailReport getDetailReport(@NotNull String date){
+        String detailReportUrl = "https://api-seller.ozon.ru/v1/finance/realization";
+
         Map<String, String> map= new HashMap<>();
         map.put("date", date);
 
@@ -67,6 +69,25 @@ public class OZON_Api {
 
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_DetailReport.class);
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    public OZON_SkuProductsReport getProductInfo(List<Long> skus){
+        String url = "https://api-seller.ozon.ru/v2/product/info/list";
+
+        Map<String, String> map= new HashMap<>();
+        map.put("sku", new Gson().toJson(skus));
+
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(url, request, String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return new Gson().fromJson(response.getBody(), OZON_SkuProductsReport.class);
         } else {
             return null;
         }
