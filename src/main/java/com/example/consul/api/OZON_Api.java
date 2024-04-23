@@ -79,10 +79,10 @@ public class OZON_Api {
     public OZON_SkuProductsReport getProductInfo(List<Long> skus){
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
 
-        Map<String, String> map= new HashMap<>();
-        map.put("sku", new Gson().toJson(skus));
+        Map<String, Long[]> map= new HashMap<>();
+        map.put("sku", skus.toArray(new Long[0]));
 
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<Map<String, Long[]>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<String> response = restTemplate
                 .postForEntity(url, request, String.class);
