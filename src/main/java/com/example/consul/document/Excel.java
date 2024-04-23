@@ -17,6 +17,24 @@ import java.util.Map;
 
 
 public class Excel {
+
+    public void setTableTitleName(Row header, Sheet sheet, int columnInd, String titleName){
+        Cell cell = header.createCell(columnInd);
+        cell.setCellValue(titleName);
+        sheet.autoSizeColumn(columnInd);
+    }
+
+    public void setTableHeader(Sheet sheet){
+        Row header = sheet.createRow(0);
+
+        setTableTitleName(header, sheet, 0, "Код товара поставщика");
+        setTableTitleName(header, sheet, 1, "Доставлено");
+        setTableTitleName(header, sheet, 2, "Возвращено");
+        setTableTitleName(header, sheet, 3, "Начислено за доставленный товар");
+        setTableTitleName(header, sheet, 4, "Возврат (-)");
+        setTableTitleName(header, sheet, 5, "Комиссия за продажу (-)");
+    }
+
     @SuppressWarnings("deprecation")
     public void createExcel(String file) throws FileNotFoundException, IOException {
 
@@ -31,28 +49,10 @@ public class Excel {
         Workbook workbook = new HSSFWorkbook();
         Sheet sheet= workbook.createSheet("Январь");
 
-        Row header = sheet.createRow(0);
+        setTableHeader(sheet);
 
-        Cell cell = header.createCell(0);
-        cell.setCellValue("Код товара поставщика");
-
-        cell = header.createCell(1);
-        cell.setCellValue("Доставлено");
-
-        cell = header.createCell(2);
-        cell.setCellValue("Возвращено");
-
-        cell = header.createCell(3);
-        cell.setCellValue("Начислено за доставленный товар");
-
-        cell = header.createCell(4);
-        cell.setCellValue("Возврат (-)");
-
-        cell = header.createCell(5);
-        cell.setCellValue("Комиссия за продажу (-)");
-
-        Map<String, Integer> mapSaleCount = ozonDP.sumSaleCount(ozonDP.groupByOfferId(rows));
-        Map<String, Integer> mapReturnCount = ozonDP.sumReturnCount(ozonDP.groupByOfferId(rows));
+        Map<String, Integer> mapSaleCount = ozonDP.saleCount(ozonDP.groupByOfferId(rows));
+        Map<String, Integer> mapReturnCount = ozonDP.returnCount(ozonDP.groupByOfferId(rows));
         Map<String, Double> mapSaleForDelivered = ozonDP.sumSaleForDelivered(ozonDP.groupByOfferId(rows));
         Map<String, Double> mapSumReturn = ozonDP.sumReturn(ozonDP.groupByOfferId(rows));
         Map<String, Double> mapSalesCommission = ozonDP.sumSalesCommission(ozonDP.groupByOfferId(rows));
@@ -69,12 +69,6 @@ public class Excel {
             rowIdx++;
         }
 
-        sheet.autoSizeColumn(0);
-        sheet.autoSizeColumn(1);
-        sheet.autoSizeColumn(2);
-        sheet.autoSizeColumn(3);
-        sheet.autoSizeColumn(4);
-        sheet.autoSizeColumn(5);
         workbook.write(new FileOutputStream(file));
         workbook.close();
     }

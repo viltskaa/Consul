@@ -11,6 +11,7 @@ public class OZON_dataProcessing {
     public OZON_dataProcessing() {
     }
 
+    // Группировка отчета о реализации товаров по артикулу(offer_id)
     public Map<String, List<OZON_DetailReport.Row>> groupByOfferId(List<OZON_DetailReport.Row> ozonDetailReports) {
         return ozonDetailReports.stream()
                 .filter(x -> x.getOffer_id() != null)
@@ -18,6 +19,7 @@ public class OZON_dataProcessing {
                 .collect(Collectors.groupingBy(OZON_DetailReport.Row::getOffer_id));
     }
 
+    // Суммирование начислений за доставленный товар по артикулу
     public Map<String,Double> sumSaleForDelivered(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
@@ -28,7 +30,8 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
-    public Map<String,Integer> sumSaleCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
+    // Нахождение количества доставленных товаров по артикулу
+    public Map<String,Integer> saleCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
                 .collect(Collectors.toMap(
@@ -38,7 +41,8 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
-    public Map<String,Integer> sumReturnCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
+    // Нахождение количества возвращенных товаров по артикулу
+    public Map<String,Integer> returnCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
                 .collect(Collectors.toMap(
@@ -48,6 +52,7 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
+    // Нахождение суммы возврата товаров по артикулу
     public Map<String,Double> sumReturn(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
@@ -58,6 +63,7 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
+    // Нахождение комиссии за продажу по артикулу
     public Map<String,Double> sumSalesCommission(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
