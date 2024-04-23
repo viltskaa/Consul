@@ -6,6 +6,9 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * https://api-seller.ozon.ru/v2/product/info
+ */
 @Setter
 @Getter
 @Data

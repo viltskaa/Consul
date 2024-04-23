@@ -39,7 +39,7 @@ public class OZON_Service {
         }
     }
 
-    public OZON_SkuProductsReport getTransactionReport(@NotNull List<Long> skus) {
+    public OZON_SkuProductsReport getProductInfo(@NotNull List<Long> skus) {
         try {
             return ozonApi.getProductInfo(skus);
         } catch (NullPointerException exception) {
