@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class ForTransactions {
 
     private Filter filter;
-    private int page = 1;
+    private int page = 2;
     private int page_size = 1000;
 
     public ForTransactions(String from, String to, ArrayList<String> operationType, String transactionType){
