@@ -25,6 +25,30 @@ class ConsulApplicationTests {
     }
 
     @Test
+    void Transactions(){
+        final OZON_Api api = new OZON_Api();
+        api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
+
+        ArrayList<String> opT = new ArrayList<>();
+        opT.add("MarketplaceRedistributionOfAcquiringOperation");
+
+        OZON_TransactionReport reports = api.getTransactionReport(
+                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all");
+
+        Long sku1 = 477040103L;
+        Long sku2 = 477040104L;
+        double sum = 0;
+        for(OZON_TransactionReport.Operation operation: reports.getResult().getOperations()){
+            Long sku = operation.getItems().getFirst().getSku();
+            if( sku.equals(sku1)  || sku.equals(sku2) ){
+                sum += operation.getAmount();
+            }
+        }
+        System.out.println(sum);
+    }
+
+
+    @Test
     void getProductInfo(){
         final OZON_Api api = new OZON_Api();
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");

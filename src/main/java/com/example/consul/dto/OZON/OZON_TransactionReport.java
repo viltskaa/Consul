@@ -16,6 +16,8 @@ public class OZON_TransactionReport {
         this.result = result;
     }
 
+    @Setter
+    @Getter
     @Data
     public static class Result{
         private List<Operation> operations;

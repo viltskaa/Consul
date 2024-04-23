@@ -1,5 +1,6 @@
 package com.example.consul.api.utils;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 
 @Getter
 @Setter
+@Data
 public class FilterMessage {
     private Filter filter;
     private int page;
@@ -18,6 +20,9 @@ public class FilterMessage {
         this.page_size=page_size;
     }
 
+    @Getter
+    @Setter
+    @Data
     public static class Filter{
         private Date date;
         private ArrayList<String> operationType;
@@ -30,6 +35,9 @@ public class FilterMessage {
         }
     }
 
+    @Getter
+    @Setter
+    @Data
     static class Date {
         private String from;
         private String to;

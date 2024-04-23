@@ -1,6 +1,8 @@
 package com.example.consul.api;
 
+
 import com.example.consul.api.utils.FilterMessage;
+import com.example.consul.api.utils.ForTransactions;
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
@@ -40,15 +42,13 @@ public class OZON_Api {
                                                              @NotNull String transaction_type){
         String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
 
-        FilterMessage filter= new FilterMessage(new FilterMessage.Filter(from,to,operation_type,transaction_type),1,1000);
-        Gson gson=new Gson();
-
-        HttpEntity<String> request = new HttpEntity<>(gson.toJson(filter), headers);
+        HttpEntity<String> request = new HttpEntity<>
+                (new Gson().toJson(new ForTransactions(from, to, operation_type, transaction_type)), headers);
 
         ResponseEntity<String> response = restTemplate
                 .postForEntity(transactionReportUrl, request, String.class );
         if (response.getStatusCode() == HttpStatus.OK) {
-            return gson.fromJson(response.getBody(), OZON_TransactionReport.class);
+            return new Gson().fromJson(response.getBody(), OZON_TransactionReport.class);
         } else {
             return null;
         }
@@ -74,6 +74,7 @@ public class OZON_Api {
         }
     }
 
+    //Загрузка и обновление товаров => Получить список товаров по идентификаторам
     @Nullable
     public OZON_SkuProductsReport getProductInfo(List<Long> skus){
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
