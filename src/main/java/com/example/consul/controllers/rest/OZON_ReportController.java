@@ -18,7 +18,7 @@ public class OZON_ReportController {
     }
 
     @GetMapping(path = "/transaction")
-    public List<OZON_TransactionReport> getTransactionReport(
+    public OZON_TransactionReport getTransactionReport(
             @RequestParam String from,
             @RequestParam String to,
             @RequestParam(value = "") ArrayList<String> operation_type,

@@ -28,14 +28,14 @@ public class OZON_Service {
         ozonApi.setHeaders(apiKey, clientId);
     }
 
-    public List<OZON_TransactionReport> getTransactionReport(@NotNull String from,
+    public OZON_TransactionReport getTransactionReport(@NotNull String from,
                                                              @NotNull String to,
                                                              @NotNull ArrayList<String> operation_type,
                                                              @NotNull String transaction_type) {
         try {
             return ozonApi.getTransactionReport(from, to, operation_type, transaction_type);
         } catch (NullPointerException exception) {
-            return new ArrayList<>();
+            return null;
         }
     }
 

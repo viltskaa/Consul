@@ -1,6 +1,6 @@
 package com.example.consul.api;
 
-import com.example.consul.api.utils.Filter;
+import com.example.consul.api.utils.FilterMessage;
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
@@ -34,21 +34,21 @@ public class OZON_Api {
 
     // Финансовые отчеты => Список транзакций
     @Nullable
-    public List<OZON_TransactionReport> getTransactionReport(@NotNull String from,
+    public OZON_TransactionReport getTransactionReport(@NotNull String from,
                                                              @NotNull String to,
                                                              @NotNull ArrayList<String> operation_type,
                                                              @NotNull String transaction_type){
         String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
 
-        HttpEntity<String> request = new HttpEntity<>
-                (new Gson().toJson(new Filter(from, to, operation_type, transaction_type)), headers);
+        FilterMessage filter= new FilterMessage(new FilterMessage.Filter(from,to,operation_type,transaction_type),1,1000);
+        Gson gson=new Gson();
 
-        ResponseEntity<OZON_TransactionReport[]> response = restTemplate
-                .postForEntity(transactionReportUrl, request, OZON_TransactionReport[].class );
+        HttpEntity<String> request = new HttpEntity<>(gson.toJson(filter), headers);
+
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(transactionReportUrl, request, String.class );
         if (response.getStatusCode() == HttpStatus.OK) {
-            return Arrays.asList(
-                    Objects.requireNonNull(response.getBody())
-            );
+            return gson.fromJson(response.getBody(), OZON_TransactionReport.class);
         } else {
             return null;
         }

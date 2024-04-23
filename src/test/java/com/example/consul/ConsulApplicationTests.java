@@ -4,6 +4,7 @@ import com.example.consul.api.OZON_Api;
 import com.example.consul.document.Excel;
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
+import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.mapping.ListToHtml;
 import com.example.consul.models.ApiKey;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class ConsulApplicationTests {
         skus.add(477040103L);
         skus.add(477056233L);
 
-        OZON_SkuProductsReport report = api.getProductInfo(skus);
+        OZON_SkuProductsReport report = api.getProductInfo((List<Long>) skus);
         System.out.println(report.findBySku(477040103L).getOffer_id());
     }
 
@@ -47,6 +48,16 @@ class ConsulApplicationTests {
 
                 sum += row.getPrice() * row.getSale_qty();
         }
+    }
+
+    @Test
+    void TransactionReportTest(){
+        final OZON_Api api = new OZON_Api();
+        api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
+        ArrayList<String> operationTypes=new ArrayList<>();
+        operationTypes.add("MarketplaceRedistributionOfAcquiringOperation");
+        OZON_TransactionReport report =  api.getTransactionReport("2024-01-01T00:00:00.000Z","2024-01-31T00:00:00.000Z", operationTypes,"other");
+        System.out.println(report.toString());
     }
 
     @Test
