@@ -1,8 +1,8 @@
 package com.example.consul.services;
 
 import com.example.consul.api.WB_Api;
-import com.example.consul.dto.WB_AdReport;
-import com.example.consul.dto.WB_DetailReport;
+import com.example.consul.dto.WB.WB_AdReport;
+import com.example.consul.dto.WB.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 

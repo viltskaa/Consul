@@ -1,7 +1,7 @@
 package com.example.consul.document;
 
 import com.example.consul.api.OZON_Api;
-import com.example.consul.dto.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.mapping.OZON_dataProcessing;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;

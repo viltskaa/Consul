@@ -1,7 +1,7 @@
 package com.example.consul.mapping;
 
-import com.example.consul.dto.WB_DetailReport;
-import com.example.consul.dto.WB_DetailReportShort;
+import com.example.consul.dto.WB.WB_DetailReport;
+import com.example.consul.dto.WB.WB_DetailReportShort;
 
 import java.util.List;
 import java.util.Map;

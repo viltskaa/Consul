@@ -1,8 +1,8 @@
 package com.example.consul.api;
 
 import com.example.consul.api.utils.Link;
-import com.example.consul.dto.WB_AdReport;
-import com.example.consul.dto.WB_DetailReport;
+import com.example.consul.dto.WB.WB_AdReport;
+import com.example.consul.dto.WB.WB_DetailReport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.*;

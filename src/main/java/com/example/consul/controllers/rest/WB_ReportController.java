@@ -1,7 +1,7 @@
 package com.example.consul.controllers.rest;
 
-import com.example.consul.dto.WB_AdReport;
-import com.example.consul.dto.WB_DetailReport;
+import com.example.consul.dto.WB.WB_AdReport;
+import com.example.consul.dto.WB.WB_DetailReport;
 import com.example.consul.services.WB_Service;
 import org.springframework.web.bind.annotation.*;
 

@@ -2,20 +2,24 @@ package com.example.consul.services;
 
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
-import com.example.consul.dto.OZON_TransactionReport;
-import org.antlr.v4.runtime.misc.Pair;
+import com.example.consul.dto.OZON.OZON_PerformanceCampaigns;
+import com.example.consul.dto.OZON.OZON_PerformanceTokenExpires;
+import com.example.consul.dto.OZON.OZON_PerformanceTokenResult;
+import com.example.consul.dto.OZON.OZON_TransactionReport;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OZON_Service {
     private final OZON_Api ozonApi;
     private final OZON_PerformanceApi ozonPerformanceApi;
-    private Pair<Long, String> performanceKey = new Pair<>(0L, null);
+    // key - client_id
+    private final Map<String, OZON_PerformanceTokenExpires> performanceKey = new HashMap<>();
 
     public OZON_Service(OZON_Api ozonApi,
                         OZON_PerformanceApi ozonPerformanceApi) {
@@ -24,7 +28,7 @@ public class OZON_Service {
     }
 
     public void setHeader(@NotNull String apiKey, @NotNull String clientId) {
-        ozonApi.setHeaders(apiKey,clientId);
+        ozonApi.setHeaders(apiKey, clientId);
     }
 
     public List<OZON_TransactionReport> getTransactionReport(@NotNull String from,
@@ -32,7 +36,7 @@ public class OZON_Service {
                                                              @NotNull ArrayList<String> operation_type,
                                                              @NotNull String transaction_type) {
         try {
-            return ozonApi.getTransactionReport(from, to,operation_type,transaction_type);
+            return ozonApi.getTransactionReport(from, to, operation_type, transaction_type);
         } catch (NullPointerException exception) {
             return new ArrayList<>();
         }
@@ -41,16 +45,30 @@ public class OZON_Service {
     public String getPerformanceToken(@NotNull String clientId,
                                       @NotNull String clientSecret) {
         try {
-            if (Instant.now().getEpochSecond() > performanceKey.a + 1800) {
-                String token = ozonPerformanceApi.get_token(clientId, clientSecret).getAccess_token();
-                performanceKey = new Pair<>(Instant.now().getEpochSecond(), token);
-                return token;
-            }
-            else {
-                return performanceKey.b;
+            if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+                OZON_PerformanceTokenResult token = ozonPerformanceApi.getToken(clientId, clientSecret);
+                performanceKey.put(
+                        clientId, OZON_PerformanceTokenExpires.of(token)
+                );
+                return token.getAccess_token();
+            } else {
+                return performanceKey.get(clientId).getAccess_token();
             }
         } catch (Exception exception) {
             return "error";
+        }
+    }
+
+    public OZON_PerformanceCampaigns getCampaigns(@NotNull String clientId,
+                                                  @NotNull String dateFrom,
+                                                  @NotNull String dateTo) {
+        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+            return ozonPerformanceApi.getCampaigns(
+                    performanceKey.get(clientId).getAccess_token(),
+                    dateFrom,
+                    dateTo);
+        } else {
+            return null;
         }
     }
 }

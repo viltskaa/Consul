@@ -1,4 +1,4 @@
-package com.example.consul.dto;
+package com.example.consul.dto.OZON;
 
 import lombok.Data;
 import lombok.Getter;

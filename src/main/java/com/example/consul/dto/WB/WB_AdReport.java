@@ -1,4 +1,4 @@
-package com.example.consul.dto;
+package com.example.consul.dto.WB;
 
 import lombok.Data;
 import lombok.Getter;

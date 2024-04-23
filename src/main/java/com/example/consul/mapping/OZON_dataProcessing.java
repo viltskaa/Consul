@@ -1,6 +1,6 @@
 package com.example.consul.mapping;
 
-import com.example.consul.dto.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_DetailReport;
 
 import java.util.List;
 import java.util.Map;

@@ -1,6 +1,6 @@
 package com.example.consul.controllers.rest;
 
-import com.example.consul.dto.OZON_TransactionReport;
+import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
 import org.springframework.web.bind.annotation.*;
 

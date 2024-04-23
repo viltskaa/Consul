@@ -2,10 +2,13 @@ package com.example.consul;
 
 import com.example.consul.api.OZON_Api;
 import com.example.consul.document.Excel;
-import com.example.consul.dto.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_DetailReport;
+import com.example.consul.mapping.ListToHtml;
+import com.example.consul.models.ApiKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.io.IOException;
 import java.util.List;
 
@@ -28,6 +31,15 @@ class ConsulApplicationTests {
 
                 sum += row.getPrice() * row.getSale_qty();
         }
+    }
+
+    @Test
+    void HtmlBuildTest() {
+        ArrayList<ApiKey> test = new ArrayList<>();
+        test.add(new ApiKey(0L, "OZON", "0312756387"));
+        test.add(new ApiKey(1L, "OZON_1", "9765"));
+        test.add(new ApiKey(2L, "WB", "6789"));
+        ListToHtml.build(test);
     }
 
     @Test

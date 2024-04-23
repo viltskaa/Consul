@@ -1,14 +1,17 @@
 package com.example.consul.api;
 
-import com.example.consul.dto.OZON_PerformanceCampaigns;
-import com.example.consul.dto.OZON_PerformanceTokenResult;
+import com.example.consul.dto.OZON.OZON_PerformanceCampaigns;
+import com.example.consul.dto.OZON.OZON_PerformanceTokenResult;
+import com.example.consul.dto.OZON.OZON_campaignProductsInfo;
+import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import com.example.consul.api.utils.Link;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class OZON_PerformanceApi {
@@ -18,21 +21,20 @@ public class OZON_PerformanceApi {
     private void setHeaders() {
         headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
-        headers.setContentType(MediaType.valueOf("text/csv; charset=UTF-8"));
     }
 
-    public OZON_PerformanceTokenResult get_token(@NotNull String clientId,
-                                                 @NotNull String clientSecret) {
+    public OZON_PerformanceTokenResult getToken(@NotNull String clientId,
+                                                @NotNull String clientSecret) {
         String url = "https://performance.ozon.ru/api/client/token";
         setHeaders();
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        Map<String, String> map = new HashMap<>();
 
-        map.add("client_id", clientId);
-        map.add("client_secret", clientSecret);
-        map.add("grant_type", "client_credentials");
+        map.put("client_id", clientId);
+        map.put("client_secret", clientSecret);
+        map.put("grant_type", "client_credentials");
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<OZON_PerformanceTokenResult> response = restTemplate
                 .postForEntity(url, request, OZON_PerformanceTokenResult.class);
@@ -43,35 +45,46 @@ public class OZON_PerformanceApi {
         }
     }
 
-    public OZON_PerformanceCampaigns getCampaigns(@NotNull String dateFrom,
+    public OZON_PerformanceCampaigns getCampaigns(@NotNull String token,
+                                                  @NotNull String dateFrom,
                                                   @NotNull String dateTo) {
         String url = "https://performance.ozon.ru:443/api/client/statistics/campaign/product/json";
         setHeaders();
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        Map<String, String> map = new HashMap<>();
 
-        map.add("dateFrom", dateFrom);
-        map.add("dateTo", dateTo);
-        map.add("campaigns", "[]");
+        map.put("dateFrom", dateFrom);
+        map.put("dateTo", dateTo);
+        map.put("campaigns", "[]");
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        headers.setBearerAuth(token);
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
 
-        ResponseEntity<OZON_PerformanceCampaigns> response = restTemplate
-                .postForEntity(url, request, OZON_PerformanceCampaigns.class);
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(url, request, String.class);
         if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
+            return new Gson().fromJson(response.getBody(), OZON_PerformanceCampaigns.class);
         } else {
             return null;
         }
     }
 
-    public Object getCampaignInfo(@NotNull Integer campaignId) {
+    public OZON_campaignProductsInfo getCampaignInfo(@NotNull String token,
+                                                     @NotNull Integer campaignId) {
         String url = Link.create("https://performance.ozon.ru:443/api/client/campaign/<arg>/v2/products")
                 .setArgs(campaignId.toString())
                 .build();
         setHeaders();
 
+        headers.setBearerAuth(token);
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(null, headers);
 
-        return null;
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(url, request, String.class);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return new Gson().fromJson(response.getBody(), OZON_campaignProductsInfo.class);
+        } else {
+            return null;
+        }
     }
 }
