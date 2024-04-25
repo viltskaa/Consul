@@ -8,12 +8,15 @@ import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.mapping.ListToHtml;
 import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.models.ApiKey;
+import org.apache.commons.math3.analysis.function.Abs;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
 import java.io.IOException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SpringBootTest
 class ConsulApplicationTests {
@@ -99,10 +102,19 @@ class ConsulApplicationTests {
 
         operations.addAll(rp.getResult().getOperations());
 
-        Map<Long, Double> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
+        Map<Long, Double> skuPrice = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
                 Collectors.summingDouble(OZON_TransactionReport.Operation::getPrice)));
-        System.out.println(collect);
 
+
+        Map<String,Double> map2 = offerSku.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().stream()
+                        .mapToDouble(row -> skuPrice.entrySet().stream().filter(o -> o.getKey().equals(row))
+                                .mapToDouble(Map.Entry::getValue).sum())
+                        .sum()
+        ));
+
+        System.out.println(map2);
     }
 
 
