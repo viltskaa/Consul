@@ -6,6 +6,7 @@ import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.mapping.ListToHtml;
+import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.models.ApiKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 class ConsulApplicationTests {
@@ -42,6 +44,17 @@ class ConsulApplicationTests {
             }
         }
         System.out.println(sum);
+    }
+
+    @Test
+    void allOfferIdToSku(){
+        final OZON_Api api = new OZON_Api();
+        api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
+        OZON_DetailReport report =  api.getDetailReport("2024-01");
+        List<OZON_DetailReport.Row> rows = report.getResult().getRows();
+        Map<String, List<OZON_DetailReport.Row>> map = OZON_dataProcessing.groupByOfferId(rows);
+
+        System.out.println(map);
     }
 
 
