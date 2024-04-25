@@ -80,6 +80,30 @@ public class OZON_TransactionReport {
         private List<Item> items;
         private List<Service> services;
 
+        public String getPostingNumber() {
+            return getPosting().getPosting_number();
+        }
+
+        public Boolean hasSku(Long sku) {
+            return getItems().stream().anyMatch(x -> x.getSku().equals(sku));
+        }
+
+        public static OZON_TransactionReport.Operation of(OZON_TransactionReport.Operation operation) {
+            return new OZON_TransactionReport.Operation(operation.getOperation_id(),
+                    operation.getOperation_type(),
+                    operation.getOperation_date(),
+                    operation.getOperation_type_name(),
+                    operation.getDelivery_charge(),
+                    operation.getReturn_delivery_charge(),
+                    operation.getAccruals_for_sale(),
+                    operation.getSale_commission(),
+                    operation.getAmount(),
+                    operation.getType(),
+                    operation.getPosting(),
+                    operation.getItems(),
+                    operation.getServices());
+        }
+
         public Operation(Long operation_id,
                          String operation_type,
                          String operation_date,
@@ -109,11 +133,11 @@ public class OZON_TransactionReport {
         }
 
         public Long getSku(){
-            return items.getFirst().getSku();
+            return items.get(0).getSku();
         }
 
         public double getPrice(){
-            return services.getFirst().getPrice();
+            return services.get(0).getPrice();
         }
     }
 }

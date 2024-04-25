@@ -33,6 +33,7 @@ class ConsulApplicationTests {
         ArrayList<String> opT = new ArrayList<>();
         opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationAgentStornoDeliveredToCustomer");
+        opT.add("OperationReturnGoodsFBSofRMS");
 
         ArrayList<OZON_TransactionReport.Operation> operations = new ArrayList<>();
 
@@ -44,21 +45,37 @@ class ConsulApplicationTests {
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all",2,1000);
         operations.addAll(reports2.getResult().getOperations());
 
-        Long sku1 = 477040103L;
-        Long sku2 = 477040104L;
+        Long sku1 = 477053081L;
+        Long sku2 = 477053086L;
 
         List<OZON_TransactionReport.Operation> filtered = operations.stream()
                 .filter(x -> x.getItems().size() == 0).toList();
 
-        double total = operations.stream()
-                .filter(x -> x.getItems().size() > 0)
-                .filter(x -> Objects.equals(x.getItems().get(0).getSku(), sku1)|| Objects.equals(x.getItems().get(0).getSku(), sku2))
-                .flatMap(o -> o.getServices().stream())
-                .filter(s -> "MarketplaceServiceItemDelivToCustomer".equals(s.getName()))
-                .mapToDouble(OZON_TransactionReport.Service::getPrice)
-                .sum();
+        Map<String,List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
+                .stream()
+                .filter(x -> x.getPosting() != null)
+                .map(OZON_TransactionReport.Operation::of)
+                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
 
-        //operations.stream().collect(Co)
+        Map<String,List<OZON_TransactionReport.Operation>> getBySku = groupByPostingNumber
+                .entrySet()
+                .stream()
+                        .filter(entry -> entry.getValue().stream()
+                                .anyMatch(y->y.hasSku(sku1) || y.hasSku(sku2)))
+                                .collect(Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        Map.Entry::getValue
+                                ));
+
+        double total = getBySku.values().stream()
+                .flatMap(List::stream)
+                .filter(s -> s.getServices() != null && s.getServices().stream()
+                        .anyMatch(x -> "MarketplaceServiceItemDelivToCustomer".equals(x.getName())))
+                .mapToDouble(x -> x.getServices().stream()
+                        .filter(y -> "MarketplaceServiceItemDelivToCustomer".equals(y.getName()))
+                        .mapToDouble(serv -> serv.getPrice())
+                        .sum())
+                        .sum();
 
         System.out.println(total);
     }
