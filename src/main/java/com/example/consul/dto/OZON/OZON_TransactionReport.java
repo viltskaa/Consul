@@ -107,5 +107,13 @@ public class OZON_TransactionReport {
             this.items = items;
             this.services = services;
         }
+
+        public Long getSku(){
+            return items.getFirst().getSku();
+        }
+
+        public double getPrice(){
+            return services.getFirst().getPrice();
+        }
     }
 }

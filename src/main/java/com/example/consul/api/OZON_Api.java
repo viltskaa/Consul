@@ -94,4 +94,24 @@ public class OZON_Api {
             return null;
         }
     }
+
+    //Загрузка и обновление товаров => Получить список товаров по идентификаторам
+    @Nullable
+    public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds){
+        String url = "https://api-seller.ozon.ru/v2/product/info/list";
+
+        Map<String, String[]> map= new HashMap<>();
+        map.put("offer_id", offerIds);
+
+        HttpEntity<Map<String, String[]>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(url, request, String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return new Gson().fromJson(response.getBody(), OZON_SkuProductsReport.class);
+        } else {
+            return null;
+        }
+    }
 }

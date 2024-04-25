@@ -1,6 +1,7 @@
 package com.example.consul.mapping;
 
 import com.example.consul.dto.OZON.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_TransactionReport;
 
 import java.util.List;
 import java.util.Map;
@@ -69,5 +70,10 @@ public class OZON_dataProcessing {
                         entry -> entry.getValue().stream()
                                 .mapToDouble(row -> row.getPrice()*row.getCommission_percent()*(row.getSale_qty()-row.getReturn_qty()))
                                 .sum()));
+    }
+
+    static public Map<Long, Double> sumAcquiringBySku(List<OZON_TransactionReport.Operation> operations) {
+        return operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
+                Collectors.summingDouble(OZON_TransactionReport.Operation::getPrice)));
     }
 }

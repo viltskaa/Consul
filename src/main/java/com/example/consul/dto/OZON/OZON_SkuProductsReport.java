@@ -4,8 +4,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -27,10 +26,11 @@ public class OZON_SkuProductsReport {
     public Map<String, List<Long>> getSkuListByOfferId() {
         return result.getItems().stream()
                 .collect(Collectors.toMap(OZON_SkuProduct::getOffer_id,
-                        item -> item.getSources().stream()
+                        item -> item.getSku() != 0L ? List.of(item.getSku()) : item.getSources().stream()
                                 .map(OZON_SkuProductsReport.OZON_SkuProduct.Sources::getSku)
                                 .collect(Collectors.toList())));
     }
+
 
     public OZON_SkuProduct findBySku(Long sku) {
         return result.getItems().stream()
@@ -46,6 +46,7 @@ public class OZON_SkuProductsReport {
         private Long id;
         private String name;
         private String offer_id;
+        private Long sku;
         private String barcode;
         private List<String> barcodes;
         private String buybox_price;
@@ -77,6 +78,7 @@ public class OZON_SkuProductsReport {
         private String color_image;
         private String primary_image;
         private Status status;
+
 
 
         @Setter

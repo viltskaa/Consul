@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 class ConsulApplicationTests {
@@ -60,14 +61,48 @@ class ConsulApplicationTests {
     }
 
     @Test
-    void allOfferIdToSku(){
+    void allOfferIdWithSku(){
         final OZON_Api api = new OZON_Api();
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
         OZON_DetailReport report =  api.getDetailReport("2024-01");
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
-        Map<String, List<OZON_DetailReport.Row>> map = OZON_dataProcessing.groupByOfferId(rows);
+        Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
 
-        System.out.println(map);
+        String[] ids = offersId.toArray(new String[0]);
+        OZON_SkuProductsReport products = api.getProductInfoByOfferId(ids);
+
+        System.out.println(products.getSkuListByOfferId());
+    }
+
+    @Test
+    void Aq(){
+        final OZON_Api api = new OZON_Api();
+        api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
+        OZON_DetailReport report =  api.getDetailReport("2024-01");
+        List<OZON_DetailReport.Row> rows = report.getResult().getRows();
+        Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
+
+        OZON_SkuProductsReport products = api.getProductInfoByOfferId(offersId.toArray(new String[0]));
+        Map<String, List<Long>> offerSku = products.getSkuListByOfferId();
+
+        ArrayList<String> opT = new ArrayList<>();
+        opT.add("MarketplaceRedistributionOfAcquiringOperation");
+
+        OZON_TransactionReport rp = api.getTransactionReport(
+                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
+                opT, "all",1,1000);
+        List<OZON_TransactionReport.Operation> operations = rp.getResult().getOperations();
+
+        rp = api.getTransactionReport(
+                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
+                opT, "all",2,1000);
+
+        operations.addAll(rp.getResult().getOperations());
+
+        Map<Long, Double> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
+                Collectors.summingDouble(OZON_TransactionReport.Operation::getPrice)));
+        System.out.println(collect);
+
     }
 
 
@@ -82,6 +117,7 @@ class ConsulApplicationTests {
         OZON_SkuProductsReport report = api.getProductInfo(skus);
         System.out.println(report.findBySku(477040103L).getOffer_id());
         System.out.println(report.getSkuListByOfferId());
+
     }
 
     @Test
@@ -104,7 +140,7 @@ class ConsulApplicationTests {
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
         ArrayList<String> operationTypes=new ArrayList<>();
         operationTypes.add("MarketplaceRedistributionOfAcquiringOperation");
-        OZON_TransactionReport report =  api.getTransactionReport("2024-01-01T00:00:00.000Z","2024-01-31T00:00:00.000Z", operationTypes,"other",1,1000);
+//        OZON_TransactionReport report =  api.getTransactionReport("2024-01-01T00:00:00.000Z","2024-01-31T00:00:00.000Z", operationTypes,"other");
     }
 
     @Test
