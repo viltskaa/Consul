@@ -11,11 +11,8 @@ import com.example.consul.models.ApiKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 @SpringBootTest
 class ConsulApplicationTests {
@@ -30,20 +27,36 @@ class ConsulApplicationTests {
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
 
         ArrayList<String> opT = new ArrayList<>();
-        opT.add("MarketplaceRedistributionOfAcquiringOperation");
+        opT.add("OperationAgentDeliveredToCustomer");
+        opT.add("OperationAgentStornoDeliveredToCustomer");
+
+        ArrayList<OZON_TransactionReport.Operation> operations = new ArrayList<>();
 
         OZON_TransactionReport reports = api.getTransactionReport(
-                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all");
+                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all",1,1000);
+        operations.addAll(reports.getResult().getOperations());
+
+        OZON_TransactionReport reports2 = api.getTransactionReport(
+                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all",2,1000);
+        operations.addAll(reports2.getResult().getOperations());
+
         Long sku1 = 477040103L;
         Long sku2 = 477040104L;
-        double sum = 0;
-        for (OZON_TransactionReport.Operation operation : reports.getResult().getOperations()) {
-            Long sku = operation.getItems().get(0).getSku();
-            if (sku.equals(sku1) || sku.equals(sku2)) {
-                sum += operation.getAmount();
-            }
-        }
-        System.out.println(sum);
+
+        List<OZON_TransactionReport.Operation> filtered = operations.stream()
+                .filter(x -> x.getItems().size() == 0).toList();
+
+        double total = operations.stream()
+                .filter(x -> x.getItems().size() > 0)
+                .filter(x -> Objects.equals(x.getItems().get(0).getSku(), sku1)|| Objects.equals(x.getItems().get(0).getSku(), sku2))
+                .flatMap(o -> o.getServices().stream())
+                .filter(s -> "MarketplaceServiceItemDelivToCustomer".equals(s.getName()))
+                .mapToDouble(OZON_TransactionReport.Service::getPrice)
+                .sum();
+
+        //operations.stream().collect(Co)
+
+        System.out.println(total);
     }
 
     @Test
@@ -69,7 +82,6 @@ class ConsulApplicationTests {
         OZON_SkuProductsReport report = api.getProductInfo(skus);
         System.out.println(report.findBySku(477040103L).getOffer_id());
         System.out.println(report.getSkuListByOfferId());
-
     }
 
     @Test
@@ -92,7 +104,7 @@ class ConsulApplicationTests {
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
         ArrayList<String> operationTypes=new ArrayList<>();
         operationTypes.add("MarketplaceRedistributionOfAcquiringOperation");
-        OZON_TransactionReport report =  api.getTransactionReport("2024-01-01T00:00:00.000Z","2024-01-31T00:00:00.000Z", operationTypes,"other");
+        OZON_TransactionReport report =  api.getTransactionReport("2024-01-01T00:00:00.000Z","2024-01-31T00:00:00.000Z", operationTypes,"other",1,1000);
     }
 
     @Test

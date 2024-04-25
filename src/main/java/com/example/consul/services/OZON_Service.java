@@ -31,9 +31,11 @@ public class OZON_Service {
     public OZON_TransactionReport getTransactionReport(@NotNull String from,
                                                              @NotNull String to,
                                                              @NotNull ArrayList<String> operation_type,
-                                                             @NotNull String transaction_type) {
+                                                             @NotNull String transaction_type,
+                                                       @NotNull int page,
+                                                       @NotNull int page_size) {
         try {
-            return ozonApi.getTransactionReport(from, to, operation_type, transaction_type);
+            return ozonApi.getTransactionReport(from, to, operation_type, transaction_type,page,page_size);
         } catch (NullPointerException exception) {
             return null;
         }

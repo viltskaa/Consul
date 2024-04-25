@@ -24,9 +24,11 @@ public class OZON_ReportController {
             @RequestParam(value = "") ArrayList<String> operation_type,
             @RequestParam(value = "all") String transaction_type,
             @RequestParam String apiKey,
-            @RequestParam String clientId
+            @RequestParam String clientId,
+            @RequestParam int page,
+            @RequestParam int page_size
     ) {
         ozonService.setHeader(apiKey,clientId);
-        return ozonService.getTransactionReport(from, to,operation_type,transaction_type);
+        return ozonService.getTransactionReport(from, to,operation_type,transaction_type,page,page_size);
     }
 }
