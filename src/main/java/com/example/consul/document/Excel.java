@@ -16,6 +16,7 @@ import java.util.Map;
 import static org.apache.poi.ss.usermodel.Font.COLOR_RED;
 import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
 
+
 public class Excel {
 
     public CellStyle createBaseStyle(Workbook workbook) {
@@ -121,12 +122,7 @@ public class Excel {
 
             rowIdx++;
         }
-        sheet.autoSizeColumn(0);
-        sheet.autoSizeColumn(1);
-        sheet.autoSizeColumn(2);
-        sheet.autoSizeColumn(3);
-        sheet.autoSizeColumn(4);
-        sheet.autoSizeColumn(5);
+
         workbook.write(new FileOutputStream(file));
         workbook.close();
     }
