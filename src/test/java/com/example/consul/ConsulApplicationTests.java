@@ -80,6 +80,8 @@ class ConsulApplicationTests {
         System.out.println(total);
     }
 
+
+    //Логистика
     @Test
     void testLogistic(){
         final OZON_Api api = new OZON_Api();
@@ -213,6 +215,53 @@ class ConsulApplicationTests {
         System.out.println(sum);
     }
 
+    //Доставка возврата
+    @Test
+    void testGetReturnShipping(){
+        final OZON_Api api = new OZON_Api();
+        api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
+
+        //OperationReturnGoodsFBSofRMS — доставка и обработка возврата, отмены, невыкупа
+        //OperationAgentDeliveredToCustomer - Доставка покупателю
+        ArrayList<String> opT = new ArrayList<>();
+//        opT.add("OperationAgentDeliveredToCustomer");
+        opT.add("OperationReturnGoodsFBSofRMS");
+
+        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
+        OZON_TransactionReport report = api.getTransactionReport(
+                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
+                opT, "all",1,1000);
+        operations.addAll(report.getResult().getOperations());
+
+        OZON_TransactionReport report2 = api.getTransactionReport(
+                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
+                opT, "all",2,1000);
+        operations.addAll(report2.getResult().getOperations());
+
+        Long sku1 = 477053081L;
+        Long sku2 = 477053086L;
+
+//        Long sku1 = 477040103L;
+//        Long sku2 = 477040104L;
+
+        double sum = 0;
+        for(OZON_TransactionReport.Operation op: operations){
+
+            if( (op.getSku().equals(sku1) ||  op.getSku().equals(sku2)) &&
+                    !op.checkServiceName("MarketplaceServiceItemDropoffSC") &&
+                    !op.checkServiceName("MarketplaceServiceItemDropoffPVZ")
+                    )
+            {
+                if (op.getPriceByServiceName("MarketplaceServiceItemReturnFlowLogistic") != null) {
+                    sum += op.getPriceByServiceName("MarketplaceServiceItemReturnFlowLogistic");
+                }
+                if (op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic") != null) {
+                    sum += op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic");
+                }
+            }
+        }
+        System.out.println(sum);
+    }
 
     @Test
     void allOfferIdWithSku(){

@@ -147,29 +147,15 @@ public class OZON_TransactionReport {
             return services.stream().flatMap(service -> Stream.of(service.getName())).collect(Collectors.toList());
         }
 
-        public List<String> getAllServicesName_(){
-            List<String> names = new ArrayList<>();
-            for(Service service: services){
-                names.add(service.getName());
-            }
-            return names;
-        }
-
         public Double getPriceByServiceName(String serviceName){
-            if (!getAllServicesName().contains(serviceName))
+            if (!checkServiceName(serviceName))
                 return null;
             return services.stream().filter(service -> service.getName().equals(serviceName))
                     .findFirst().get().getPrice();
         }
 
-        public Double getPriceByServiceName_(String serviceName){
-            double sum = 0;
-            for(Service service: services){
-                if(service.getName().equals(serviceName))
-                    sum += service.getPrice();
-            }
-            return sum;
-
+        public boolean checkServiceName(String serviceName){
+            return getAllServicesName().contains(serviceName);
         }
     }
 }
