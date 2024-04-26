@@ -4,7 +4,10 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Setter
 @Getter
@@ -138,6 +141,35 @@ public class OZON_TransactionReport {
 
         public double getPrice(){
             return services.get(0).getPrice();
+        }
+
+        public List<String> getAllServicesName(){
+            return services.stream().flatMap(service -> Stream.of(service.getName())).collect(Collectors.toList());
+        }
+
+        public List<String> getAllServicesName_(){
+            List<String> names = new ArrayList<>();
+            for(Service service: services){
+                names.add(service.getName());
+            }
+            return names;
+        }
+
+        public Double getPriceByServiceName(String serviceName){
+            if (!getAllServicesName().contains(serviceName))
+                return null;
+            return services.stream().filter(service -> service.getName().equals(serviceName))
+                    .findFirst().get().getPrice();
+        }
+
+        public Double getPriceByServiceName_(String serviceName){
+            double sum = 0;
+            for(Service service: services){
+                if(service.getName().equals(serviceName))
+                    sum += service.getPrice();
+            }
+            return sum;
+
         }
     }
 }
