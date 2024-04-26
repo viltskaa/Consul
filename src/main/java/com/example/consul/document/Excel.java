@@ -1,8 +1,6 @@
 package com.example.consul.document;
 
-import com.example.consul.api.OZON_Api;
-import com.example.consul.dto.OZON.OZON_DetailReport;
-import com.example.consul.mapping.OZON_dataProcessing;
+import com.example.consul.services.ExcelService;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -10,13 +8,18 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import static org.apache.poi.ss.usermodel.Font.COLOR_RED;
 import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
 
 public class Excel {
+
+    private final ExcelService excelService;
+
+    public Excel(ExcelService excelService) {
+        this.excelService=excelService;
+    }
 
     public CellStyle createBaseStyle(Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
@@ -59,17 +62,10 @@ public class Excel {
     }
 
     @SuppressWarnings("deprecation")
-    public void createExcel(String file, String date) throws FileNotFoundException, IOException {
-
-        final OZON_Api api = new OZON_Api();
-
-        api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
-        OZON_DetailReport report = api.getDetailReport(date);
-        System.out.println(report.getResult().getRows().size());
-        List<OZON_DetailReport.Row> rows = report.getResult().getRows();
+    public void createExcel(String file, String apiKey, String clientId,  String date, String from, String to) throws FileNotFoundException, IOException {
 
         Workbook workbook = new HSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Январь");
+        Sheet sheet = workbook.createSheet(excelService.getMonthNameAndYear(date));
 
         CellStyle style = createBaseStyle(workbook);
         CellStyle styleExpense = createExpenseStyle(workbook);
@@ -82,17 +78,15 @@ public class Excel {
         setTableTitle(style, header, sheet, 3, "Начислено за доставленный товар");
         setTableTitle(styleExpense, header, sheet, 4, "Возврат (-)");
         setTableTitle(style, header, sheet, 5, "Комиссия за продажу (-)");
-
-        Map<String, Integer> mapSaleCount = OZON_dataProcessing.saleCount(OZON_dataProcessing.groupByOfferId(rows));
-        System.out.println(mapSaleCount);
-        Map<String, Integer> mapReturnCount = OZON_dataProcessing.returnCount(OZON_dataProcessing.groupByOfferId(rows));
-        Map<String, Double> mapSaleForDelivered = OZON_dataProcessing.sumSaleForDelivered(OZON_dataProcessing.groupByOfferId(rows));
-        Map<String, Double> mapSumReturn = OZON_dataProcessing.sumReturn(OZON_dataProcessing.groupByOfferId(rows));
-        Map<String, Double> mapSalesCommission = OZON_dataProcessing.sumSalesCommission(OZON_dataProcessing.groupByOfferId(rows));
-
+        setTableTitle(styleExpense, header, sheet, 6, "обработка отправления");
+        setTableTitle(styleExpense, header, sheet, 7, "Логистика (до покупателя)");
+        setTableTitle(style, header, sheet, 8, "Последняя миля");
+        setTableTitle(style, header, sheet, 9, "Эквайринг");
+        setTableTitle(style, header, sheet, 10, "Обработка возврата");
+        setTableTitle(style, header, sheet, 11, "Доставка возврата");
 
         int rowIdx = 1;
-        for (Map.Entry<String, Integer> entry : mapSaleCount.entrySet()) {
+        for (Map.Entry<String, Integer> entry : excelService.getMapSaleCount(apiKey, clientId,date).entrySet()) {
             Row row = sheet.createRow(rowIdx);
 
             Cell cell = row.createCell(0);
@@ -104,29 +98,68 @@ public class Excel {
             cell.setCellStyle(style);
 
             cell = row.createCell(2);
-            cell.setCellValue(mapReturnCount.getOrDefault(entry.getKey(), 0));
+            cell.setCellValue(excelService
+                    .getMapReturnCount(apiKey, clientId,date)
+                    .getOrDefault(entry.getKey(), 0));
             cell.setCellStyle(styleExpense);
 
             cell = row.createCell(3);
-            cell.setCellValue(mapSaleForDelivered.getOrDefault(entry.getKey(), 0.0));
+            cell.setCellValue(excelService
+                    .getMapSaleForDelivered(apiKey, clientId,date)
+                    .getOrDefault(entry.getKey(), 0.0));
             cell.setCellStyle(style);
 
             cell = row.createCell(4);
-            cell.setCellValue(mapSumReturn.getOrDefault(entry.getKey(), 0.0));
+            cell.setCellValue(excelService
+                    .getMapSumReturn(apiKey, clientId,date)
+                    .getOrDefault(entry.getKey(), 0.0));
             cell.setCellStyle(styleExpense);
 
             cell = row.createCell(5);
-            cell.setCellValue(mapSalesCommission.getOrDefault(entry.getKey(), 0.0));
+            cell.setCellValue(excelService
+                    .getMapSalesCommission(apiKey, clientId,date)
+                    .getOrDefault(entry.getKey(), 0.0));
+            cell.setCellStyle(style);
+
+            cell = row.createCell(6);
+            cell.setCellValue(excelService
+                    .getMapShipmentProcessing(apiKey, clientId,date, from, to)
+                    .getOrDefault(entry.getKey(), 0.0)*(-1));
+            cell.setCellStyle(styleExpense);
+
+            cell = row.createCell(7);
+            cell.setCellValue(excelService
+                    .getMapLogistic(apiKey, clientId,date, from, to)
+                    .getOrDefault(entry.getKey(), 0.0)*(-1));
+            cell.setCellStyle(styleExpense);
+
+            cell = row.createCell(8);
+            cell.setCellValue(excelService
+                    .getMapLastMile(apiKey, clientId,date, from, to)
+                    .getOrDefault(entry.getKey(), 0.0)*(-1));
+            cell.setCellStyle(style);
+
+            cell = row.createCell(9);
+            cell.setCellValue(excelService
+                    .getMapAcquiring(apiKey, clientId,date, from, to)
+                    .getOrDefault(entry.getKey(), 0.0)*(-1));
+            cell.setCellStyle(style);
+
+            cell = row.createCell(10);
+            cell.setCellValue(excelService
+                    .getMapReturnProcessing(apiKey, clientId,date, from, to)
+                    .getOrDefault(entry.getKey(), 0.0)*(-1));
+            cell.setCellStyle(style);
+
+            cell = row.createCell(11);
+            cell.setCellValue(excelService
+                    .getMapReturnDelivery(apiKey, clientId,date, from, to)
+                    .getOrDefault(entry.getKey(), 0.0)*(-1));
             cell.setCellStyle(style);
 
             rowIdx++;
         }
-        sheet.autoSizeColumn(0);
-        sheet.autoSizeColumn(1);
-        sheet.autoSizeColumn(2);
-        sheet.autoSizeColumn(3);
-        sheet.autoSizeColumn(4);
-        sheet.autoSizeColumn(5);
+
         workbook.write(new FileOutputStream(file));
         workbook.close();
     }

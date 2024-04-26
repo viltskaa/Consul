@@ -1,6 +1,7 @@
 package com.example.consul;
 
 import com.example.consul.api.OZON_Api;
+import com.example.consul.api.OZON_PerformanceApi;
 import com.example.consul.document.Excel;
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
@@ -8,15 +9,16 @@ import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.mapping.ListToHtml;
 import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.models.ApiKey;
-import org.apache.commons.math3.analysis.function.Abs;
-import org.junit.jupiter.api.Nested;
+import com.example.consul.services.ExcelService;
+import com.example.consul.services.OZON_Service;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.io.IOException;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 @SpringBootTest
 class ConsulApplicationTests {
@@ -45,11 +47,8 @@ class ConsulApplicationTests {
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all",2,1000);
         operations.addAll(reports2.getResult().getOperations());
 
-        Long sku1 = 477053081L;
-        Long sku2 = 477053086L;
-
-        List<OZON_TransactionReport.Operation> filtered = operations.stream()
-                .filter(x -> x.getItems().size() == 0).toList();
+        Long sku1=477053081L;
+        Long sku2=477053086L;
 
         Map<String,List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
                 .stream()
@@ -57,17 +56,25 @@ class ConsulApplicationTests {
                 .map(OZON_TransactionReport.Operation::of)
                 .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
 
-        Map<String,List<OZON_TransactionReport.Operation>> getBySku = groupByPostingNumber
+        OZON_DetailReport report =  api.getDetailReport("2024-01");
+
+        List<OZON_DetailReport.Row> rows = report.getResult().getRows();
+        Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
+
+        OZON_SkuProductsReport products = api.getProductInfoByOfferId(offersId.toArray(new String[0]));
+        Map<String, List<Long>> offerSku = products.getSkuListByOfferId();
+
+        /*Map<String,List<OZON_TransactionReport.Operation>> getBySku = groupByPostingNumber
                 .entrySet()
                 .stream()
-                        .filter(entry -> entry.getValue().stream()
-                                .anyMatch(y->y.hasSku(sku1) || y.hasSku(sku2)))
-                                .collect(Collectors.toMap(
-                                        Map.Entry::getKey,
-                                        Map.Entry::getValue
-                                ));
+                .filter(entry -> entry.getValue().stream()
+                        .anyMatch(y->y.hasSku(sku1) || y.hasSku(sku2)))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));*/
 
-        double total = getBySku.values().stream()
+        /*double total = getBySku.values().stream()
                 .flatMap(List::stream)
                 .filter(s -> s.getServices() != null && s.getServices().stream()
                         .anyMatch(x -> "MarketplaceServiceItemDelivToCustomer".equals(x.getName())))
@@ -75,53 +82,55 @@ class ConsulApplicationTests {
                         .filter(y -> "MarketplaceServiceItemDelivToCustomer".equals(y.getName()))
                         .mapToDouble(serv -> serv.getPrice())
                         .sum())
-                        .sum();
+                        .sum();*/
 
-        System.out.println(total);
+        System.out.println(OZON_dataProcessing.sumLastMile(offerSku,operations));
     }
 
 
-    //Логистика
+    //Логистика. Готово
     @Test
     void testLogistic(){
         final OZON_Api api = new OZON_Api();
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
 
-        //OperationReturnGoodsFBSofRMS — доставка и обработка возврата, отмены, невыкупа
-        //OperationAgentDeliveredToCustomer - Доставка покупателю
         ArrayList<String> opT = new ArrayList<>();
         opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
         List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-        OZON_TransactionReport report = api.getTransactionReport(
-                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
-                opT, "all",1,1000);
-        operations.addAll(report.getResult().getOperations());
-
-        OZON_TransactionReport report2 = api.getTransactionReport(
-                "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
-                opT, "all",2,1000);
-        operations.addAll(report2.getResult().getOperations());
+        IntStream.rangeClosed(1, 2).forEach(i -> {
+            OZON_TransactionReport report = api.getTransactionReport(
+                    "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
+                    opT, "all", i, 1000);
+            operations.addAll(report.getResult().getOperations());
+        });
 
         Long sku1 = 477053081L;
         Long sku2 = 477053086L;
 
-        double sum = 0;
-        for(OZON_TransactionReport.Operation op: operations){
+        double sum = operations.stream()
+                .filter(op -> op.getSku().equals(sku1) || op.getSku().equals(sku2))
+                .mapToDouble(op -> {
+                    double price = 0;
+                    if (op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic") != null) {
+                        price += op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic");
+                    }
+                    if (op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogisticVDC") != null) {
+                        price += op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogisticVDC");
+                    }
+                    return price;
+                })
+                .sum();
 
-            if( op.getSku().equals(sku1) ||  op.getSku().equals(sku2)){
-                //логистика
-                if (op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic") != null) {
-                    sum += op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic");
-                }
-                //логистика вРЦ;
-                if (op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogisticVDC") != null) {
-                    sum += op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogisticVDC");
-                }
-            }
-        }
-        System.out.println(sum);
+        OZON_DetailReport report =  api.getDetailReport("2024-01");
+
+        List<OZON_DetailReport.Row> rows = report.getResult().getRows();
+        Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
+
+        OZON_SkuProductsReport products = api.getProductInfoByOfferId(offersId.toArray(new String[0]));
+        Map<String, List<Long>> offerSku = products.getSkuListByOfferId();
+        System.out.println(OZON_dataProcessing.sumLogistic(offerSku,operations));
     }
 
     // обработка отправления
@@ -165,7 +174,14 @@ class ConsulApplicationTests {
                 }
             }
         }
-        System.out.println(sum);
+        OZON_DetailReport report5 =  api.getDetailReport("2024-01");
+
+        List<OZON_DetailReport.Row> rows = report5.getResult().getRows();
+        Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
+
+        OZON_SkuProductsReport products = api.getProductInfoByOfferId(offersId.toArray(new String[0]));
+        Map<String, List<Long>> offerSku = products.getSkuListByOfferId();
+        System.out.println(OZON_dataProcessing.sumShipmentProcessing(offerSku,operations));
     }
 
     // Обработка возврата
@@ -212,7 +228,14 @@ class ConsulApplicationTests {
                 }
             }
         }
-        System.out.println(sum);
+        OZON_DetailReport report5 =  api.getDetailReport("2024-01");
+
+        List<OZON_DetailReport.Row> rows = report5.getResult().getRows();
+        Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
+
+        OZON_SkuProductsReport products = api.getProductInfoByOfferId(offersId.toArray(new String[0]));
+        Map<String, List<Long>> offerSku = products.getSkuListByOfferId();
+        System.out.println(OZON_dataProcessing.sumReturnProcessing(offerSku,operations));
     }
 
     //Доставка возврата
@@ -260,8 +283,32 @@ class ConsulApplicationTests {
                 }
             }
         }
-        System.out.println(sum);
+        OZON_DetailReport report5 =  api.getDetailReport("2024-01");
+
+        List<OZON_DetailReport.Row> rows = report5.getResult().getRows();
+        Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
+
+        OZON_SkuProductsReport products = api.getProductInfoByOfferId(offersId.toArray(new String[0]));
+        Map<String, List<Long>> offerSku = products.getSkuListByOfferId();
+        System.out.println(OZON_dataProcessing.sumReturnDelivery(offerSku,operations));
     }
+
+    @Test
+    void getDateMonthName(){
+        String dateStr = "2023-01";
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+
+        try {
+            Date date = dateFormat.parse(dateStr);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("LLLL yyyy");
+            String monthAndYear = simpleDateFormat.format(date).toUpperCase();
+
+            System.out.println(monthAndYear);
+        } catch (Exception e) {
+            System.err.println("Ошибка: " + e.getMessage());
+        }
+    }
+
 
     @Test
     void allOfferIdWithSku(){
@@ -367,10 +414,9 @@ class ConsulApplicationTests {
 
     @Test
     void ExcelFile() throws IOException {
-        Excel excel = new Excel();
-        excel.createExcel("2024-02.xls", "2024-02");
-//        excel.createExcel("2023-12.xls", "2023-12");
-//        excel.createExcel("2023-11.xls", "2023-11");
+        Excel excel = new Excel(new ExcelService(new OZON_Service(new OZON_Api(),new OZON_PerformanceApi())));
+        excel.createExcel("2024-01.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-01","2024-01-01T00:00:00.000Z","2024-01-31T00:00:00.000Z");
+        excel.createExcel("2024-03.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-03","2024-03-01T00:00:00.000Z","2024-03-31T00:00:00.000Z");
     }
 
 }
