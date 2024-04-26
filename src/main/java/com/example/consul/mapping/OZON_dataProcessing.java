@@ -76,4 +76,10 @@ public class OZON_dataProcessing {
         return operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
                 Collectors.summingDouble(OZON_TransactionReport.Operation::getPrice)));
     }
+//    List<OZON_TransactionReport.Operation> operations
+//    static public Map<Long, Double> Acquiring(List<OZON_TransactionReport.Operation> operations,
+//                                              Map<String, List<Long>> offerSku,
+//                                              Map<Long, Double> skuPrice) {
+//        return
+//    }
 }

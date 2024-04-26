@@ -16,7 +16,6 @@ import java.util.Map;
 import static org.apache.poi.ss.usermodel.Font.COLOR_RED;
 import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
 
-
 public class Excel {
 
     public CellStyle createBaseStyle(Workbook workbook) {
@@ -60,14 +59,13 @@ public class Excel {
     }
 
     @SuppressWarnings("deprecation")
-    public void createExcel(String file) throws FileNotFoundException, IOException {
+    public void createExcel(String file, String date) throws FileNotFoundException, IOException {
 
         final OZON_Api api = new OZON_Api();
-        final OZON_dataProcessing ozonDP = new OZON_dataProcessing();
 
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
-        OZON_DetailReport report = api.getDetailReport("2024-01");
-
+        OZON_DetailReport report = api.getDetailReport(date);
+        System.out.println(report.getResult().getRows().size());
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
 
         Workbook workbook = new HSSFWorkbook();
@@ -85,11 +83,13 @@ public class Excel {
         setTableTitle(styleExpense, header, sheet, 4, "Возврат (-)");
         setTableTitle(style, header, sheet, 5, "Комиссия за продажу (-)");
 
-        Map<String, Integer> mapSaleCount = ozonDP.saleCount(ozonDP.groupByOfferId(rows));
-        Map<String, Integer> mapReturnCount = ozonDP.returnCount(ozonDP.groupByOfferId(rows));
-        Map<String, Double> mapSaleForDelivered = ozonDP.sumSaleForDelivered(ozonDP.groupByOfferId(rows));
-        Map<String, Double> mapSumReturn = ozonDP.sumReturn(ozonDP.groupByOfferId(rows));
-        Map<String, Double> mapSalesCommission = ozonDP.sumSalesCommission(ozonDP.groupByOfferId(rows));
+        Map<String, Integer> mapSaleCount = OZON_dataProcessing.saleCount(OZON_dataProcessing.groupByOfferId(rows));
+        System.out.println(mapSaleCount);
+        Map<String, Integer> mapReturnCount = OZON_dataProcessing.returnCount(OZON_dataProcessing.groupByOfferId(rows));
+        Map<String, Double> mapSaleForDelivered = OZON_dataProcessing.sumSaleForDelivered(OZON_dataProcessing.groupByOfferId(rows));
+        Map<String, Double> mapSumReturn = OZON_dataProcessing.sumReturn(OZON_dataProcessing.groupByOfferId(rows));
+        Map<String, Double> mapSalesCommission = OZON_dataProcessing.sumSalesCommission(OZON_dataProcessing.groupByOfferId(rows));
+
 
         int rowIdx = 1;
         for (Map.Entry<String, Integer> entry : mapSaleCount.entrySet()) {
@@ -121,7 +121,12 @@ public class Excel {
 
             rowIdx++;
         }
-
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+        sheet.autoSizeColumn(2);
+        sheet.autoSizeColumn(3);
+        sheet.autoSizeColumn(4);
+        sheet.autoSizeColumn(5);
         workbook.write(new FileOutputStream(file));
         workbook.close();
     }

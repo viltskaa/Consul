@@ -99,6 +99,7 @@ class ConsulApplicationTests {
         final OZON_Api api = new OZON_Api();
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
         OZON_DetailReport report =  api.getDetailReport("2024-01");
+
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
 
@@ -184,7 +185,9 @@ class ConsulApplicationTests {
     @Test
     void ExcelFile() throws IOException {
         Excel excel = new Excel();
-        excel.createExcel("test.xls");
+        excel.createExcel("2024-02.xls", "2024-02");
+//        excel.createExcel("2023-12.xls", "2023-12");
+//        excel.createExcel("2023-11.xls", "2023-11");
     }
 
 }
