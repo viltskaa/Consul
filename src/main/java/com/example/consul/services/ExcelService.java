@@ -1,5 +1,6 @@
 package com.example.consul.services;
 
+import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.mapping.OZON_dataProcessing;
 import org.jetbrains.annotations.NotNull;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class ExcelService {
@@ -17,6 +19,24 @@ public class ExcelService {
 
     public ExcelService(OZON_Service ozonService) {
         this.ozonService = ozonService;
+    }
+
+    private Map<String, Integer> getDataForMapInt(@NotNull String apiKey,
+                                               @NotNull String clientId,
+                                               @NotNull String date,
+                                               Function<Map<String, List<OZON_DetailReport.Row>>, Map<String, Integer>> dataFunction) {
+        ozonService.setHeader(apiKey, clientId);
+        Map<String, List<OZON_DetailReport.Row>> operations = OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date).getResult().getRows());
+        return dataFunction.apply(operations);
+    }
+
+    private Map<String, Double> getDataForMapDouble(@NotNull String apiKey,
+                                               @NotNull String clientId,
+                                               @NotNull String date,
+                                               Function< Map<String, List<OZON_DetailReport.Row>>, Map<String, Double>> dataFunction) {
+        ozonService.setHeader(apiKey, clientId);
+        Map<String, List<OZON_DetailReport.Row>> operations = OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date).getResult().getRows());
+        return dataFunction.apply(operations);
     }
 
     public String getMonthNameAndYear(String dateStr){
@@ -33,48 +53,33 @@ public class ExcelService {
     }
 
     public Map<String, Integer> getMapSaleCount(@NotNull String apiKey,
-                                                  @NotNull String clientId,
-                                                  @NotNull String date){
-        ozonService.setHeader(apiKey, clientId);
-
-        return OZON_dataProcessing.saleCount(OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date)
-                .getResult().getRows()));
+                                                @NotNull String clientId,
+                                                @NotNull String date) {
+        return getDataForMapInt(apiKey, clientId, date, OZON_dataProcessing::saleCount);
     }
 
     public Map<String, Integer> getMapReturnCount(@NotNull String apiKey,
-                                                      @NotNull String clientId,
-                                                      @NotNull String date){
-        ozonService.setHeader(apiKey, clientId);
-
-        return OZON_dataProcessing.returnCount(OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date)
-                .getResult().getRows()));
+                                                  @NotNull String clientId,
+                                                  @NotNull String date) {
+        return getDataForMapInt(apiKey, clientId, date, OZON_dataProcessing::returnCount);
     }
 
     public Map<String, Double> getMapSaleForDelivered(@NotNull String apiKey,
-                                               @NotNull String clientId,
-                                               @NotNull String date){
-        ozonService.setHeader(apiKey, clientId);
-
-        return OZON_dataProcessing.sumSaleForDelivered(OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date)
-                .getResult().getRows()));
+                                                      @NotNull String clientId,
+                                                      @NotNull String date) {
+        return getDataForMapDouble(apiKey, clientId, date, OZON_dataProcessing::sumSaleForDelivered);
     }
 
     public Map<String, Double> getMapSumReturn(@NotNull String apiKey,
-                                                     @NotNull String clientId,
-                                                     @NotNull String date){
-        ozonService.setHeader(apiKey, clientId);
-
-        return OZON_dataProcessing.sumReturn(OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date)
-                .getResult().getRows()));
+                                               @NotNull String clientId,
+                                               @NotNull String date) {
+        return getDataForMapDouble(apiKey, clientId, date, OZON_dataProcessing::sumReturn);
     }
 
     public Map<String, Double> getMapSalesCommission(@NotNull String apiKey,
-                                              @NotNull String clientId,
-                                              @NotNull String date){
-        ozonService.setHeader(apiKey, clientId);
-
-        return OZON_dataProcessing.sumSalesCommission(OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date)
-                .getResult().getRows()));
+                                                     @NotNull String clientId,
+                                                     @NotNull String date) {
+        return getDataForMapDouble(apiKey, clientId, date, OZON_dataProcessing::sumSalesCommission);
     }
 
     public Map<String, Double> getMapLastMile(@NotNull String apiKey,

@@ -85,8 +85,20 @@ public class Excel {
         setTableTitle(style, header, sheet, 10, "Обработка возврата");
         setTableTitle(style, header, sheet, 11, "Доставка возврата");
 
+        Map<String, Integer> saleCountMap = excelService.getMapSaleCount(apiKey, clientId, date);
+        Map<String, Integer> returnCountMap = excelService.getMapReturnCount(apiKey, clientId, date);
+        Map<String, Double> mapSaleForDelivered = excelService.getMapSaleForDelivered(apiKey, clientId,date);
+        Map<String, Double> mapSumReturn = excelService.getMapSumReturn(apiKey, clientId,date);
+        Map<String, Double> mapSalesCommission = excelService.getMapSalesCommission(apiKey, clientId,date);
+        Map<String, Double> mapShipmentProcessing = excelService.getMapShipmentProcessing(apiKey, clientId,date, from, to);
+        Map<String, Double> mapLogistic = excelService.getMapLogistic(apiKey, clientId,date, from, to);
+        Map<String, Double> mapLastMile = excelService.getMapLastMile(apiKey, clientId,date, from, to);
+        Map<String, Double> mapAcquiring= excelService.getMapAcquiring(apiKey, clientId,date, from, to);
+        Map<String, Double> mapReturnProcessing= excelService.getMapReturnProcessing(apiKey, clientId,date, from, to);
+        Map<String, Double> mapReturnDelivery= excelService.getMapReturnDelivery(apiKey, clientId,date, from, to);
+
         int rowIdx = 1;
-        for (Map.Entry<String, Integer> entry : excelService.getMapSaleCount(apiKey, clientId,date).entrySet()) {
+        for (Map.Entry<String, Integer> entry : saleCountMap.entrySet()) {
             Row row = sheet.createRow(rowIdx);
 
             Cell cell = row.createCell(0);
@@ -98,62 +110,52 @@ public class Excel {
             cell.setCellStyle(style);
 
             cell = row.createCell(2);
-            cell.setCellValue(excelService
-                    .getMapReturnCount(apiKey, clientId,date)
+            cell.setCellValue(returnCountMap
                     .getOrDefault(entry.getKey(), 0));
             cell.setCellStyle(styleExpense);
 
             cell = row.createCell(3);
-            cell.setCellValue(excelService
-                    .getMapSaleForDelivered(apiKey, clientId,date)
+            cell.setCellValue(mapSaleForDelivered
                     .getOrDefault(entry.getKey(), 0.0));
             cell.setCellStyle(style);
 
             cell = row.createCell(4);
-            cell.setCellValue(excelService
-                    .getMapSumReturn(apiKey, clientId,date)
+            cell.setCellValue(mapSumReturn
                     .getOrDefault(entry.getKey(), 0.0));
             cell.setCellStyle(styleExpense);
 
             cell = row.createCell(5);
-            cell.setCellValue(excelService
-                    .getMapSalesCommission(apiKey, clientId,date)
+            cell.setCellValue(mapSalesCommission
                     .getOrDefault(entry.getKey(), 0.0));
             cell.setCellStyle(style);
 
             cell = row.createCell(6);
-            cell.setCellValue(excelService
-                    .getMapShipmentProcessing(apiKey, clientId,date, from, to)
+            cell.setCellValue(mapShipmentProcessing
                     .getOrDefault(entry.getKey(), 0.0)*(-1));
             cell.setCellStyle(styleExpense);
 
             cell = row.createCell(7);
-            cell.setCellValue(excelService
-                    .getMapLogistic(apiKey, clientId,date, from, to)
+            cell.setCellValue(mapLogistic
                     .getOrDefault(entry.getKey(), 0.0)*(-1));
             cell.setCellStyle(styleExpense);
 
             cell = row.createCell(8);
-            cell.setCellValue(excelService
-                    .getMapLastMile(apiKey, clientId,date, from, to)
+            cell.setCellValue(mapLastMile
                     .getOrDefault(entry.getKey(), 0.0)*(-1));
             cell.setCellStyle(style);
 
             cell = row.createCell(9);
-            cell.setCellValue(excelService
-                    .getMapAcquiring(apiKey, clientId,date, from, to)
+            cell.setCellValue(mapAcquiring
                     .getOrDefault(entry.getKey(), 0.0)*(-1));
             cell.setCellStyle(style);
 
             cell = row.createCell(10);
-            cell.setCellValue(excelService
-                    .getMapReturnProcessing(apiKey, clientId,date, from, to)
+            cell.setCellValue(mapReturnProcessing
                     .getOrDefault(entry.getKey(), 0.0)*(-1));
             cell.setCellStyle(style);
 
             cell = row.createCell(11);
-            cell.setCellValue(excelService
-                    .getMapReturnDelivery(apiKey, clientId,date, from, to)
+            cell.setCellValue(mapReturnDelivery
                     .getOrDefault(entry.getKey(), 0.0)*(-1));
             cell.setCellStyle(style);
 

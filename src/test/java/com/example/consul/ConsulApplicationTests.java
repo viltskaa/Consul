@@ -414,9 +414,15 @@ class ConsulApplicationTests {
 
     @Test
     void ExcelFile() throws IOException {
+        ExcelService excelService = new ExcelService(new OZON_Service(new OZON_Api(),new OZON_PerformanceApi()));
         Excel excel = new Excel(new ExcelService(new OZON_Service(new OZON_Api(),new OZON_PerformanceApi())));
+        //System.out.println(excelService.getMapSaleCount("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-01"));
+        //System.out.println(excelService.getMapReturnCount("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-01"));
+        //System.out.println(excelService.getMapSumReturn("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-01"));
+        //System.out.println(excelService.getMapSaleForDelivered("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-01"));
+        //System.out.println(excelService.getMapSalesCommission("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-01"));
         excel.createExcel("2024-01.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-01","2024-01-01T00:00:00.000Z","2024-01-31T00:00:00.000Z");
-        excel.createExcel("2024-03.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-03","2024-03-01T00:00:00.000Z","2024-03-31T00:00:00.000Z");
+        //excel.createExcel("2024-03.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66","350423","2024-03","2024-03-01T00:00:00.000Z","2024-03-31T00:00:00.000Z");
     }
 
 }
