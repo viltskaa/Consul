@@ -20,7 +20,7 @@ public class OZON_PerformanceReport {
     @Getter
     @Setter
     @Data
-    private static class Report {
+    public static class Report {
         private List<Product> rows;
         private Totals totals;
     }
@@ -28,7 +28,7 @@ public class OZON_PerformanceReport {
     @Getter
     @Setter
     @Data
-    private static class Product {
+    public static class Product {
         private String date;
         private String views;
         private String clicks;

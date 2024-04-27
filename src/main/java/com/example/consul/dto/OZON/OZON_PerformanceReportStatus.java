@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class OZON_PerformanceReportStatus {
     private String UUID;
-    private String state;
+    private State state;
     private String createdAt;
     private String updatedAt;
     private Request request;
@@ -31,5 +31,12 @@ public class OZON_PerformanceReportStatus {
         private String groupBy;
         private List<String> objects;
         private String to;
+    }
+
+    public enum State {
+        NOT_STARTED,
+        IN_PROGRESS,
+        ERROR,
+        OK
     }
 }

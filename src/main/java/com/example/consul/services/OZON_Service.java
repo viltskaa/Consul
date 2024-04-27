@@ -111,7 +111,20 @@ public class OZON_Service {
         }
     }
 
-    public List<OZON_PerformanceReport> getPerformanceReportByUUID(@NotNull String clientId, @NotNull String UUID) {
+    public OZON_PerformanceReportStatus getPerformanceReportStatusByUUID(@NotNull String clientId,
+                                                                         @NotNull String UUID) {
+        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+            return ozonPerformanceApi.getPerformanceReportStatusByUUID(
+                    performanceKey.get(clientId).getAccess_token(),
+                    UUID
+            );
+        } else {
+            return null;
+        }
+    }
+
+    public List<OZON_PerformanceReport> getPerformanceReportByUUID(@NotNull String clientId,
+                                                                   @NotNull String UUID) {
         if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
             return ozonPerformanceApi.getPerformanceReportByUUID(
                     performanceKey.get(clientId).getAccess_token(),
