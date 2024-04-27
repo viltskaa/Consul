@@ -29,13 +29,13 @@ public class OZON_Service {
     }
 
     public OZON_TransactionReport getTransactionReport(@NotNull String from,
-                                                             @NotNull String to,
-                                                             @NotNull ArrayList<String> operation_type,
-                                                             @NotNull String transaction_type,
+                                                       @NotNull String to,
+                                                       @NotNull ArrayList<String> operation_type,
+                                                       @NotNull String transaction_type,
                                                        int page,
                                                        int page_size) {
         try {
-            return ozonApi.getTransactionReport(from, to, operation_type, transaction_type,page,page_size);
+            return ozonApi.getTransactionReport(from, to, operation_type, transaction_type, page, page_size);
         } catch (NullPointerException exception) {
             return null;
         }
@@ -136,7 +136,7 @@ public class OZON_Service {
     }
 
     public List<OZON_PerformanceReport> asyncGetPerformanceReportByUUID(@NotNull String clientId,
-                                                                                           @NotNull String UUID)
+                                                                        @NotNull String UUID)
             throws InterruptedException {
         Thread reportStatusThread = new Thread(() -> {
             OZON_PerformanceReportStatus status;
