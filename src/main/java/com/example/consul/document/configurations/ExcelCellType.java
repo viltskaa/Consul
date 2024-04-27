@@ -1,7 +1,5 @@
 package com.example.consul.document.configurations;
 
-import java.util.Arrays;
-
 public enum ExcelCellType {
     BASE,
     EXPENSIVE,

@@ -5,7 +5,6 @@ import com.example.consul.document.configurations.ExcelCellType;
 import com.example.consul.document.configurations.ExcelConfig;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,13 +112,17 @@ public class ExcelBuilder {
         List<Method> methods = Arrays.stream(config.getDataClass().getDeclaredMethods())
                 .filter(x -> !x.getAnnotatedReturnType().getType().equals(void.class)).toList();
         List<T> data = config.getData();
+        List<Double> sumTotal = new ArrayList<>();
         addPageHeader(sheet, fields);
-
-        for (int rowIndex = 0; rowIndex < config.getData().size(); rowIndex++) {
+        int rowIndex;
+        for (rowIndex = 0; rowIndex < config.getData().size(); rowIndex++) {
             Row row = sheet.createRow(rowIndex + 1);
             int columnInd = 0;
 
             for (Field field : fields) {
+                if (rowIndex == 0) {
+                    sumTotal.add(0.0);
+                }
                 if (field.isAnnotationPresent(CellUnit.class)) {
                     CellUnit cellUnit = field.getAnnotation(CellUnit.class);
                     Cell cell = row.createCell(columnInd++);
@@ -136,14 +140,24 @@ public class ExcelBuilder {
                         }
                         else {
                             Object returnFromMethod = method.invoke(data.get(rowIndex));
-                            if (cellUnit.inverse()
-                                    && (field.getType() == Integer.class || field.getType() == Double.class)) {
-                                switch (field.getType().getSimpleName()) {
-                                    case "Integer" -> value = String.valueOf((Integer)returnFromMethod * -1);
-                                    case "Double" -> value = String.valueOf((Double)returnFromMethod * -1);
+                            if (returnFromMethod == null) {
+                                value = "";
+                            }
+                            else {
+                                if (cellUnit.inverse()
+                                        && (field.getType() == Integer.class || field.getType() == Double.class)) {
+                                    switch (field.getType().getSimpleName()) {
+                                        case "Integer" -> value = String.valueOf((Integer)returnFromMethod * -1);
+                                        case "Double" -> value = String.valueOf((Double)returnFromMethod * -1);
+                                    }
+                                } else {
+                                    value = String.valueOf(returnFromMethod);
                                 }
-                            } else {
-                                value = String.valueOf(returnFromMethod);
+                                if (field.getType() == Double.class || field.getType() == Integer.class) {
+                                    sumTotal.set(columnInd - 1,
+                                            (!sumTotal.isEmpty() ? sumTotal.get(columnInd - 1) : 0)
+                                                    + Double.parseDouble(value));
+                                }
                             }
                         }
                     }
@@ -156,7 +170,27 @@ public class ExcelBuilder {
                     cell.setCellValue(value);
                 }
             }
+
+            Integer index = ExcelCellType.getIndex(ExcelCellType.TOTAL);
+            Cell cell = row.createCell(columnInd++);
+            cell.setCellStyle(cellStyles.get(index != null ? index : 0));
+            cell.setCellFormula(
+                    "(D2-E2-F2-G2-H2-I2-J2-K2-L2-M2-N2-P2-Q2-U2)/(B2-C2)-2,47"
+            );
+            workbook.getCreationHelper().createFormulaEvaluator().evaluateFormulaCell(cell);
         }
+
+        Row row = sheet.createRow(rowIndex + 1);
+        int columnInd = 0;
+        Integer index = ExcelCellType.getIndex(ExcelCellType.TOTAL);
+        for (Double sum : sumTotal) {
+            Cell cell = row.createCell(columnInd++);
+            cell.setCellStyle(cellStyles.get(index != null ? index : 0));
+            cell.setCellValue(sum);
+        }
+
+//        FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+//        formulaEvaluator.evaluateAll();
 
         workbook.write(new FileOutputStream(config.getFileName()));
         workbook.close();

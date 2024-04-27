@@ -50,8 +50,6 @@ public class OZON_TableRow {
     private Double claimsAccruals;
     @CellUnit(name = "Прочие начисления")
     private Double other;
-    @CellUnit(name = "Итого", type = ExcelCellType.TOTAL)
-    private Double total;
 
     public OZON_TableRow(String offerId,
                          Integer delivered,
@@ -95,7 +93,5 @@ public class OZON_TableRow {
         this.crossDockingDelivery = crossDockingDelivery;
         this.claimsAccruals = claimsAccruals;
         this.other = other;
-
-        this.total = (saleForDelivered - sumReturn - salesCommission - (shipmentProcessing * -1) - (logistic * -1) - (lastMile * -1) - (acquiring * -1) - installment - (returnDelivery * -1) - (returnProcessing * -1) - promotion - stencilProduct - other) / (delivered - returned - returnProcessing - returnDelivery - promotion - stencilProduct) - 2.47;
     }
 }
