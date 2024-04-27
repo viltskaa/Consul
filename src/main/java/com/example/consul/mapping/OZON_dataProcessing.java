@@ -1,9 +1,11 @@
 package com.example.consul.mapping;
 
 import com.example.consul.dto.OZON.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_PerformanceReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -188,6 +190,24 @@ public class OZON_dataProcessing {
                                         .mapToDouble(OZON_TransactionReport.Service::getPrice)
                                         .sum())
                                 .sum()
+                ));
+    }
+
+    static public Map<String, Double> sumStencilBySku(List<OZON_PerformanceReport> reports) {
+        return reports.stream()
+                .map(OZON_PerformanceReport::getReport)
+                .map(OZON_PerformanceReport.Report::getRows)
+                .flatMap(Collection::stream)
+                .collect(Collectors.groupingBy(OZON_PerformanceReport.Product::getSku))
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        value ->
+                                value.getValue().stream()
+                                        .map(OZON_PerformanceReport.Product::getMoneySpent)
+                                        .map(x -> x.replace(",", "."))
+                                        .mapToDouble(Double::parseDouble)
+                                        .sum()
                 ));
     }
 }
