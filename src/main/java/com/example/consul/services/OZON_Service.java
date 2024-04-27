@@ -134,4 +134,27 @@ public class OZON_Service {
             return null;
         }
     }
+
+    public List<OZON_PerformanceReport> asyncGetPerformanceReportByUUID(@NotNull String clientId,
+                                                                                           @NotNull String UUID)
+            throws InterruptedException {
+        Thread reportStatusThread = new Thread(() -> {
+            OZON_PerformanceReportStatus status;
+            do {
+                status = getPerformanceReportStatusByUUID(
+                        clientId,
+                        UUID
+                );
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            } while (!status.getState().equals(OZON_PerformanceReportStatus.State.OK));
+        });
+        reportStatusThread.start();
+        reportStatusThread.join();
+
+        return getPerformanceReportByUUID(clientId, UUID);
+    }
 }
