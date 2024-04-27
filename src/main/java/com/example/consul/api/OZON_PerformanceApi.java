@@ -30,6 +30,11 @@ public class OZON_PerformanceApi {
         headers.add("Content-Type", "application/json");
     }
 
+    /**
+     * @param clientId
+     * @param clientSecret
+     * @return
+     */
     @Nullable
     public OZON_PerformanceTokenResult getToken(@NotNull String clientId,
                                                 @NotNull String clientSecret) {
@@ -53,6 +58,12 @@ public class OZON_PerformanceApi {
         }
     }
 
+    /**
+     * @param token
+     * @param dateFrom
+     * @param dateTo
+     * @return
+     */
     @Nullable
     public OZON_PerformanceCampaigns getCampaigns(@NotNull String token,
                                                   @NotNull String dateFrom,
@@ -74,6 +85,13 @@ public class OZON_PerformanceApi {
         }
     }
 
+    /**
+     * @param token
+     * @param campaignId
+     * @param dateFrom
+     * @param dateTo
+     * @return
+     */
     @Nullable
     public OZON_PerformanceStatistic getPerformanceStatisticByCampaignId(@NotNull String token,
                                                                          @NotNull List<String> campaignId,
@@ -115,9 +133,14 @@ public class OZON_PerformanceApi {
         }
     }
 
+    /**
+     * @param token
+     * @param UUID
+     * @return
+     */
     @Nullable
     public OZON_PerformanceReportStatus getPerformanceReportStatusByUUID(@NotNull String token,
-                                                   @NotNull String UUID) {
+                                                                         @NotNull String UUID) {
         String url = Link.create("https://performance.ozon.ru:443/api/client/statistics/<arg>")
                 .setArgs(UUID).build();
         setHeaders();
@@ -131,12 +154,16 @@ public class OZON_PerformanceApi {
                     response.getBody(),
                     OZON_PerformanceReportStatus.class
             );
-        }
-        else {
+        } else {
             return null;
         }
     }
 
+    /**
+     * @param token
+     * @param UUID
+     * @return
+     */
     @Nullable
     public List<OZON_PerformanceReport> getPerformanceReportByUUID(@NotNull String token,
                                                                    @NotNull String UUID) {
