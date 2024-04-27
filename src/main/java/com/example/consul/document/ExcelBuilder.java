@@ -5,23 +5,28 @@ import com.example.consul.document.configurations.ExcelCellType;
 import com.example.consul.document.configurations.ExcelConfig;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.poi.ss.usermodel.Font.COLOR_RED;
 import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
 
-public abstract class ExcelAbstract {
-    private List<CellStyle> cellStyles;
+public class ExcelBuilder {
+    private static List<CellStyle> cellStyles;
+
+    private ExcelBuilder() {}
 
     @NotNull
-    protected CellStyle createBaseStyle(@NotNull Workbook workbook) {
+    private static CellStyle createBaseStyle(@NotNull Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
         style.setWrapText(true);
         style.setAlignment(CENTER);
@@ -38,28 +43,33 @@ public abstract class ExcelAbstract {
     }
 
     @NotNull
-    protected CellStyle createExpenseStyle(@NotNull Workbook workbook) {
-        CellStyle styleExpense = workbook.createCellStyle();
-        styleExpense.setWrapText(true);
-        styleExpense.setAlignment(CENTER);
-        styleExpense.setVerticalAlignment(VerticalAlignment.CENTER);
-        styleExpense.setBorderBottom(BorderStyle.THIN);
-        styleExpense.setBorderLeft(BorderStyle.THIN);
-        styleExpense.setBorderTop(BorderStyle.THIN);
-        styleExpense.setBorderRight(BorderStyle.THIN);
+    private static CellStyle createExpenseStyle(@NotNull Workbook workbook) {
+        CellStyle style = createBaseStyle(workbook);
         HSSFFont fontExpense = (HSSFFont) workbook.createFont();
         fontExpense.setFontName("Calibri");
         fontExpense.setFontHeightInPoints((short) 11);
         fontExpense.setColor(COLOR_RED);
-        styleExpense.setFont(fontExpense);
-        return styleExpense;
+        style.setFont(fontExpense);
+        return style;
     }
 
-    private void addHeader(@NotNull Workbook workbook) {
+    @NotNull
+    private static CellStyle createTotalStyle(@NotNull Workbook workbook) {
+        CellStyle style = createBaseStyle(workbook);
+        style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        HSSFFont fontExpense = (HSSFFont) workbook.createFont();
+        fontExpense.setFontName("Calibri");
+        fontExpense.setFontHeightInPoints((short) 11);
+        style.setFont(fontExpense);
+        return style;
+    }
+
+    private static void addHeader(@NotNull Workbook workbook) {
 
     }
 
-    public void setTableTitle(@NotNull CellStyle style,
+    private static void setTableTitle(@NotNull CellStyle style,
                               @NotNull Row header,
                               @NotNull Sheet sheet,
                               int columnInd,
@@ -67,13 +77,12 @@ public abstract class ExcelAbstract {
         Cell cell = header.createCell(columnInd);
         cell.setCellValue(titleName);
         cell.setCellStyle(style);
-        sheet.autoSizeColumn(columnInd);
-//        sheet.setColumnWidth(columnInd, 15 * 256);
+//        sheet.autoSizeColumn(columnInd);
+        sheet.setColumnWidth(columnInd, 15 * 256);
     }
 
-    private void addPageHeader(@NotNull Workbook workbook,
-                                   @NotNull Sheet sheet,
-                                   @NotNull List<Field> fields) {
+    private static void addPageHeader(@NotNull Sheet sheet,
+                                      @NotNull List<Field> fields) {
         int columnIndex = 0;
 
         Row header = sheet.createRow(0);
@@ -81,55 +90,67 @@ public abstract class ExcelAbstract {
         for (Field field : fields) {
             if (field.isAnnotationPresent(CellUnit.class)) {
                 CellUnit cellUnit = field.getAnnotation(CellUnit.class);
-                setTableTitle(cellUnit.type().equals(ExcelCellType.BASE)
-                                ? cellStyles.get(0)
-                                : cellStyles.get(1),
+                Integer index = ExcelCellType.getIndex(cellUnit.type());
+                setTableTitle(cellStyles.get(index != null ? index : 0),
                         header,
                         sheet,
-                        columnIndex,
+                        columnIndex++,
                         cellUnit.name());
             }
         }
     }
 
-    public <T> void createDocument(@NotNull ExcelConfig<T> config) throws IOException {
+    public static <T> void createDocument(@NotNull ExcelConfig<T> config) throws IOException {
         Workbook workbook = new HSSFWorkbook();
         Sheet sheet = workbook.createSheet(config.getSheetName());
-        cellStyles = List.of(createBaseStyle(workbook), createExpenseStyle(workbook));
+        cellStyles = List.of(
+                createBaseStyle(workbook),
+                createExpenseStyle(workbook),
+                createTotalStyle(workbook));
 
-        List<Field> fields = Arrays.stream(config.getDataClass().getFields()).toList();
+        List<Field> fields = Arrays.stream(config.getDataClass().getDeclaredFields()).toList();
+        List<Method> methods = Arrays.stream(config.getDataClass().getDeclaredMethods())
+                .filter(x -> !x.getAnnotatedReturnType().getType().equals(void.class)).toList();
         List<T> data = config.getData();
-        addPageHeader(workbook, sheet, fields);
+        addPageHeader(sheet, fields);
 
         for (int rowIndex = 0; rowIndex < config.getData().size(); rowIndex++) {
-            Row row = sheet.createRow(rowIndex);
+            Row row = sheet.createRow(rowIndex + 1);
             int columnInd = 0;
 
             for (Field field : fields) {
                 if (field.isAnnotationPresent(CellUnit.class)) {
                     CellUnit cellUnit = field.getAnnotation(CellUnit.class);
                     Cell cell = row.createCell(columnInd++);
-                    cell.setCellStyle(cellUnit.type().equals(ExcelCellType.BASE)
-                            ? cellStyles.get(0)
-                            : cellStyles.get(1));
+
+                    Integer index = ExcelCellType.getIndex(cellUnit.type());
+                    cell.setCellStyle(cellStyles.get(index != null ? index : 0));
+
                     String value = "";
                     try {
-                        if (field.get(data.get(rowIndex)) == null) {
+                        Method method = methods.stream()
+                                .filter(x -> x.getName().toLowerCase().contains(field.getName().toLowerCase()))
+                                .findFirst().orElse(null);
+                        if (method == null) {
                             value = cellUnit.defaultValue();
                         }
                         else {
-                            if (cellUnit.inverse() && (field.getType() == Integer.class || field.getType() == Double.class)) {
+                            Object returnFromMethod = method.invoke(data.get(rowIndex));
+                            if (cellUnit.inverse()
+                                    && (field.getType() == Integer.class || field.getType() == Double.class)) {
                                 switch (field.getType().getSimpleName()) {
-                                    case "Integer" -> value = String.valueOf((Integer)field.get(data.get(rowIndex)) * -1);
-                                    case "Double" -> value = String.valueOf((Double)field.get(data.get(rowIndex)) * -1);
+                                    case "Integer" -> value = String.valueOf((Integer)returnFromMethod * -1);
+                                    case "Double" -> value = String.valueOf((Double)returnFromMethod * -1);
                                 }
                             } else {
-                                value = String.valueOf(field.get(data.get(rowIndex)));
+                                value = String.valueOf(returnFromMethod);
                             }
                         }
                     }
                     catch (IllegalAccessException e) {
-                        value = "";
+                        value = "IE";
+                    } catch (InvocationTargetException e) {
+                        value = "IT";
                     }
 
                     cell.setCellValue(value);

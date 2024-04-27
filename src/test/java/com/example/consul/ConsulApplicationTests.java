@@ -3,8 +3,11 @@ package com.example.consul;
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
 import com.example.consul.document.Excel;
+import com.example.consul.document.ExcelBuilder;
+import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
+import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.mapping.ListToHtml;
 import com.example.consul.mapping.OZON_dataProcessing;
@@ -413,7 +416,7 @@ class ConsulApplicationTests {
 
     @Test
     void ExcelFile() throws IOException {
-        Excel excel = new Excel(new ExcelService(new OZON_Service(new OZON_Api(), new OZON_PerformanceApi())));
+//        Excel excel = new Excel(new ExcelService(new OZON_Service(new OZON_Api(), new OZON_PerformanceApi())));
 //        excel.createExcel("2023-11.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
 //                "350423","2023-11","2023-11-01T00:00:00.000Z","2023-11-30T23:59:59.999Z");
 //        excel.createExcel("2023-12.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
@@ -424,15 +427,31 @@ class ConsulApplicationTests {
 //                "350423","2024-02","2024-02-01T00:00:00.000Z","2024-02-29T23:59:59.999Z");
 //        excel.createExcel("2024-03.xls", "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
 //                "350423","2024-03","2024-03-01T00:00:00.000Z","2024-03-31T23:59:59.999Z");
-
-        excel.createExcel("2024-01.xls",
-                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
-                "350423",
-                "27013136-1713353681106@advertising.performance.ozon.ru",
-                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
-                "2024-01",
-                "2024-01-01T00:00:00.000Z",
-                "2024-01-31T23:59:59.999Z");
+//
+//        excel.createExcel("2024-01.xls",
+//                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
+//                "350423",
+//                "27013136-1713353681106@advertising.performance.ozon.ru",
+//                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
+//                "2024-01",
+//                "2024-01-01T00:00:00.000Z",
+//                "2024-01-31T23:59:59.999Z");
     }
 
+    @Test
+    void NewExcelCreateTest() throws IOException {
+        List<OZON_TableRow> data = Arrays.asList(
+                new OZON_TableRow("RE0001", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                new OZON_TableRow("RE0002", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                new OZON_TableRow("RE0003", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0)
+                );
+
+
+        ExcelBuilder.createDocument(new ExcelConfig<>(
+                "test.xls",
+                "1",
+                "",
+                data
+        ));
+    }
 }
