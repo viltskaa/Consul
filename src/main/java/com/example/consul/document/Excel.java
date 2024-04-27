@@ -62,7 +62,14 @@ public class Excel {
     }
 
     @SuppressWarnings("deprecation")
-    public void createExcel(String file, String apiKey, String clientId,  String date, String from, String to) throws FileNotFoundException, IOException {
+    public void createExcel(String file,
+                            String apiKey,
+                            String clientId,
+                            String performanceClientId,
+                            String performanceClientSecret,
+                            String date,
+                            String from,
+                            String to) throws FileNotFoundException, IOException {
 
         Workbook workbook = new HSSFWorkbook();
         Sheet sheet = workbook.createSheet(excelService.getMonthNameAndYear(date));
@@ -84,9 +91,10 @@ public class Excel {
         setTableTitle(style, header, sheet, 9, "Эквайринг");
         setTableTitle(style, header, sheet, 10, "Обработка возврата");
         setTableTitle(style, header, sheet, 11, "Доставка возврата");
+        setTableTitle(style, header, sheet, 12, "Трафареты");
 
-        Map<String, Integer> saleCountMap = excelService.getMapSaleCount(apiKey, clientId, date);
-        Map<String, Integer> returnCountMap = excelService.getMapReturnCount(apiKey, clientId, date);
+        Map<String, Integer> mapSaleCount = excelService.getMapSaleCount(apiKey, clientId, date);
+        Map<String, Integer> mapReturnCount = excelService.getMapReturnCount(apiKey, clientId, date);
         Map<String, Double> mapSaleForDelivered = excelService.getMapSaleForDelivered(apiKey, clientId,date);
         Map<String, Double> mapSumReturn = excelService.getMapSumReturn(apiKey, clientId,date);
         Map<String, Double> mapSalesCommission = excelService.getMapSalesCommission(apiKey, clientId,date);
@@ -96,9 +104,11 @@ public class Excel {
         Map<String, Double> mapAcquiring= excelService.getMapAcquiring(apiKey, clientId,date, from, to);
         Map<String, Double> mapReturnProcessing= excelService.getMapReturnProcessing(apiKey, clientId,date, from, to);
         Map<String, Double> mapReturnDelivery= excelService.getMapReturnDelivery(apiKey, clientId,date, from, to);
+        Map<String, Double> mapStencilProduct
+                = excelService.getMapStencils(performanceClientId, performanceClientSecret, date);
 
         int rowIdx = 1;
-        for (Map.Entry<String, Integer> entry : saleCountMap.entrySet()) {
+        for (Map.Entry<String, Integer> entry : mapSaleCount.entrySet()) {
             Row row = sheet.createRow(rowIdx);
 
             Cell cell = row.createCell(0);
@@ -110,7 +120,7 @@ public class Excel {
             cell.setCellStyle(style);
 
             cell = row.createCell(2);
-            cell.setCellValue(returnCountMap
+            cell.setCellValue(mapReturnCount
                     .getOrDefault(entry.getKey(), 0));
             cell.setCellStyle(styleExpense);
 
@@ -157,6 +167,11 @@ public class Excel {
             cell = row.createCell(11);
             cell.setCellValue(mapReturnDelivery
                     .getOrDefault(entry.getKey(), 0.0)*(-1));
+            cell.setCellStyle(style);
+
+            cell = row.createCell(12);
+            cell.setCellValue(mapStencilProduct
+                    .getOrDefault(entry.getKey(), 0.0));
             cell.setCellStyle(style);
 
             rowIdx++;

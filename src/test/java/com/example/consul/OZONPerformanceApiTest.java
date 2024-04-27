@@ -4,6 +4,7 @@ import com.example.consul.dto.OZON.OZON_PerformanceCampaigns;
 import com.example.consul.dto.OZON.OZON_PerformanceReport;
 import com.example.consul.dto.OZON.OZON_PerformanceReportStatus;
 import com.example.consul.dto.OZON.OZON_PerformanceStatistic;
+import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.services.OZON_Service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +78,12 @@ public class OZONPerformanceApiTest {
                                         .mapToDouble(Double::parseDouble)
                                         .sum()
                 ));
-        System.out.println(values);
+
+        ozonService.setHeader("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
+        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, "2024-01");
+
+        Map<String, Double> valuesWithOfferId = OZON_dataProcessing
+                .sumStencilByOfferId(values, offerSku);
+        System.out.println(valuesWithOfferId);
     }
 }

@@ -1,16 +1,12 @@
 package com.example.consul.services;
 
-import com.example.consul.dto.OZON.OZON_DetailReport;
-import com.example.consul.dto.OZON.OZON_TransactionReport;
+import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -251,5 +247,43 @@ public class ExcelService {
         }
 
         return OZON_dataProcessing.sumLogistic(offerSku, operations);
+    }
+
+    public Map<String, Double> getMapStencils(@NotNull String clientId,
+                                              @NotNull String clientSecret,
+                                              @NotNull String date) {
+        String dateFrom = date + "-01";
+        String dateTo = date + "-31";
+
+        ozonService.getPerformanceToken(clientId, clientSecret);
+
+        OZON_PerformanceCampaigns ozonPerformanceCampaigns = ozonService.getCampaigns(
+                clientId,
+                dateFrom,
+                dateTo
+        );
+
+        List<String> activeCampaignList = ozonPerformanceCampaigns.getRows()
+                .stream().filter(x -> x.getStatus().equals("running"))
+                .map(OZON_PerformanceCampaigns.OZON_PerformanceCampaign::getId).toList();
+
+        OZON_PerformanceStatistic statistic = ozonService.getPerformanceStatisticByCampaignId(
+                clientId,
+                activeCampaignList,
+                dateFrom,
+                dateTo
+        );
+
+        List<OZON_PerformanceReport> report
+                = ozonService.asyncGetPerformanceReportByUUID(clientId, statistic.getUUID());
+        if (report == null) {
+            return new HashMap<>();
+        }
+
+        Map<String, Double> priceStencilsBySku = OZON_dataProcessing.sumStencilBySku(report);
+        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+
+        return OZON_dataProcessing
+                .sumStencilByOfferId(priceStencilsBySku, offerSku);
     }
 }

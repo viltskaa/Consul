@@ -4,6 +4,7 @@ import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
 import com.example.consul.dto.OZON.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -135,25 +136,29 @@ public class OZON_Service {
         }
     }
 
+    @Nullable
     public List<OZON_PerformanceReport> asyncGetPerformanceReportByUUID(@NotNull String clientId,
-                                                                        @NotNull String UUID)
-            throws InterruptedException {
-        Thread reportStatusThread = new Thread(() -> {
-            OZON_PerformanceReportStatus status;
-            do {
-                status = getPerformanceReportStatusByUUID(
-                        clientId,
-                        UUID
-                );
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            } while (!status.getState().equals(OZON_PerformanceReportStatus.State.OK));
-        });
-        reportStatusThread.start();
-        reportStatusThread.join();
+                                                                        @NotNull String UUID) {
+        try {
+            Thread reportStatusThread = new Thread(() -> {
+                OZON_PerformanceReportStatus status;
+                do {
+                    status = getPerformanceReportStatusByUUID(
+                            clientId,
+                            UUID
+                    );
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                } while (!status.getState().equals(OZON_PerformanceReportStatus.State.OK));
+            });
+            reportStatusThread.start();
+            reportStatusThread.join();
+        } catch (Exception exception) {
+            return null;
+        }
 
         return getPerformanceReportByUUID(clientId, UUID);
     }

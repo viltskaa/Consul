@@ -4,6 +4,7 @@ import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_PerformanceReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -208,6 +209,18 @@ public class OZON_dataProcessing {
                                         .map(x -> x.replace(",", "."))
                                         .mapToDouble(Double::parseDouble)
                                         .sum()
+                ));
+    }
+
+    static public Map<String, Double> sumStencilByOfferId(@NotNull Map<String, Double> stencilsBySku,
+                                                          @NotNull Map<String, List<Long>> offerSku) {
+        return offerSku.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> stencilsBySku.entrySet().stream()
+                                .filter(x -> entry.getValue().contains(Long.valueOf(x.getKey())))
+                                .mapToDouble(Map.Entry::getValue)
+                                .sum()
                 ));
     }
 }

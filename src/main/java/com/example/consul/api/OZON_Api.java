@@ -26,7 +26,7 @@ public class OZON_Api {
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
-    public void setHeaders(@NotNull String apiKey,@NotNull String clientId) {
+    public void setHeaders(@NotNull String apiKey, @NotNull String clientId) {
         headers = new HttpHeaders();
         headers.add("Api-Key", apiKey);
         headers.add("Client-Id", clientId);
@@ -36,18 +36,18 @@ public class OZON_Api {
     // Финансовые отчеты => Список транзакций
     @Nullable
     public OZON_TransactionReport getTransactionReport(@NotNull String from,
-                                                             @NotNull String to,
-                                                             @NotNull ArrayList<String> operation_type,
-                                                             @NotNull String transaction_type,
-                                                       @NotNull int page,
-                                                       @NotNull int page_size){
+                                                       @NotNull String to,
+                                                       @NotNull ArrayList<String> operation_type,
+                                                       @NotNull String transaction_type,
+                                                       @NotNull Integer page,
+                                                       @NotNull Integer page_size) {
         String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
 
         HttpEntity<String> request = new HttpEntity<>
-                (new Gson().toJson(new ForTransactions(from, to, operation_type, transaction_type, page,page_size)), headers);
+                (new Gson().toJson(new ForTransactions(from, to, operation_type, transaction_type, page, page_size)), headers);
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity(transactionReportUrl, request, String.class );
+                .postForEntity(transactionReportUrl, request, String.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_TransactionReport.class);
         } else {
@@ -57,16 +57,16 @@ public class OZON_Api {
 
     // Финансовые отчеты => Отчёт о реализации товаров
     @Nullable
-    public OZON_DetailReport getDetailReport(@NotNull String date){
+    public OZON_DetailReport getDetailReport(@NotNull String date) {
         String detailReportUrl = "https://api-seller.ozon.ru/v1/finance/realization";
 
-        Map<String, String> map= new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("date", date);
 
         HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity(detailReportUrl, request, String.class );
+                .postForEntity(detailReportUrl, request, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_DetailReport.class);
@@ -77,10 +77,10 @@ public class OZON_Api {
 
     //Загрузка и обновление товаров => Получить список товаров по идентификаторам
     @Nullable
-    public OZON_SkuProductsReport getProductInfo(List<Long> skus){
+    public OZON_SkuProductsReport getProductInfo(List<Long> skus) {
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
 
-        Map<String, Long[]> map= new HashMap<>();
+        Map<String, Long[]> map = new HashMap<>();
         map.put("sku", skus.toArray(new Long[0]));
 
         HttpEntity<Map<String, Long[]>> request = new HttpEntity<>(map, headers);
@@ -97,10 +97,10 @@ public class OZON_Api {
 
     //Загрузка и обновление товаров => Получить список товаров по идентификаторам
     @Nullable
-    public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds){
+    public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds) {
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
 
-        Map<String, String[]> map= new HashMap<>();
+        Map<String, String[]> map = new HashMap<>();
         map.put("offer_id", offerIds);
 
         HttpEntity<Map<String, String[]>> request = new HttpEntity<>(map, headers);
