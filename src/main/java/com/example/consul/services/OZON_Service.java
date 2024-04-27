@@ -32,10 +32,26 @@ public class OZON_Service {
                                                              @NotNull String to,
                                                              @NotNull ArrayList<String> operation_type,
                                                              @NotNull String transaction_type,
-                                                       @NotNull int page,
-                                                       @NotNull int page_size) {
+                                                       int page,
+                                                       int page_size) {
         try {
             return ozonApi.getTransactionReport(from, to, operation_type, transaction_type,page,page_size);
+        } catch (NullPointerException exception) {
+            return null;
+        }
+    }
+
+    public OZON_DetailReport getDetailReport(@NotNull String date) {
+        try {
+            return ozonApi.getDetailReport(date);
+        } catch (NullPointerException exception) {
+            return null;
+        }
+    }
+
+    public OZON_SkuProductsReport getProductInfoByOfferId(@NotNull String[] offerId) {
+        try {
+            return ozonApi.getProductInfoByOfferId(offerId);
         } catch (NullPointerException exception) {
             return null;
         }

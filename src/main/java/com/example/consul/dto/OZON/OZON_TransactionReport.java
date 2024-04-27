@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Setter
 @Getter
@@ -21,9 +23,13 @@ public class OZON_TransactionReport {
     @Data
     public static class Result{
         private List<Operation> operations;
+        private Long page_count;
+        private Long row_count;
 
-        public Result(List<Operation> operations) {
+        public Result(List<Operation> operations, Long page_count, Long row_count) {
             this.operations = operations;
+            this.page_count=page_count;
+            this.row_count=row_count;
         }
     }
 
@@ -84,8 +90,8 @@ public class OZON_TransactionReport {
             return getPosting().getPosting_number();
         }
 
-        public Boolean hasSku(Long sku) {
-            return getItems().stream().anyMatch(x -> x.getSku().equals(sku));
+        public Boolean hasSkus(List<Long> skus) {
+            return getItems().stream().anyMatch(x -> skus.contains(x.getSku()));
         }
 
         public static OZON_TransactionReport.Operation of(OZON_TransactionReport.Operation operation) {
@@ -133,11 +139,26 @@ public class OZON_TransactionReport {
         }
 
         public Long getSku(){
-            return items.get(0).getSku();
+                return items.get(0).getSku();
         }
 
         public double getPrice(){
             return services.get(0).getPrice();
+        }
+
+        public List<String> getAllServicesName(){
+            return services.stream().flatMap(service -> Stream.of(service.getName())).collect(Collectors.toList());
+        }
+
+        public Double getPriceByServiceName(String serviceName){
+            if (!checkServiceName(serviceName))
+                return null;
+            return services.stream().filter(service -> service.getName().equals(serviceName))
+                    .findFirst().get().getPrice();
+        }
+
+        public boolean checkServiceName(String serviceName){
+            return getAllServicesName().contains(serviceName);
         }
     }
 }
