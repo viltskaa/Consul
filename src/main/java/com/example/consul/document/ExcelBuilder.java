@@ -130,44 +130,50 @@ public class ExcelBuilder {
                     Integer index = ExcelCellType.getIndex(cellUnit.type());
                     cell.setCellStyle(cellStyles.get(index != null ? index : 0));
 
-                    String value = "";
                     try {
                         Method method = methods.stream()
                                 .filter(x -> x.getName().toLowerCase().contains(field.getName().toLowerCase()))
                                 .findFirst().orElse(null);
                         if (method == null) {
-                            value = cellUnit.defaultValue();
+                            cell.setCellValue(cellUnit.defaultValue());
                         }
                         else {
                             Object returnFromMethod = method.invoke(data.get(rowIndex));
                             if (returnFromMethod == null) {
-                                value = "";
+                                cell.setCellValue(cellUnit.defaultValue());
                             }
                             else {
-                                if (cellUnit.inverse()
-                                        && (field.getType() == Integer.class || field.getType() == Double.class)) {
-                                    switch (field.getType().getSimpleName()) {
-                                        case "Integer" -> value = String.valueOf((Integer)returnFromMethod * -1);
-                                        case "Double" -> value = String.valueOf((Double)returnFromMethod * -1);
-                                    }
-                                } else {
-                                    value = String.valueOf(returnFromMethod);
+                                if (field.getType().equals(String.class)) {
+                                    cell.setCellValue(returnFromMethod.toString());
                                 }
-                                if (field.getType() == Double.class || field.getType() == Integer.class) {
-                                    sumTotal.set(columnInd - 1,
-                                            (!sumTotal.isEmpty() ? sumTotal.get(columnInd - 1) : 0)
-                                                    + Double.parseDouble(value));
+                                else {
+                                    if (cellUnit.inverse()
+                                            && (field.getType() == Integer.class || field.getType() == Double.class)) {
+                                        switch (field.getType().getSimpleName()) {
+                                            case "Integer" -> cell.setCellValue((Integer)returnFromMethod * -1);
+                                            case "Double" -> cell.setCellValue((Double)returnFromMethod * -1);
+                                        }
+                                    } else {
+                                        switch (field.getType().getSimpleName()) {
+                                            case "Integer" -> cell.setCellValue((Integer)returnFromMethod);
+                                            case "Double" -> cell.setCellValue((Double)returnFromMethod);
+                                        }
+                                    }
+
+                                    if (field.getType() == Double.class || field.getType() == Integer.class) {
+                                        sumTotal.set(columnInd - 1,
+                                                (!sumTotal.isEmpty() ? sumTotal.get(columnInd - 1) : 0)
+                                                        + Double.parseDouble(returnFromMethod.toString())
+                                                        * (cellUnit.inverse() ? -1 : 1)
+                                        );
+                                    }
                                 }
                             }
                         }
                     }
-                    catch (IllegalAccessException e) {
-                        value = "IE";
-                    } catch (InvocationTargetException e) {
-                        value = "IT";
+                    catch (IllegalAccessException | InvocationTargetException e) {
+                        cell.setCellValue(e.getClass().getSimpleName());
                     }
-
-                    cell.setCellValue(value);
                 }
             }
 
@@ -175,9 +181,8 @@ public class ExcelBuilder {
             Cell cell = row.createCell(columnInd++);
             cell.setCellStyle(cellStyles.get(index != null ? index : 0));
             cell.setCellFormula(
-                    "(D2-E2-F2-G2-H2-I2-J2-K2-L2-M2-N2-P2-Q2-U2)/(B2-C2)-2,47"
+                    "(D2-E2-F2-G2-H2-I2-J2-K2-L2-M2-N2-P2-Q2-U2)/(B2-C2)-2.47"
             );
-            workbook.getCreationHelper().createFormulaEvaluator().evaluateFormulaCell(cell);
         }
 
         Row row = sheet.createRow(rowIndex + 1);
@@ -188,9 +193,6 @@ public class ExcelBuilder {
             cell.setCellStyle(cellStyles.get(index != null ? index : 0));
             cell.setCellValue(sum);
         }
-
-//        FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
-//        formulaEvaluator.evaluateAll();
 
         workbook.write(new FileOutputStream(config.getFileName()));
         workbook.close();

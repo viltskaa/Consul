@@ -7,6 +7,7 @@ import lombok.*;
 @Setter
 @Getter
 @Data
+@AllArgsConstructor
 public class OZON_TableRow {
     @CellUnit(name = "Артикуль")
     private String offerId;
@@ -20,19 +21,19 @@ public class OZON_TableRow {
     private Double sumReturn;
     @CellUnit(name = "Комиссия за продажу", type = ExcelCellType.EXPENSIVE)
     private Double salesCommission;
-    @CellUnit(name = "Обработка отправлений", inverse = true)
+    @CellUnit(name = "Обработка отправлений")
     private Double shipmentProcessing;
-    @CellUnit(name = "Логистика до покупателя", inverse = true)
+    @CellUnit(name = "Логистика до покупателя")
     private Double logistic;
-    @CellUnit(name = "Последняя миля", inverse = true)
+    @CellUnit(name = "Последняя миля")
     private Double lastMile;
-    @CellUnit(name = "Эквайринг", inverse = true)
+    @CellUnit(name = "Эквайринг")
     private Double acquiring;
     @CellUnit(name = "Ozon рассрочка")
     private Double installment;
-    @CellUnit(name = "Обработка возврата", inverse = true)
+    @CellUnit(name = "Обработка возврата")
     private Double returnProcessing;
-    @CellUnit(name = "Доставка возврата", inverse = true)
+    @CellUnit(name = "Доставка возврата")
     private Double returnDelivery;
     @CellUnit(name = "Услуга продвижения")
     private Double promotion;
@@ -50,48 +51,4 @@ public class OZON_TableRow {
     private Double claimsAccruals;
     @CellUnit(name = "Прочие начисления")
     private Double other;
-
-    public OZON_TableRow(String offerId,
-                         Integer delivered,
-                         Integer returned,
-                         Double saleForDelivered,
-                         Double sumReturn,
-                         Double salesCommission,
-                         Double shipmentProcessing,
-                         Double logistic,
-                         Double lastMile,
-                         Double acquiring,
-                         Double installment,
-                         Double returnProcessing,
-                         Double returnDelivery,
-                         Double promotion,
-                         Double compensation,
-                         Double searchPromotion,
-                         Double stencilProduct,
-                         Double ozonPremium,
-                         Double crossDockingDelivery,
-                         Double claimsAccruals,
-                         Double other) {
-        this.offerId = offerId;
-        this.delivered = delivered;
-        this.returned = returned;
-        this.saleForDelivered = saleForDelivered;
-        this.sumReturn = sumReturn;
-        this.salesCommission = salesCommission;
-        this.shipmentProcessing = shipmentProcessing;
-        this.logistic = logistic;
-        this.lastMile = lastMile;
-        this.acquiring = acquiring;
-        this.installment = installment;
-        this.returnProcessing = returnProcessing;
-        this.returnDelivery = returnDelivery;
-        this.promotion = promotion;
-        this.compensation = compensation;
-        this.searchPromotion = searchPromotion;
-        this.stencilProduct = stencilProduct;
-        this.ozonPremium = ozonPremium;
-        this.crossDockingDelivery = crossDockingDelivery;
-        this.claimsAccruals = claimsAccruals;
-        this.other = other;
-    }
 }
