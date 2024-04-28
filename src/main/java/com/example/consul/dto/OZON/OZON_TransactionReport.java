@@ -142,7 +142,7 @@ public class OZON_TransactionReport {
                 return items.get(0).getSku();
         }
 
-        public double getPrice(){
+        public Double getPrice(){
             return services.get(0).getPrice();
         }
 

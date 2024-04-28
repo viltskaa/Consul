@@ -1,5 +1,6 @@
 package com.example.consul.services;
 
+import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
 import org.jetbrains.annotations.NotNull;
@@ -7,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ExcelService {
@@ -33,6 +36,41 @@ public class ExcelService {
         ozonService.setHeader(apiKey, clientId);
         Map<String, List<OZON_DetailReport.Row>> operations = OZON_dataProcessing.groupByOfferId(ozonService.getDetailReport(date).getResult().getRows());
         return dataFunction.apply(operations);
+    }
+
+    private Map<String, Double> getDataForMapTransaction(@NotNull String apiKey,
+                                                        @NotNull String clientId,
+                                                        @NotNull String date,
+                                                        @NotNull String from,
+                                                        @NotNull String to,
+                                                        BiFunction<Map<String, List<Long>>,List<OZON_TransactionReport.Operation>, Map<String, Double>> dataFunction) {
+        ozonService.setHeader(apiKey, clientId);
+
+        ArrayList<String> opT = new ArrayList<>();
+        opT.add("OperationAgentDeliveredToCustomer");
+        opT.add("OperationAgentStornoDeliveredToCustomer");
+        opT.add("OperationReturnGoodsFBSofRMS");
+        opT.add("MarketplaceRedistributionOfAcquiringOperation");
+
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                        ozonService.getListOfferIdByDate(date))
+                .getSkuListByOfferId();
+
+        OZON_TransactionReport request = ozonService.getTransactionReport(
+                from, to,
+                opT, "all",
+                1, 1000);
+
+        List<OZON_TransactionReport.Operation> operations = request.getResult().getOperations();
+
+        for (int i = 2; i <= request.getResult().getPage_count(); i++) {
+            operations.addAll(ozonService.getTransactionReport(
+                            from, to,
+                            opT, "all", i, 1000)
+                    .getResult().getOperations());
+        }
+
+        return dataFunction.apply(offerSku, operations);
     }
 
     public String getMonthNameAndYear(String dateStr) {
@@ -78,69 +116,12 @@ public class ExcelService {
         return getDataForMapDouble(apiKey, clientId, date, OZON_dataProcessing::sumSalesCommission);
     }
 
-    public List<Map<String, Double>> getAllTransactionMap(@NotNull String apiKey,
-                                                          @NotNull String clientId,
-                                                          @NotNull String date,
-                                                          @NotNull String from,
-                                                          @NotNull String to) {
-        ozonService.setHeader(apiKey, clientId);
-
-        ArrayList<String> opT = new ArrayList<>();
-        opT.add("OperationAgentDeliveredToCustomer");
-        opT.add("OperationAgentStornoDeliveredToCustomer");
-        opT.add("OperationReturnGoodsFBSofRMS");
-        opT.add("MarketplaceRedistributionOfAcquiringOperation");
-
-        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
-                ozonService.getListOfferIdByDate(date))
-                .getSkuListByOfferId();;
-
-        OZON_TransactionReport request = ozonService.getTransactionReport(
-                from, to,
-                opT, "all",
-                1, 1000);
-
-        List<OZON_TransactionReport.Operation> operations = request.getResult().getOperations();
-
-        for (int i = 2; i <= request.getResult().getPage_count(); i++) {
-            operations.addAll(ozonService.getTransactionReport(
-                            from, to,
-                            opT, "all", i, 1000)
-                    .getResult().getOperations());
-        }
-
-        return null;
-    }
-
     public Map<String, Double> getMapLastMile(@NotNull String apiKey,
                                               @NotNull String clientId,
                                               @NotNull String date,
                                               @NotNull String from,
                                               @NotNull String to) {
-        ozonService.setHeader(apiKey, clientId);
-        ArrayList<String> opTMile = new ArrayList<>();
-        opTMile.add("OperationAgentDeliveredToCustomer");
-        opTMile.add("OperationAgentStornoDeliveredToCustomer");
-        opTMile.add("OperationReturnGoodsFBSofRMS");
-
-        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
-                ozonService.getListOfferIdByDate(date))
-                .getSkuListByOfferId();
-
-        OZON_TransactionReport request = ozonService.getTransactionReport(
-                from, to,
-                opTMile, "all",
-                1, 1000);
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-
-        for (int i = 1; i <= request.getResult().getPage_count(); i++) {
-            operations.addAll(ozonService.getTransactionReport(
-                            from, to,
-                            opTMile, "all", i, 1000)
-                    .getResult().getOperations());
-        }
-
-        return OZON_dataProcessing.sumLastMile(offerSku, operations);
+        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumLastMile);
     }
 
     public Map<String, Double> getMapAcquiring(@NotNull String apiKey,
@@ -148,28 +129,7 @@ public class ExcelService {
                                                @NotNull String date,
                                                @NotNull String from,
                                                @NotNull String to) {
-        ozonService.setHeader(apiKey, clientId);
-        ArrayList<String> opTAq = new ArrayList<>();
-        opTAq.add("MarketplaceRedistributionOfAcquiringOperation");
-
-        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
-                ozonService.getListOfferIdByDate(date))
-                .getSkuListByOfferId();
-
-        OZON_TransactionReport request = ozonService.getTransactionReport(
-                from, to,
-                opTAq, "all",
-                1, 1000);
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-
-        for (int i = 1; i <= request.getResult().getPage_count(); i++) {
-            operations.addAll(ozonService.getTransactionReport(
-                            from, to,
-                            opTAq, "all", i, 1000)
-                    .getResult().getOperations());
-        }
-
-        return OZON_dataProcessing.sumAcquiring(offerSku, operations);
+        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumAcquiring);
     }
 
     public Map<String, Double> getMapReturnDelivery(@NotNull String apiKey,
@@ -177,28 +137,7 @@ public class ExcelService {
                                                     @NotNull String date,
                                                     @NotNull String from,
                                                     @NotNull String to) {
-        ozonService.setHeader(apiKey, clientId);
-        ArrayList<String> opT = new ArrayList<>();
-        opT.add("OperationReturnGoodsFBSofRMS");
-
-        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
-                ozonService.getListOfferIdByDate(date)).getSkuListByOfferId();
-
-        OZON_TransactionReport request = ozonService.getTransactionReport(
-                from, to,
-                opT, "all",
-                1, 1000);
-
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-
-        for (int i = 1; i <= request.getResult().getPage_count(); i++) {
-            operations.addAll(ozonService.getTransactionReport(
-                            from, to,
-                            opT, "all", i, 1000)
-                    .getResult().getOperations());
-        }
-
-        return OZON_dataProcessing.sumReturnDelivery(offerSku, operations);
+        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumReturnDelivery);
     }
 
     public Map<String, Double> getMapReturnProcessing(@NotNull String apiKey,
@@ -206,30 +145,7 @@ public class ExcelService {
                                                       @NotNull String date,
                                                       @NotNull String from,
                                                       @NotNull String to) {
-        ozonService.setHeader(apiKey, clientId);
-        ArrayList<String> opT = new ArrayList<>();
-        opT.add("OperationAgentDeliveredToCustomer");
-        opT.add("OperationReturnGoodsFBSofRMS");
-
-        Map<String, List<Long>> offerSku = ozonService
-                .getProductInfoByOfferId(ozonService.getListOfferIdByDate(date))
-                .getSkuListByOfferId();
-
-        OZON_TransactionReport request = ozonService.getTransactionReport(
-                from, to,
-                opT, "all",
-                1, 1000);
-
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-
-        for (int i = 1; i <= request.getResult().getPage_count(); i++) {
-            operations.addAll(ozonService.getTransactionReport(
-                            from, to,
-                            opT, "all", i, 1000)
-                    .getResult().getOperations());
-        }
-
-        return OZON_dataProcessing.sumReturnProcessing(offerSku, operations);
+        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumReturnProcessing);
     }
 
     public Map<String, Double> getMapShipmentProcessing(@NotNull String apiKey,
@@ -237,29 +153,7 @@ public class ExcelService {
                                                         @NotNull String date,
                                                         @NotNull String from,
                                                         @NotNull String to) {
-        ozonService.setHeader(apiKey, clientId);
-        ArrayList<String> opT = new ArrayList<>();
-        opT.add("OperationAgentDeliveredToCustomer");
-        opT.add("OperationReturnGoodsFBSofRMS");
-
-        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
-                ozonService.getListOfferIdByDate(date)).getSkuListByOfferId();
-
-        OZON_TransactionReport request = ozonService.getTransactionReport(
-                from, to,
-                opT, "all",
-                1, 1000);
-
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-
-        for (int i = 1; i <= request.getResult().getPage_count(); i++) {
-            operations.addAll(ozonService.getTransactionReport(
-                            from, to,
-                            opT, "all", i, 1000)
-                    .getResult().getOperations());
-        }
-
-        return OZON_dataProcessing.sumShipmentProcessing(offerSku, operations);
+        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumShipmentProcessing);
     }
 
     public Map<String, Double> getMapLogistic(@NotNull String apiKey,
@@ -267,30 +161,7 @@ public class ExcelService {
                                               @NotNull String date,
                                               @NotNull String from,
                                               @NotNull String to) {
-        ozonService.setHeader(apiKey, clientId);
-        ArrayList<String> opT = new ArrayList<>();
-        opT.add("OperationAgentDeliveredToCustomer");
-        opT.add("OperationReturnGoodsFBSofRMS");
-
-        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
-                ozonService.getListOfferIdByDate(date))
-                .getSkuListByOfferId();
-
-        OZON_TransactionReport request = ozonService.getTransactionReport(
-                from, to,
-                opT, "all",
-                1, 1000);
-
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-
-        for (int i = 1; i <= request.getResult().getPage_count(); i++) {
-            operations.addAll(ozonService.getTransactionReport(
-                            from, to,
-                            opT, "all", i, 1000)
-                    .getResult().getOperations());
-        }
-
-        return OZON_dataProcessing.sumLogistic(offerSku, operations);
+        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumLogistic);
     }
 
     public Map<String, Double> getMapStencils(@NotNull String clientId,
@@ -331,5 +202,62 @@ public class ExcelService {
 
         return OZON_dataProcessing
                 .sumStencilByOfferId(priceStencilsBySku, offerSku);
+    }
+
+    public List<OZON_TableRow> mergeMapsToTableRows(@NotNull String apiKey,
+                                               @NotNull String clientId,
+                                               @NotNull String date,
+                                               @NotNull String from,
+                                               @NotNull String to) {
+
+        Map<String, Integer> saleCount = getMapSaleCount(apiKey, clientId, date);
+        Map<String, Integer> returnCount = getMapReturnCount(apiKey, clientId, date);
+        Map<String, Double> saleForDelivered = getMapSaleForDelivered(apiKey, clientId, date);
+        Map<String, Double> sumReturn = getMapSumReturn(apiKey, clientId, date);
+        Map<String, Double> salesCommission = getMapSalesCommission(apiKey, clientId, date);
+        Map<String, Double> shipmentProcessing = getMapShipmentProcessing(apiKey, clientId, date, from, to);
+        Map<String, Double> logistic = getMapLogistic(apiKey, clientId, date, from, to);
+        Map<String, Double> lastMile = getMapLastMile(apiKey, clientId, date, from, to);
+        Map<String, Double> acquiring = getMapAcquiring(apiKey, clientId, date, from, to);
+        Map<String, Double> returnProcessing = getMapReturnProcessing(apiKey, clientId, date, from, to);
+        Map<String, Double> returnDelivery = getMapReturnDelivery(apiKey, clientId, date, from, to);
+
+        Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue(),
+                        returnCount.get(entry.getKey()), saleForDelivered.get(entry.getKey()),
+                        sumReturn.get(entry.getKey()), salesCommission.get(entry.getKey()),
+                        shipmentProcessing.get(entry.getKey()), logistic.get(entry.getKey()),
+                        lastMile.get(entry.getKey()), acquiring.get(entry.getKey()),
+                        returnProcessing.get(entry.getKey()), returnDelivery.get(entry.getKey())
+                ))));
+
+        List<OZON_TableRow> listRow=new ArrayList<>();
+
+        for(Map.Entry<String,List<Object>> item : mergedMap.entrySet()){
+            OZON_TableRow tableRow = new OZON_TableRow(item.getKey(),
+                    (Integer) item.getValue().get(0),
+                    (Integer) item.getValue().get(1),
+                    (Double) item.getValue().get(2),
+                    (Double) item.getValue().get(3),
+                    (Double) item.getValue().get(4),
+                    (Double) item.getValue().get(5),
+                    (Double) item.getValue().get(6),
+                    (Double) item.getValue().get(7),
+                    (Double) item.getValue().get(8),
+                    0.0,
+                    (Double) item.getValue().get(9),
+                    (Double) item.getValue().get(10),
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0);
+            listRow.add(tableRow);
+        }
+
+        return listRow;
     }
 }

@@ -2,9 +2,7 @@ package com.example.consul.mapping;
 
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_PerformanceReport;
-import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
-import com.example.consul.services.OZON_Service;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -79,13 +77,15 @@ public class OZON_dataProcessing {
 
     // Нахождение эквайринга по артикулу
     static public Map<String, Double> sumAcquiring(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
-        Map<Long, Double> skuPrice = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
-                Collectors.summingDouble(OZON_TransactionReport.Operation::getPrice)));
-
         return offerSku.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
                 entry -> entry.getValue().stream()
-                        .mapToDouble(row -> skuPrice.entrySet().stream().filter(o -> o.getKey().equals(row))
+                        .mapToDouble(row -> operations.stream()
+                                .filter(op -> op.hasSkus(entry.getValue())
+                                        && op.getPriceByServiceName("MarketplaceRedistributionOfAcquiringOperation") != null)
+                                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
+                                        Collectors.summingDouble(OZON_TransactionReport.Operation::getPrice)))
+                                .entrySet().stream().filter(o -> o.getKey().equals(row))
                                 .mapToDouble(Map.Entry::getValue).sum())
                         .sum()
         ));

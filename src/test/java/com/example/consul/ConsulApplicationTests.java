@@ -39,24 +39,13 @@ class ConsulApplicationTests {
         opT.add("OperationAgentStornoDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        ArrayList<OZON_TransactionReport.Operation> operations = new ArrayList<>();
-
         OZON_TransactionReport reports = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all", 1, 1000);
-        operations.addAll(reports.getResult().getOperations());
+        ArrayList<OZON_TransactionReport.Operation> operations = new ArrayList<>(reports.getResult().getOperations());
 
         OZON_TransactionReport reports2 = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all", 2, 1000);
         operations.addAll(reports2.getResult().getOperations());
-
-        Long sku1 = 477053081L;
-        Long sku2 = 477053086L;
-
-        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
-                .stream()
-                .filter(x -> x.getPosting() != null)
-                .map(OZON_TransactionReport.Operation::of)
-                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
 
         OZON_DetailReport report = api.getDetailReport("2024-01");
 
@@ -111,20 +100,6 @@ class ConsulApplicationTests {
         Long sku1 = 477053081L;
         Long sku2 = 477053086L;
 
-        double sum = operations.stream()
-                .filter(op -> op.getSku().equals(sku1) || op.getSku().equals(sku2))
-                .mapToDouble(op -> {
-                    double price = 0;
-                    if (op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic") != null) {
-                        price += op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogistic");
-                    }
-                    if (op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogisticVDC") != null) {
-                        price += op.getPriceByServiceName("MarketplaceServiceItemDirectFlowLogisticVDC");
-                    }
-                    return price;
-                })
-                .sum();
-
         OZON_DetailReport report = api.getDetailReport("2024-01");
 
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
@@ -147,11 +122,10 @@ class ConsulApplicationTests {
         opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
         OZON_TransactionReport report = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
                 opT, "all", 1, 1000);
-        operations.addAll(report.getResult().getOperations());
+        List<OZON_TransactionReport.Operation> operations = new ArrayList<>(report.getResult().getOperations());
 
         OZON_TransactionReport report2 = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
@@ -198,11 +172,10 @@ class ConsulApplicationTests {
         opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
         OZON_TransactionReport report = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
                 opT, "all", 1, 1000);
-        operations.addAll(report.getResult().getOperations());
+        List<OZON_TransactionReport.Operation> operations = new ArrayList<>(report.getResult().getOperations());
 
         OZON_TransactionReport report2 = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
@@ -252,11 +225,10 @@ class ConsulApplicationTests {
 //        opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        List<OZON_TransactionReport.Operation> operations = new ArrayList<>();
         OZON_TransactionReport report = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
                 opT, "all", 1, 1000);
-        operations.addAll(report.getResult().getOperations());
+        List<OZON_TransactionReport.Operation> operations = new ArrayList<>(report.getResult().getOperations());
 
         OZON_TransactionReport report2 = api.getTransactionReport(
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z",
@@ -438,13 +410,24 @@ class ConsulApplicationTests {
     }
 
     @Test
+    void writeMapToTableRow(){
+        ExcelService excelService =new ExcelService(new OZON_Service(new OZON_Api(),new OZON_PerformanceApi()));
+
+        System.out.println(excelService.mergeMapsToTableRows("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
+                "350423",
+                "2024-01",
+                "2024-01-01T00:00:00.000Z",
+                "2024-01-31T23:59:59.999Z"));
+
+    }
+
+    @Test
     void NewExcelCreateTest() throws IOException {
         List<OZON_TableRow> data = Arrays.asList(
                 new OZON_TableRow("RE0001", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, null, 270.0, 13241.0, null, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
                 new OZON_TableRow("RE0002", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, null, 270.0, 13241.0, null, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
                 new OZON_TableRow("RE0003", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, null, 270.0, 13241.0, null, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0)
                 );
-
 
         ExcelBuilder.createDocument(new ExcelConfig<>(
                 "test.xls",
