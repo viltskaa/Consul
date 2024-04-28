@@ -12,7 +12,12 @@ import java.util.stream.Collectors;
 
 public class OZON_dataProcessing {
 
-    // Группировка отчета о реализации товаров по артикулу(offer_id)
+    /**
+     * Группировка отчета о реализации товаров по артикулу(offer_id)
+     *
+     * @param ozonDetailReports таблица отчета (rows из result в OZON_DetailReport)
+     * @return Map [offer_id, (rows с этим offer_id)]
+     */
     static public Map<String, List<OZON_DetailReport.Row>> groupByOfferId(List<OZON_DetailReport.Row> ozonDetailReports) {
         return ozonDetailReports.stream()
                 .filter(x -> x.getOffer_id() != null)
@@ -20,7 +25,12 @@ public class OZON_dataProcessing {
                 .collect(Collectors.groupingBy(OZON_DetailReport.Row::getOffer_id));
     }
 
-    // Суммирование начислений за доставленный товар по артикулу
+    /**
+     * Суммирование начислений за доставленный товар по артикулу
+     *
+     * @param groupMap Map [offer_id, (rows с этим offer_id)]
+     * @return Map [offer_id, (начисление за доставленный товар)]
+     */
     static public Map<String, Double> sumSaleForDelivered(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
@@ -31,7 +41,13 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
-    // Нахождение количества доставленных товаров по артикулу
+
+    /**
+     * Нахождение количества доставленных товаров по артикулу
+     *
+     * @param groupMap Map [offer_id, (rows с этим offer_id)]
+     * @return Map [offer_id, (доставлено для этого товара)]
+     */
     static public Map<String, Integer> saleCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
@@ -42,7 +58,12 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
-    // Нахождение количества возвращенных товаров по артикулу
+    /**
+     * Нахождение количества возвращенных товаров по артикулу
+     *
+     * @param groupMap  Map [offer_id, (rows с этим offer_id)]
+     * @return Map [offer_id, (возвращено для этого товара)]
+     */
     static public Map<String, Integer> returnCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
@@ -53,7 +74,12 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
-    // Нахождение суммы возврата товаров по артикулу
+    /**
+     * Нахождение суммы возврата товаров по артикулу
+     *
+     * @param groupMap Map [offer_id, (rows с этим offer_id)]
+     * @return Map [offer_id, (сумма возврата для этого товара)]
+     */
     static public Map<String, Double> sumReturn(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
@@ -64,7 +90,12 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
-    // Нахождение комиссии за продажу по артикулу
+    /**
+     * Нахождение комиссии за продажу по артикулу
+     *
+     * @param groupMap Map [offer_id, (rows с этим offer_id)]
+     * @return Map [offer_id, (комиссия за продажу для этого товара)]
+     */
     static public Map<String, Double> sumSalesCommission(Map<String, List<OZON_DetailReport.Row>> groupMap) {
         return groupMap
                 .entrySet().stream()
@@ -75,7 +106,13 @@ public class OZON_dataProcessing {
                                 .sum()));
     }
 
-    // Нахождение эквайринга по артикулу
+    /**
+     * Нахождение эквайринга по артикулу
+     *
+     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param operations список операци ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (эквайринг для этого товара)]
+     */
     static public Map<String, Double> sumAcquiring(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
         return offerSku.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
@@ -92,6 +129,13 @@ public class OZON_dataProcessing {
     }
 
     // Нахождение последней мили по артикулу
+    /**
+     * Нахождение последней мили по артикулу
+     *
+     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param operations список операци ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (последняя для этого товара)]
+     */
     static public Map<String, Double> sumLastMile(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
         Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
                 .stream()
@@ -116,7 +160,13 @@ public class OZON_dataProcessing {
                 ));
     }
 
-    // Нахождение логистики по артикулу
+    /**
+     * Нахождение логистики по артикулу
+     *
+     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param operations список операци ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (последняя для этого товара)]
+     */
     static public Map<String, Double> sumLogistic(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
         return offerSku.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -133,7 +183,14 @@ public class OZON_dataProcessing {
                 ));
     }
 
-    // Нахождение обработки отправления по артикулу
+
+    /**
+     * Нахождение обработки отправления по артикулу
+     *
+     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param operations список операци ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (обработка отправления для этого товара)]
+     */
     static public Map<String, Double> sumShipmentProcessing(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
         return offerSku.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -150,7 +207,13 @@ public class OZON_dataProcessing {
                 ));
     }
 
-    // Нахождение обработки возврата по артикулу
+    /**
+     * Нахождение обработки возврата по артикулу
+     *
+     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param operations список операци ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (обработка отправления для этого товара)]
+     */
     static public Map<String, Double> sumReturnProcessing(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
         return offerSku.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -167,7 +230,13 @@ public class OZON_dataProcessing {
                 ));
     }
 
-    // Нахождение доставки возврата по артикулу
+    /**
+     * Нахождение доставки возврата по артикулу
+     *
+     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param operations список операци ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (доставка возврата для этого товара)]
+     */
     static public Map<String, Double> sumReturnDelivery(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
         return offerSku.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -184,6 +253,12 @@ public class OZON_dataProcessing {
                 ));
     }
 
+    /**
+     * Нахождение трафарета(реклама) по sku
+     *
+     * @param reports лист OZON_PerformanceReport
+     * @return Map [sku, (сумма этого sku)]
+     */
     static public Map<String, Double> sumStencilBySku(List<OZON_PerformanceReport> reports) {
         return reports.stream()
                 .map(OZON_PerformanceReport::getReport)
@@ -202,6 +277,13 @@ public class OZON_dataProcessing {
                 ));
     }
 
+    /**
+     * Нахождение трафарета(реклама) по sku
+     *
+     * @param stencilsBySku Map [sku, (сумма этого sku)]
+     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @return Map [offer_id, (трафарет для этого offer_id)]
+     */
     static public Map<String, Double> sumStencilByOfferId(@NotNull Map<String, Double> stencilsBySku,
                                                           @NotNull Map<String, List<Long>> offerSku) {
         return offerSku.entrySet().stream()
