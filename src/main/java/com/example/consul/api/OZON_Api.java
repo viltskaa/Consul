@@ -33,7 +33,18 @@ public class OZON_Api {
         headers.add("Content-Type", "application/json");
     }
 
-    // Финансовые отчеты => Список транзакций
+
+    /**
+     * Финансовые отчеты => Список транзакций
+     *
+     * @param from начало периода
+     * @param to конец периода
+     * @param operation_type тип операции
+     * @param transaction_type тип начисления
+     * @param page номер страницы, возвращаемой в запросе
+     * @param page_size количество элементов на странице
+     * @return
+     */
     @Nullable
     public OZON_TransactionReport getTransactionReport(@NotNull String from,
                                                        @NotNull String to,
@@ -55,7 +66,13 @@ public class OZON_Api {
         }
     }
 
-    // Финансовые отчеты => Отчёт о реализации товаров
+    /**
+     * Финансовые отчеты => Отчёт о реализации товаров
+     *
+     * @param date отчетный период в формате YYYY-MM
+     * @return
+     */
+
     @Nullable
     public OZON_DetailReport getDetailReport(@NotNull String date) {
         String detailReportUrl = "https://api-seller.ozon.ru/v1/finance/realization";
@@ -75,7 +92,13 @@ public class OZON_Api {
         }
     }
 
-    //Загрузка и обновление товаров => Получить список товаров по идентификаторам
+    /**
+     * Загрузка и обновление товаров => Получить список товаров по идентификаторам.
+     * Получение списка товаров по идентификатору в системе OZON - SKU
+     *
+     * @param skus идентификатор товара в системе Ozon
+     * @return
+     */
     @Nullable
     public OZON_SkuProductsReport getProductInfo(List<Long> skus) {
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
@@ -95,7 +118,13 @@ public class OZON_Api {
         }
     }
 
-    //Загрузка и обновление товаров => Получить список товаров по идентификаторам
+    /**
+     * Загрузка и обновление товаров => Получить список товаров по идентификаторам.
+     * Получение списка товаров по идентификатору в системе продавца - артикул
+     *
+     * @param offerIds идентификатор товара в системе продавца
+     * @return
+     */
     @Nullable
     public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds) {
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
