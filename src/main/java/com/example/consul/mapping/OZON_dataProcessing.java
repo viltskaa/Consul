@@ -2,6 +2,7 @@ package com.example.consul.mapping;
 
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_PerformanceReport;
+import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
 import org.jetbrains.annotations.NotNull;
@@ -88,17 +89,6 @@ public class OZON_dataProcessing {
                                 .mapToDouble(Map.Entry::getValue).sum())
                         .sum()
         ));
-    }
-
-    //Получить список sku для каждого артикула
-    static public Map<String, List<Long>> getOfferSku(OZON_Service ozonService, String date) {
-        return ozonService
-                .getProductInfoByOfferId(OZON_dataProcessing
-                        .groupByOfferId(ozonService.getDetailReport(date)
-                                .getResult().getRows())
-                        .keySet()
-                        .toArray(new String[0]))
-                .getSkuListByOfferId();
     }
 
     // Нахождение последней мили по артикулу

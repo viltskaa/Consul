@@ -78,6 +78,40 @@ public class ExcelService {
         return getDataForMapDouble(apiKey, clientId, date, OZON_dataProcessing::sumSalesCommission);
     }
 
+    public List<Map<String, Double>> getAllTransactionMap(@NotNull String apiKey,
+                                                          @NotNull String clientId,
+                                                          @NotNull String date,
+                                                          @NotNull String from,
+                                                          @NotNull String to) {
+        ozonService.setHeader(apiKey, clientId);
+
+        ArrayList<String> opT = new ArrayList<>();
+        opT.add("OperationAgentDeliveredToCustomer");
+        opT.add("OperationAgentStornoDeliveredToCustomer");
+        opT.add("OperationReturnGoodsFBSofRMS");
+        opT.add("MarketplaceRedistributionOfAcquiringOperation");
+
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate(date))
+                .getSkuListByOfferId();;
+
+        OZON_TransactionReport request = ozonService.getTransactionReport(
+                from, to,
+                opT, "all",
+                1, 1000);
+
+        List<OZON_TransactionReport.Operation> operations = request.getResult().getOperations();
+
+        for (int i = 2; i <= request.getResult().getPage_count(); i++) {
+            operations.addAll(ozonService.getTransactionReport(
+                            from, to,
+                            opT, "all", i, 1000)
+                    .getResult().getOperations());
+        }
+
+        return null;
+    }
+
     public Map<String, Double> getMapLastMile(@NotNull String apiKey,
                                               @NotNull String clientId,
                                               @NotNull String date,
@@ -89,7 +123,9 @@ public class ExcelService {
         opTMile.add("OperationAgentStornoDeliveredToCustomer");
         opTMile.add("OperationReturnGoodsFBSofRMS");
 
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate(date))
+                .getSkuListByOfferId();
 
         OZON_TransactionReport request = ozonService.getTransactionReport(
                 from, to,
@@ -116,7 +152,9 @@ public class ExcelService {
         ArrayList<String> opTAq = new ArrayList<>();
         opTAq.add("MarketplaceRedistributionOfAcquiringOperation");
 
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate(date))
+                .getSkuListByOfferId();
 
         OZON_TransactionReport request = ozonService.getTransactionReport(
                 from, to,
@@ -143,7 +181,8 @@ public class ExcelService {
         ArrayList<String> opT = new ArrayList<>();
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate(date)).getSkuListByOfferId();
 
         OZON_TransactionReport request = ozonService.getTransactionReport(
                 from, to,
@@ -172,7 +211,9 @@ public class ExcelService {
         opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+        Map<String, List<Long>> offerSku = ozonService
+                .getProductInfoByOfferId(ozonService.getListOfferIdByDate(date))
+                .getSkuListByOfferId();
 
         OZON_TransactionReport request = ozonService.getTransactionReport(
                 from, to,
@@ -201,7 +242,8 @@ public class ExcelService {
         opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate(date)).getSkuListByOfferId();
 
         OZON_TransactionReport request = ozonService.getTransactionReport(
                 from, to,
@@ -230,7 +272,9 @@ public class ExcelService {
         opT.add("OperationAgentDeliveredToCustomer");
         opT.add("OperationReturnGoodsFBSofRMS");
 
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate(date))
+                .getSkuListByOfferId();
 
         OZON_TransactionReport request = ozonService.getTransactionReport(
                 from, to,
@@ -281,7 +325,9 @@ public class ExcelService {
         }
 
         Map<String, Double> priceStencilsBySku = OZON_dataProcessing.sumStencilBySku(report);
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, date);
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate(date))
+                .getSkuListByOfferId();
 
         return OZON_dataProcessing
                 .sumStencilByOfferId(priceStencilsBySku, offerSku);

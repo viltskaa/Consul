@@ -3,6 +3,7 @@ package com.example.consul.services;
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
 import com.example.consul.dto.OZON.*;
+import com.example.consul.mapping.OZON_dataProcessing;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,14 @@ public class OZON_Service {
         } catch (NullPointerException exception) {
             return null;
         }
+    }
+
+    public String[] getListOfferIdByDate(@NotNull String date){
+        return OZON_dataProcessing
+                .groupByOfferId(ozonApi.getDetailReport(date)
+                        .getResult().getRows())
+                .keySet()
+                .toArray(new String[0]);
     }
 
     public OZON_SkuProductsReport getProductInfo(@NotNull List<Long> skus) {

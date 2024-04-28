@@ -80,7 +80,9 @@ public class OZONPerformanceApiTest {
                 ));
 
         ozonService.setHeader("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
-        Map<String, List<Long>> offerSku = OZON_dataProcessing.getOfferSku(ozonService, "2024-01");
+        Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
+                ozonService.getListOfferIdByDate("2024-01"))
+                .getSkuListByOfferId();
 
         Map<String, Double> valuesWithOfferId = OZON_dataProcessing
                 .sumStencilByOfferId(values, offerSku);
