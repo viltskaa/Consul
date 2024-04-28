@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -411,11 +414,9 @@ class ConsulApplicationTests {
 
     @Test
     void NewExcelCreateTest() throws IOException {
-        List<OZON_TableRow> data = Arrays.asList(
-                new OZON_TableRow("RE0001", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, null, 270.0, 13241.0, null, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
-                new OZON_TableRow("RE0002", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, null, 270.0, 13241.0, null, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
-                new OZON_TableRow("RE0003", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, null, 270.0, 13241.0, null, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0)
-                );
+        ExcelService excelService = new ExcelService(new OZON_Service(new OZON_Api(),new OZON_PerformanceApi()));
+
+        List<OZON_TableRow> data=excelService.mergeMapsToTableRows("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423", "2024-01");
 
         ExcelBuilder.createDocument(new ExcelConfig<>(
                 "test.xls",

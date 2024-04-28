@@ -3,10 +3,13 @@ package com.example.consul.services;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
+import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -86,6 +89,18 @@ public class ExcelService {
         }
     }
 
+    public Pair<String,String> getStartAndEndDate(String dateStr) {
+        LocalDate date = LocalDate.parse(dateStr + "-01");
+
+        LocalDate startOfMonth = date.withDayOfMonth(1);
+        LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth());
+
+        String startOfMonthString = startOfMonth.atStartOfDay(ZoneOffset.UTC).toString().replace("T00:00", "T00:00:00.000");;
+        String endOfMonthString = endOfMonth.atStartOfDay(ZoneOffset.UTC).plusDays(1).minusNanos(1000000).toString();
+
+        return new Pair<>(startOfMonthString,endOfMonthString);
+    }
+
     public Map<String, Integer> getMapSaleCount(@NotNull String apiKey,
                                                 @NotNull String clientId,
                                                 @NotNull String date) {
@@ -118,50 +133,38 @@ public class ExcelService {
 
     public Map<String, Double> getMapLastMile(@NotNull String apiKey,
                                               @NotNull String clientId,
-                                              @NotNull String date,
-                                              @NotNull String from,
-                                              @NotNull String to) {
-        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumLastMile);
+                                              @NotNull String date) {
+        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumLastMile);
     }
 
     public Map<String, Double> getMapAcquiring(@NotNull String apiKey,
                                                @NotNull String clientId,
-                                               @NotNull String date,
-                                               @NotNull String from,
-                                               @NotNull String to) {
-        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumAcquiring);
+                                               @NotNull String date) {
+        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumAcquiring);
     }
 
     public Map<String, Double> getMapReturnDelivery(@NotNull String apiKey,
                                                     @NotNull String clientId,
-                                                    @NotNull String date,
-                                                    @NotNull String from,
-                                                    @NotNull String to) {
-        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumReturnDelivery);
+                                                    @NotNull String date) {
+        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumReturnDelivery);
     }
 
     public Map<String, Double> getMapReturnProcessing(@NotNull String apiKey,
                                                       @NotNull String clientId,
-                                                      @NotNull String date,
-                                                      @NotNull String from,
-                                                      @NotNull String to) {
-        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumReturnProcessing);
+                                                      @NotNull String date) {
+        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumReturnProcessing);
     }
 
     public Map<String, Double> getMapShipmentProcessing(@NotNull String apiKey,
                                                         @NotNull String clientId,
-                                                        @NotNull String date,
-                                                        @NotNull String from,
-                                                        @NotNull String to) {
-        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumShipmentProcessing);
+                                                        @NotNull String date) {
+        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumShipmentProcessing);
     }
 
     public Map<String, Double> getMapLogistic(@NotNull String apiKey,
                                               @NotNull String clientId,
-                                              @NotNull String date,
-                                              @NotNull String from,
-                                              @NotNull String to) {
-        return getDataForMapTransaction(apiKey, clientId, date,from,to,OZON_dataProcessing::sumLogistic);
+                                              @NotNull String date) {
+        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumLogistic);
     }
 
     public Map<String, Double> getMapStencils(@NotNull String clientId,
@@ -206,21 +209,19 @@ public class ExcelService {
 
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull String apiKey,
                                                @NotNull String clientId,
-                                               @NotNull String date,
-                                               @NotNull String from,
-                                               @NotNull String to) {
+                                               @NotNull String date) {
 
         Map<String, Integer> saleCount = getMapSaleCount(apiKey, clientId, date);
         Map<String, Integer> returnCount = getMapReturnCount(apiKey, clientId, date);
         Map<String, Double> saleForDelivered = getMapSaleForDelivered(apiKey, clientId, date);
         Map<String, Double> sumReturn = getMapSumReturn(apiKey, clientId, date);
         Map<String, Double> salesCommission = getMapSalesCommission(apiKey, clientId, date);
-        Map<String, Double> shipmentProcessing = getMapShipmentProcessing(apiKey, clientId, date, from, to);
-        Map<String, Double> logistic = getMapLogistic(apiKey, clientId, date, from, to);
-        Map<String, Double> lastMile = getMapLastMile(apiKey, clientId, date, from, to);
-        Map<String, Double> acquiring = getMapAcquiring(apiKey, clientId, date, from, to);
-        Map<String, Double> returnProcessing = getMapReturnProcessing(apiKey, clientId, date, from, to);
-        Map<String, Double> returnDelivery = getMapReturnDelivery(apiKey, clientId, date, from, to);
+        Map<String, Double> shipmentProcessing = getMapShipmentProcessing(apiKey, clientId, date);
+        Map<String, Double> logistic = getMapLogistic(apiKey, clientId, date);
+        Map<String, Double> lastMile = getMapLastMile(apiKey, clientId, date);
+        Map<String, Double> acquiring = getMapAcquiring(apiKey, clientId, date);
+        Map<String, Double> returnProcessing = getMapReturnProcessing(apiKey, clientId, date);
+        Map<String, Double> returnDelivery = getMapReturnDelivery(apiKey, clientId, date);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue(),
