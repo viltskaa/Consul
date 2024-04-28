@@ -180,8 +180,9 @@ public class ExcelBuilder {
             Integer index = ExcelCellType.getIndex(ExcelCellType.TOTAL);
             Cell cell = row.createCell(columnInd++);
             cell.setCellStyle(cellStyles.get(index != null ? index : 0));
+            Integer formulaRow =rowIndex+2;
             cell.setCellFormula(
-                    "(D2-E2-F2-G2-H2-I2-J2-K2-L2-M2-N2-P2-Q2-U2)/(B2-C2)-2.47"
+                    "(D"+formulaRow+"-E"+formulaRow+"-F"+formulaRow+"-G"+formulaRow+"-H"+formulaRow+"-I"+formulaRow+"-J"+formulaRow+"-K"+formulaRow+"-L"+formulaRow+"-M"+formulaRow+"-N"+formulaRow+"-P"+formulaRow+"-Q"+formulaRow+"-U"+formulaRow+")/(B"+formulaRow+"-C"+formulaRow+")-2.47"
             );
         }
 

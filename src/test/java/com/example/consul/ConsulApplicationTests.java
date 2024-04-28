@@ -410,18 +410,6 @@ class ConsulApplicationTests {
     }
 
     @Test
-    void writeMapToTableRow(){
-        ExcelService excelService =new ExcelService(new OZON_Service(new OZON_Api(),new OZON_PerformanceApi()));
-
-        System.out.println(excelService.mergeMapsToTableRows("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
-                "350423",
-                "2024-01",
-                "2024-01-01T00:00:00.000Z",
-                "2024-01-31T23:59:59.999Z"));
-
-    }
-
-    @Test
     void NewExcelCreateTest() throws IOException {
         List<OZON_TableRow> data = Arrays.asList(
                 new OZON_TableRow("RE0001", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, null, 270.0, 13241.0, null, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
