@@ -414,12 +414,17 @@ class ConsulApplicationTests {
 
     @Test
     void NewExcelCreateTest() throws IOException {
-        ExcelService excelService = new ExcelService(new OZON_Service(new OZON_Api(),new OZON_PerformanceApi()));
+        ExcelService excelService = new ExcelService(new OZON_Service(new OZON_Api(), new OZON_PerformanceApi()));
 
-        List<OZON_TableRow> data=excelService.mergeMapsToTableRows("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423", "2024-01");
+        List<OZON_TableRow> data = excelService.mergeMapsToTableRows(
+                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
+                "350423",
+                "27013136-1713353681106@advertising.performance.ozon.ru",
+                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
+                "2024-01");
 
         ExcelBuilder.createDocument(new ExcelConfig<>(
-                "test.xls",
+                "2024_01.xls",
                 "1",
                 "",
                 data

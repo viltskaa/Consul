@@ -31,9 +31,9 @@ public class OZON_PerformanceApi {
     }
 
     /**
-     * @param clientId
-     * @param clientSecret
-     * @return
+     * @param clientId performance client id
+     * @param clientSecret performance client secret
+     * @return bearer token in object OZON_PerformanceTokenResult
      */
     @Nullable
     public OZON_PerformanceTokenResult getToken(@NotNull String clientId,
@@ -59,10 +59,10 @@ public class OZON_PerformanceApi {
     }
 
     /**
-     * @param token
-     * @param dateFrom
-     * @param dateTo
-     * @return
+     * @param token bearer token
+     * @param dateFrom format @YYYY-MM-DD
+     * @param dateTo format @YYYY-MM-DD
+     * @return @OZON_PerformanceCampaigns
      */
     @Nullable
     public OZON_PerformanceCampaigns getCampaigns(@NotNull String token,
@@ -86,11 +86,11 @@ public class OZON_PerformanceApi {
     }
 
     /**
-     * @param token
-     * @param campaignId
-     * @param dateFrom
-     * @param dateTo
-     * @return
+     * @param token bearer token
+     * @param campaignId list of campaigns
+     * @param dateFrom format @YYYY-MM-DD
+     * @param dateTo format @YYYY-MM-DD
+     * @return OZON_PerformanceStatistic
      */
     @Nullable
     public OZON_PerformanceStatistic getPerformanceStatisticByCampaignId(@NotNull String token,
@@ -100,13 +100,6 @@ public class OZON_PerformanceApi {
         String url = "https://performance.ozon.ru:443/api/client/statistics/json";
         setHeaders();
         headers.setBearerAuth(token);
-
-        Map<String, String> map = new HashMap<>();
-
-        map.put("campaigns", String.valueOf(campaignId));
-        map.put("dateFrom", dateFrom);
-        map.put("dateTo", dateTo);
-        map.put("groupBy", "START_OF_MONTH");
 
         OZON_PerformanceStatisticConfig config = OZON_PerformanceStatisticConfig
                 .builder()
@@ -134,9 +127,9 @@ public class OZON_PerformanceApi {
     }
 
     /**
-     * @param token
-     * @param UUID
-     * @return
+     * @param token bearer token
+     * @param UUID id report
+     * @return report status
      */
     @Nullable
     public OZON_PerformanceReportStatus getPerformanceReportStatusByUUID(@NotNull String token,
@@ -160,9 +153,9 @@ public class OZON_PerformanceApi {
     }
 
     /**
-     * @param token
-     * @param UUID
-     * @return
+     * @param token bearer token
+     * @param UUID id report
+     * @return list of reports
      */
     @Nullable
     public List<OZON_PerformanceReport> getPerformanceReportByUUID(@NotNull String token,

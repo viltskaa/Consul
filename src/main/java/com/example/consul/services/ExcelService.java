@@ -42,11 +42,11 @@ public class ExcelService {
     }
 
     private Map<String, Double> getDataForMapTransaction(@NotNull String apiKey,
-                                                        @NotNull String clientId,
-                                                        @NotNull String date,
-                                                        @NotNull String from,
-                                                        @NotNull String to,
-                                                        BiFunction<Map<String, List<Long>>,List<OZON_TransactionReport.Operation>, Map<String, Double>> dataFunction) {
+                                                         @NotNull String clientId,
+                                                         @NotNull String date,
+                                                         @NotNull String from,
+                                                         @NotNull String to,
+                                                         BiFunction<Map<String, List<Long>>, List<OZON_TransactionReport.Operation>, Map<String, Double>> dataFunction) {
         ozonService.setHeader(apiKey, clientId);
 
         ArrayList<String> opT = new ArrayList<>();
@@ -85,20 +85,25 @@ public class ExcelService {
 
             return simpleDateFormat.format(date).toUpperCase();
         } catch (Exception e) {
-            return "Ошибка: " + e.getMessage();
+            return "Error: " + e.getMessage();
         }
     }
 
-    public Pair<String,String> getStartAndEndDate(String dateStr) {
+    public Pair<String, String> getStartAndEndDateToUtc(String dateStr) {
         LocalDate date = LocalDate.parse(dateStr + "-01");
 
         LocalDate startOfMonth = date.withDayOfMonth(1);
         LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth());
 
-        String startOfMonthString = startOfMonth.atStartOfDay(ZoneOffset.UTC).toString().replace("T00:00", "T00:00:00.000");;
+        String startOfMonthString = startOfMonth.atStartOfDay(ZoneOffset.UTC).toString().replace("T00:00", "T00:00:00.000");
         String endOfMonthString = endOfMonth.atStartOfDay(ZoneOffset.UTC).plusDays(1).minusNanos(1000000).toString();
 
-        return new Pair<>(startOfMonthString,endOfMonthString);
+        return new Pair<>(startOfMonthString, endOfMonthString);
+    }
+
+    public Pair<String, String> getStartAndEndDateToDate(String dateStr) {
+        LocalDate date = LocalDate.parse(dateStr + "-01");
+        return new Pair<>(date.withDayOfMonth(1).toString(), date.withDayOfMonth(date.lengthOfMonth()).toString());
     }
 
     public Map<String, Integer> getMapSaleCount(@NotNull String apiKey,
@@ -134,44 +139,51 @@ public class ExcelService {
     public Map<String, Double> getMapLastMile(@NotNull String apiKey,
                                               @NotNull String clientId,
                                               @NotNull String date) {
-        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumLastMile);
+        return getDataForMapTransaction(apiKey, clientId, date, getStartAndEndDateToUtc(date).a,
+                getStartAndEndDateToUtc(date).b, OZON_dataProcessing::sumLastMile);
     }
 
     public Map<String, Double> getMapAcquiring(@NotNull String apiKey,
                                                @NotNull String clientId,
                                                @NotNull String date) {
-        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumAcquiring);
+        return getDataForMapTransaction(apiKey, clientId, date, getStartAndEndDateToUtc(date).a,
+                getStartAndEndDateToUtc(date).b, OZON_dataProcessing::sumAcquiring);
     }
 
     public Map<String, Double> getMapReturnDelivery(@NotNull String apiKey,
                                                     @NotNull String clientId,
                                                     @NotNull String date) {
-        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumReturnDelivery);
+        return getDataForMapTransaction(apiKey, clientId, date, getStartAndEndDateToUtc(date).a,
+                getStartAndEndDateToUtc(date).b, OZON_dataProcessing::sumReturnDelivery);
     }
 
     public Map<String, Double> getMapReturnProcessing(@NotNull String apiKey,
                                                       @NotNull String clientId,
                                                       @NotNull String date) {
-        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumReturnProcessing);
+        return getDataForMapTransaction(apiKey, clientId, date, getStartAndEndDateToUtc(date).a,
+                getStartAndEndDateToUtc(date).b, OZON_dataProcessing::sumReturnProcessing);
     }
 
     public Map<String, Double> getMapShipmentProcessing(@NotNull String apiKey,
                                                         @NotNull String clientId,
                                                         @NotNull String date) {
-        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumShipmentProcessing);
+        return getDataForMapTransaction(apiKey, clientId, date, getStartAndEndDateToUtc(date).a,
+                getStartAndEndDateToUtc(date).b, OZON_dataProcessing::sumShipmentProcessing);
     }
 
     public Map<String, Double> getMapLogistic(@NotNull String apiKey,
                                               @NotNull String clientId,
                                               @NotNull String date) {
-        return getDataForMapTransaction(apiKey, clientId, date,getStartAndEndDate(date).a,getStartAndEndDate(date).b,OZON_dataProcessing::sumLogistic);
+        return getDataForMapTransaction(apiKey, clientId, date, getStartAndEndDateToUtc(date).a,
+                getStartAndEndDateToUtc(date).b, OZON_dataProcessing::sumLogistic);
     }
 
     public Map<String, Double> getMapStencils(@NotNull String clientId,
                                               @NotNull String clientSecret,
                                               @NotNull String date) {
-        String dateFrom = date + "-01";
-        String dateTo = date + "-31";
+        Pair<String, String> dateEntry = getStartAndEndDateToDate(date);
+        String dateFrom = dateEntry.a;
+        String dateTo = dateEntry.b;
 
         ozonService.getPerformanceToken(clientId, clientSecret);
 
@@ -184,6 +196,10 @@ public class ExcelService {
         List<String> activeCampaignList = ozonPerformanceCampaigns.getRows()
                 .stream().filter(x -> x.getStatus().equals("running"))
                 .map(OZON_PerformanceCampaigns.OZON_PerformanceCampaign::getId).toList();
+
+        if (activeCampaignList.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
         OZON_PerformanceStatistic statistic = ozonService.getPerformanceStatisticByCampaignId(
                 clientId,
@@ -200,7 +216,7 @@ public class ExcelService {
 
         Map<String, Double> priceStencilsBySku = OZON_dataProcessing.sumStencilBySku(report);
         Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
-                ozonService.getListOfferIdByDate(date))
+                        ozonService.getListOfferIdByDate(date))
                 .getSkuListByOfferId();
 
         return OZON_dataProcessing
@@ -208,8 +224,10 @@ public class ExcelService {
     }
 
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull String apiKey,
-                                               @NotNull String clientId,
-                                               @NotNull String date) {
+                                                    @NotNull String clientId,
+                                                    @NotNull String performanceClientId,
+                                                    @NotNull String performanceClientSecret,
+                                                    @NotNull String date) {
 
         Map<String, Integer> saleCount = getMapSaleCount(apiKey, clientId, date);
         Map<String, Integer> returnCount = getMapReturnCount(apiKey, clientId, date);
@@ -222,36 +240,43 @@ public class ExcelService {
         Map<String, Double> acquiring = getMapAcquiring(apiKey, clientId, date);
         Map<String, Double> returnProcessing = getMapReturnProcessing(apiKey, clientId, date);
         Map<String, Double> returnDelivery = getMapReturnDelivery(apiKey, clientId, date);
+        Map<String, Double> stencilProduct = getMapStencils(performanceClientId, performanceClientSecret, date);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue(),
-                        returnCount.get(entry.getKey()), saleForDelivered.get(entry.getKey()),
-                        sumReturn.get(entry.getKey()), salesCommission.get(entry.getKey()),
-                        shipmentProcessing.get(entry.getKey()), logistic.get(entry.getKey()),
-                        lastMile.get(entry.getKey()), acquiring.get(entry.getKey()),
-                        returnProcessing.get(entry.getKey()), returnDelivery.get(entry.getKey())
+                        returnCount.getOrDefault(entry.getKey(), 0),
+                        saleForDelivered.getOrDefault(entry.getKey(), 0.0),
+                        sumReturn.getOrDefault(entry.getKey(), 0.0),
+                        salesCommission.getOrDefault(entry.getKey(), 0.0),
+                        shipmentProcessing.getOrDefault(entry.getKey(), 0.0),
+                        logistic.getOrDefault(entry.getKey(), 0.0),
+                        lastMile.getOrDefault(entry.getKey(), 0.0),
+                        acquiring.getOrDefault(entry.getKey(), 0.0),
+                        returnProcessing.getOrDefault(entry.getKey(), 0.0),
+                        returnDelivery.getOrDefault(entry.getKey(), 0.0),
+                        stencilProduct.getOrDefault(entry.getKey(), 0.0)
                 ))));
 
-        List<OZON_TableRow> listRow=new ArrayList<>();
+        List<OZON_TableRow> listRow = new ArrayList<>();
 
-        for(Map.Entry<String,List<Object>> item : mergedMap.entrySet()){
+        for (Map.Entry<String, List<Object>> item : mergedMap.entrySet()) {
             OZON_TableRow tableRow = new OZON_TableRow(item.getKey(),
                     (Integer) item.getValue().get(0),
                     (Integer) item.getValue().get(1),
                     (Double) item.getValue().get(2),
                     (Double) item.getValue().get(3),
                     (Double) item.getValue().get(4),
-                    (Double) item.getValue().get(5)*(-1),
-                    (Double) item.getValue().get(6)*(-1),
-                    (Double) item.getValue().get(7)*(-1),
-                    (Double) item.getValue().get(8)*(-1),
+                    (Double) item.getValue().get(5) * (-1),
+                    (Double) item.getValue().get(6) * (-1),
+                    (Double) item.getValue().get(7) * (-1),
+                    (Double) item.getValue().get(8) * (-1),
                     0.0,
-                    (Double) item.getValue().get(9)*(-1),
-                    (Double) item.getValue().get(10)*(-1),
-                    0.0,
-                    0.0,
+                    (Double) item.getValue().get(9) * (-1),
+                    (Double) item.getValue().get(10) * (-1),
                     0.0,
                     0.0,
+                    0.0,
+                    (Double) item.getValue().get(11),
                     0.0,
                     0.0,
                     0.0,
