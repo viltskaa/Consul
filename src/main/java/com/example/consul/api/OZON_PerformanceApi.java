@@ -1,6 +1,5 @@
 package com.example.consul.api;
 
-import com.example.consul.api.utils.ForTransactions;
 import com.example.consul.dto.OZON.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
