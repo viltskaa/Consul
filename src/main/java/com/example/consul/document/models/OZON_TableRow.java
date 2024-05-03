@@ -1,6 +1,7 @@
 package com.example.consul.document.models;
 
-import com.example.consul.document.Annotations.CellUnit;
+import com.example.consul.document.annotations.CellUnit;
+import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
 import lombok.*;
 
@@ -8,8 +9,14 @@ import lombok.*;
 @Getter
 @Data
 @AllArgsConstructor
+@TotalCell(
+        formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +
+                "-logistic-lastMile-acquiring-installment-returnProcessing-returnDelivery" +
+                "-promotion-compensation-searchPromotion-stencilProduct-ozonPremium" +
+                "-crossDockingDelivery-claimsAccruals-other)/(delivered-returned)-2.47"
+)
 public class OZON_TableRow {
-    @CellUnit(name = "Артикуль")
+    @CellUnit(name = "Артикуль", total = false)
     private String offerId;
     @CellUnit(name = "Доставлено")
     private Integer delivered;
@@ -51,4 +58,6 @@ public class OZON_TableRow {
     private Double claimsAccruals;
     @CellUnit(name = "Прочие начисления")
     private Double other;
+    @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
+    private final Double total = 0.0;
 }

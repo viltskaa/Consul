@@ -1,4 +1,4 @@
-package com.example.consul.document.Annotations;
+package com.example.consul.document.annotations;
 
 import com.example.consul.document.configurations.ExcelCellType;
 
@@ -13,7 +13,6 @@ public @interface CellUnit {
     String name() default "";
     int width() default 16;
     boolean total() default true;
-    boolean inverse() default false;
     ExcelCellType type() default ExcelCellType.BASE;
     String defaultValue() default "";
 }

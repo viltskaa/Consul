@@ -1,0 +1,35 @@
+package com.example.consul;
+
+import com.example.consul.document.ExcelBuilder;
+import com.example.consul.document.configurations.ExcelConfig;
+import com.example.consul.document.models.HeaderConfig;
+import com.example.consul.document.models.OZON_TableRow;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+@SpringBootTest
+public class ExcelBuilderTest {
+    @Test
+    void test() throws IOException {
+        ExcelBuilder.createDocument(new ExcelConfig<>(
+                "2024_01.xls",
+                List.of("1", "2", "3"),
+                new HeaderConfig("OZON финансовый отчет 'Алиса'", "2024-01"),
+                List.of(
+                        List.of(new OZON_TableRow("RE0001", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                                new OZON_TableRow("RE0002", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                                new OZON_TableRow("RE0003", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0)),
+                        List.of(new OZON_TableRow("RE0001", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                                new OZON_TableRow("RE0002", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                                new OZON_TableRow("RE0003", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0)),
+                        List.of(new OZON_TableRow("RE0001", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                                new OZON_TableRow("RE0002", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0),
+                                new OZON_TableRow("RE0003", 196, 5, 1106608.0, 27099.0, 142668.97, 4080.0, 195435.0, 4.0, 45093.44, 13261.31, 0.0, 270.0, 13241.0, 0.0, 3528.66, 0.0, 1927.0, 82.0, 0.0, 0.0))
+                )
+        ));
+    }
+}
