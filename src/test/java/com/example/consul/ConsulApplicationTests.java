@@ -47,7 +47,7 @@ class ConsulApplicationTests {
                 "2024-01-01T00:00:00.000Z", "2024-01-31T00:00:00.000Z", opT, "all", 2, 1000);
         operations.addAll(reports2.getResult().getOperations());
 
-        OZON_DetailReport report = api.getDetailReport("2024-01");
+        OZON_DetailReport report = api.getDetailReport(1,2024);
 
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
@@ -100,7 +100,7 @@ class ConsulApplicationTests {
         Long sku1 = 477053081L;
         Long sku2 = 477053086L;
 
-        OZON_DetailReport report = api.getDetailReport("2024-01");
+        OZON_DetailReport report = api.getDetailReport(1,2024);
 
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
@@ -150,7 +150,7 @@ class ConsulApplicationTests {
                 }
             }
         }
-        OZON_DetailReport report5 = api.getDetailReport("2024-01");
+        OZON_DetailReport report5 = api.getDetailReport(1,2024);
 
         List<OZON_DetailReport.Row> rows = report5.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
@@ -203,7 +203,7 @@ class ConsulApplicationTests {
                 }
             }
         }
-        OZON_DetailReport report5 = api.getDetailReport("2024-01");
+        OZON_DetailReport report5 = api.getDetailReport(1,2024);
 
         List<OZON_DetailReport.Row> rows = report5.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
@@ -256,7 +256,7 @@ class ConsulApplicationTests {
                 }
             }
         }
-        OZON_DetailReport report5 = api.getDetailReport("2024-01");
+        OZON_DetailReport report5 = api.getDetailReport(1,2024);
 
         List<OZON_DetailReport.Row> rows = report5.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
@@ -287,7 +287,7 @@ class ConsulApplicationTests {
     void allOfferIdWithSku() {
         final OZON_Api api = new OZON_Api();
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
-        OZON_DetailReport report = api.getDetailReport("2024-01");
+        OZON_DetailReport report = api.getDetailReport(1,2024);
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
 
@@ -301,7 +301,7 @@ class ConsulApplicationTests {
     void Aq() {
         final OZON_Api api = new OZON_Api();
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
-        OZON_DetailReport report = api.getDetailReport("2024-01");
+        OZON_DetailReport report = api.getDetailReport(1,2024);
 
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
         Set<String> offersId = OZON_dataProcessing.groupByOfferId(rows).keySet();
@@ -357,13 +357,13 @@ class ConsulApplicationTests {
     void DetailReportTest() {
         final OZON_Api api = new OZON_Api();
         api.setHeaders("ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66", "350423");
-        OZON_DetailReport report = api.getDetailReport("2024-01");
+        OZON_DetailReport report = api.getDetailReport(1,2024);
         List<OZON_DetailReport.Row> rows = report.getResult().getRows();
         double sum = 0;
         for (OZON_DetailReport.Row row : rows) {
-            if (row.getOffer_id().equals("RO010"))
+            if (row.getItem().getOffer_id().equals("RO010"))
 
-                sum += row.getPrice() * row.getSale_qty();
+                sum += row.getSeller_price_per_instance() * row.getDelivery_commission().getQuantity();
         }
     }
 
@@ -418,7 +418,7 @@ class ConsulApplicationTests {
                 "350423",
                 "27013136-1713353681106@advertising.performance.ozon.ru",
                 "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
-                "2024-01");
+                1, 2024);
 
         ExcelBuilder.createDocument(new ExcelConfig<>(
                 "2024_01.xls",

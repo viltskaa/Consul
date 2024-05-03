@@ -69,18 +69,21 @@ public class OZON_Api {
     /**
      * Финансовые отчеты => Отчёт о реализации товаров
      *
-     * @param date отчетный период в формате YYYY-MM
+     * @param month месяц для отчетного периода
+     * @param year год для отчетного периода
      * @return
      */
 
     @Nullable
-    public OZON_DetailReport getDetailReport(@NotNull String date) {
-        String detailReportUrl = "https://api-seller.ozon.ru/v1/finance/realization";
+    public OZON_DetailReport getDetailReport(@NotNull Integer month,
+                                             @NotNull Integer year) {
+        String detailReportUrl = "https://api-seller.ozon.ru/v2/finance/realization";
 
-        Map<String, String> map = new HashMap<>();
-        map.put("date", date);
+        Map<String, Integer> map = new HashMap<>();
+        map.put("month", month);
+        map.put("year", year);
 
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<Map<String, Integer>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<String> response = restTemplate
                 .postForEntity(detailReportUrl, request, String.class);
