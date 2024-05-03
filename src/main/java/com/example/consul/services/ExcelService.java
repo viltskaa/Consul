@@ -280,7 +280,7 @@ public class ExcelService {
         Map<String, Double> acquiring = getMapAcquiring(apiKey, clientId, month, year);
         Map<String, Double> returnProcessing = getMapReturnProcessing(apiKey, clientId, month, year);
         Map<String, Double> returnDelivery = getMapReturnDelivery(apiKey, clientId, month, year);
-        //Map<String, Double> stencilProduct = getMapStencils(performanceClientId, performanceClientSecret, month, year);
+        Map<String, Double> stencilProduct = getMapStencils(performanceClientId, performanceClientSecret, month, year);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue(),
@@ -293,8 +293,8 @@ public class ExcelService {
                         lastMile.getOrDefault(entry.getKey(), 0.0),
                         acquiring.getOrDefault(entry.getKey(), 0.0),
                         returnProcessing.getOrDefault(entry.getKey(), 0.0),
-                        returnDelivery.getOrDefault(entry.getKey(), 0.0)
-                        //stencilProduct.getOrDefault(entry.getKey(), 0.0)
+                        returnDelivery.getOrDefault(entry.getKey(), 0.0),
+                        stencilProduct.getOrDefault(entry.getKey(), 0.0)
                 ))));
 
         List<OZON_TableRow> listRow = new ArrayList<>();
@@ -316,7 +316,7 @@ public class ExcelService {
                     0.0,
                     0.0,
                     0.0,
-                    0.0,//(Double) item.getValue().get(11),
+                    (Double) item.getValue().get(11),
                     0.0,
                     0.0,
                     0.0,
