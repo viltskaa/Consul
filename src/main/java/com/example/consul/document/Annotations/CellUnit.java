@@ -11,6 +11,8 @@ import java.lang.annotation.Target;
 @Retention(value= RetentionPolicy.RUNTIME)
 public @interface CellUnit {
     String name() default "";
+    int width() default 16;
+    boolean total() default true;
     boolean inverse() default false;
     ExcelCellType type() default ExcelCellType.BASE;
     String defaultValue() default "";
