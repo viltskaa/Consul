@@ -110,6 +110,10 @@ public class OZON_Service {
                                                                          @NotNull List<String> campaignId,
                                                                          @NotNull String dateFrom,
                                                                          @NotNull String dateTo) {
+        if (campaignId.isEmpty()) {
+            return new OZON_PerformanceStatistic();
+        }
+
         if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
             return ozonPerformanceApi.getPerformanceStatisticByCampaignId(
                     performanceKey.get(clientId).getAccess_token(),

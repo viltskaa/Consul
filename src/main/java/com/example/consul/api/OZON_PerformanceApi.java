@@ -170,8 +170,7 @@ public class OZON_PerformanceApi {
         ResponseEntity<String> response = restTemplate
                 .exchange(url, HttpMethod.GET, request, String.class);
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            Type type = new TypeToken<LinkedTreeMap<String, Object>>() {
-            }.getType();
+            Type type = new TypeToken<LinkedTreeMap<String, Object>>(){}.getType();
             LinkedTreeMap<String, Object> test = new Gson().fromJson(response.getBody(), type);
             List<OZON_PerformanceReport> reports = new ArrayList<>();
 

@@ -40,7 +40,7 @@ public class OZONPerformanceApiTest {
         );
 
         List<String> activeCampaignList = ozonPerformanceCampaigns.getRows()
-                .stream().filter(x -> x.getStatus().equals("running"))
+                .stream().filter(x -> !x.getMoneySpent().equals("0"))
                 .map(OZON_PerformanceCampaigns.OZON_PerformanceCampaign::getId).toList();
 
         OZON_PerformanceStatistic statistic = ozonService.getPerformanceStatisticByCampaignId(

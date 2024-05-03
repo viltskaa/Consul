@@ -23,7 +23,8 @@ import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
 public class ExcelBuilder {
     private static List<CellStyle> cellStyles;
 
-    private ExcelBuilder() {}
+    private ExcelBuilder() {
+    }
 
     @NotNull
     private static CellStyle createBaseStyle(@NotNull Workbook workbook) {
@@ -70,10 +71,10 @@ public class ExcelBuilder {
     }
 
     private static void setTableTitle(@NotNull CellStyle style,
-                              @NotNull Row header,
-                              @NotNull Sheet sheet,
-                              int columnInd,
-                              String titleName) {
+                                      @NotNull Row header,
+                                      @NotNull Sheet sheet,
+                                      int columnInd,
+                                      String titleName) {
         Cell cell = header.createCell(columnInd);
         cell.setCellValue(titleName);
         cell.setCellStyle(style);
@@ -136,27 +137,24 @@ public class ExcelBuilder {
                                 .findFirst().orElse(null);
                         if (method == null) {
                             cell.setCellValue(cellUnit.defaultValue());
-                        }
-                        else {
+                        } else {
                             Object returnFromMethod = method.invoke(data.get(rowIndex));
                             if (returnFromMethod == null) {
                                 cell.setCellValue(cellUnit.defaultValue());
-                            }
-                            else {
+                            } else {
                                 if (field.getType().equals(String.class)) {
                                     cell.setCellValue(returnFromMethod.toString());
-                                }
-                                else {
+                                } else {
                                     if (cellUnit.inverse()
                                             && (field.getType() == Integer.class || field.getType() == Double.class)) {
                                         switch (field.getType().getSimpleName()) {
-                                            case "Integer" -> cell.setCellValue((Integer)returnFromMethod * -1);
-                                            case "Double" -> cell.setCellValue((Double)returnFromMethod * -1);
+                                            case "Integer" -> cell.setCellValue((Integer) returnFromMethod * -1);
+                                            case "Double" -> cell.setCellValue((Double) returnFromMethod * -1);
                                         }
                                     } else {
                                         switch (field.getType().getSimpleName()) {
-                                            case "Integer" -> cell.setCellValue((Integer)returnFromMethod);
-                                            case "Double" -> cell.setCellValue((Double)returnFromMethod);
+                                            case "Integer" -> cell.setCellValue((Integer) returnFromMethod);
+                                            case "Double" -> cell.setCellValue((Double) returnFromMethod);
                                         }
                                     }
 
@@ -170,8 +168,7 @@ public class ExcelBuilder {
                                 }
                             }
                         }
-                    }
-                    catch (IllegalAccessException | InvocationTargetException e) {
+                    } catch (IllegalAccessException | InvocationTargetException e) {
                         cell.setCellValue(e.getClass().getSimpleName());
                     }
                 }
@@ -180,9 +177,9 @@ public class ExcelBuilder {
             Integer index = ExcelCellType.getIndex(ExcelCellType.TOTAL);
             Cell cell = row.createCell(columnInd++);
             cell.setCellStyle(cellStyles.get(index != null ? index : 0));
-            Integer formulaRow =rowIndex+2;
+            int formulaRow = rowIndex + 2;
             cell.setCellFormula(
-                    "(D"+formulaRow+"-E"+formulaRow+"-F"+formulaRow+"-G"+formulaRow+"-H"+formulaRow+"-I"+formulaRow+"-J"+formulaRow+"-K"+formulaRow+"-L"+formulaRow+"-M"+formulaRow+"-N"+formulaRow+"-P"+formulaRow+"-Q"+formulaRow+"-U"+formulaRow+")/(B"+formulaRow+"-C"+formulaRow+")-2.47"
+                    "(D" + formulaRow + "-E" + formulaRow + "-F" + formulaRow + "-G" + formulaRow + "-H" + formulaRow + "-I" + formulaRow + "-J" + formulaRow + "-K" + formulaRow + "-L" + formulaRow + "-M" + formulaRow + "-N" + formulaRow + "-P" + formulaRow + "-Q" + formulaRow + "-U" + formulaRow + ")/(B" + formulaRow + "-C" + formulaRow + ")-2.47"
             );
         }
 
