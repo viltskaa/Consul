@@ -43,9 +43,10 @@ public class OZON_Service {
         }
     }
 
-    public OZON_DetailReport getDetailReport(@NotNull String date) {
+    public OZON_DetailReport getDetailReport(@NotNull Integer month,
+                                             @NotNull Integer year) {
         try {
-            return ozonApi.getDetailReport(date);
+            return ozonApi.getDetailReport(month,year);
         } catch (NullPointerException exception) {
             return null;
         }
@@ -59,9 +60,10 @@ public class OZON_Service {
         }
     }
 
-    public String[] getListOfferIdByDate(@NotNull String date){
+    public String[] getListOfferIdByDate(@NotNull Integer month,
+                                         @NotNull Integer year){
         return OZON_dataProcessing
-                .groupByOfferId(ozonApi.getDetailReport(date)
+                .groupByOfferId(ozonApi.getDetailReport(month,year)
                         .getResult().getRows())
                 .keySet()
                 .toArray(new String[0]);
