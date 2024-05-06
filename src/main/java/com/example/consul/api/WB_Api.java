@@ -44,7 +44,7 @@ public class WB_Api {
 
         HttpEntity<WB_DetailReport[]> request = new HttpEntity<>(headers);
         ResponseEntity<WB_DetailReport[]> response = restTemplate
-                .exchange(detailReportUrl.setArgs("v1",dateFrom, dateTo).build(),
+                .exchange(detailReportUrl.setArgs("v5",dateFrom, dateTo).build(),
                         HttpMethod.GET, request,
                         WB_DetailReport[].class);
         if (response.getStatusCode() == HttpStatus.OK) {
