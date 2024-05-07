@@ -50,6 +50,7 @@ public class OZON_PerformanceApi {
 
         ResponseEntity<OZON_PerformanceTokenResult> response = restTemplate
                 .postForEntity(url, request, OZON_PerformanceTokenResult.class);
+
         if (response.getStatusCode() == HttpStatus.OK) {
             return response.getBody();
         } else {
@@ -77,6 +78,7 @@ public class OZON_PerformanceApi {
 
         ResponseEntity<String> response = restTemplate
                 .exchange(url, HttpMethod.GET, request, String.class);
+
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_PerformanceCampaigns.class);
         } else {
@@ -108,13 +110,13 @@ public class OZON_PerformanceApi {
                 .groupBy(OZON_PerformanceStatisticConfig.GroupBy.START_OF_MONTH)
                 .build();
 
-        HttpEntity<String> request = new HttpEntity<>
-                (new Gson()
+        HttpEntity<String> request = new HttpEntity<>(new Gson()
                         .toJson(config),
                         headers);
 
         ResponseEntity<String> response = restTemplate
                 .postForEntity(url, request, String.class);
+
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(
                     response.getBody(),
@@ -134,7 +136,8 @@ public class OZON_PerformanceApi {
     public OZON_PerformanceReportStatus getPerformanceReportStatusByUUID(@NotNull String token,
                                                                          @NotNull String UUID) {
         String url = Link.create("https://performance.ozon.ru:443/api/client/statistics/<arg>")
-                .setArgs(UUID).build();
+                .setArgs(UUID)
+                .build();
         setHeaders();
         headers.setBearerAuth(token);
         HttpEntity<Map<String, String>> request = new HttpEntity<>(headers);
@@ -169,6 +172,7 @@ public class OZON_PerformanceApi {
 
         ResponseEntity<String> response = restTemplate
                 .exchange(url, HttpMethod.GET, request, String.class);
+
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             Type type = new TypeToken<LinkedTreeMap<String, Object>>(){}.getType();
             LinkedTreeMap<String, Object> test = new Gson().fromJson(response.getBody(), type);

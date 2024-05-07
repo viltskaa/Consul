@@ -54,11 +54,20 @@ public class OZON_Api {
                                                        @NotNull Integer page_size) {
         final String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
 
-        HttpEntity<String> request = new HttpEntity<>
-                (new Gson().toJson(new ForTransactions(from, to, operation_type, transaction_type, page, page_size)), headers);
+        HttpEntity<String> request = new HttpEntity<>(new Gson()
+                .toJson(new ForTransactions(from,
+                                            to,
+                                            operation_type,
+                                            transaction_type,
+                                            page,
+                                            page_size)
+                        ),
+                headers
+        );
 
         ResponseEntity<String> response = restTemplate
                 .postForEntity(transactionReportUrl, request, String.class);
+
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_TransactionReport.class);
         } else {
