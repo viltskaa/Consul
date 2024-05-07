@@ -36,7 +36,7 @@ public class OZON_Service {
 
     public OZON_TransactionReport getTransactionReport(@NotNull String from,
                                                        @NotNull String to,
-                                                       @NotNull ArrayList<String> operation_type,
+                                                       @NotNull List<String> operation_type,
                                                        @NotNull String transaction_type,
                                                        int page,
                                                        int page_size) {

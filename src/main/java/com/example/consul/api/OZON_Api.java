@@ -1,7 +1,7 @@
 package com.example.consul.api;
 
 
-import com.example.consul.api.utils.ForTransactions;
+import com.example.consul.api.utils.TransactionBody;
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
@@ -48,14 +48,14 @@ public class OZON_Api {
     @Nullable
     public OZON_TransactionReport getTransactionReport(@NotNull String from,
                                                        @NotNull String to,
-                                                       @NotNull ArrayList<String> operation_type,
+                                                       @NotNull List<String> operation_type,
                                                        @NotNull String transaction_type,
                                                        @NotNull Integer page,
                                                        @NotNull Integer page_size) {
         final String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
 
         HttpEntity<String> request = new HttpEntity<>(new Gson()
-                .toJson(new ForTransactions(from,
+                .toJson(new TransactionBody(from,
                                             to,
                                             operation_type,
                                             transaction_type,

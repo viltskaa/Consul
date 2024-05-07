@@ -30,9 +30,9 @@ public class ExcelService {
                                                   Function<Map<String, List<OZON_DetailReport.Row>>, Map<String, Integer>> dataFunction) {
         ozonService.setHeader(apiKey, clientId);
         Map<String, List<OZON_DetailReport.Row>> operations = OZON_dataProcessing
-                                                                .groupByOfferId(ozonService
-                                                                        .getDetailReport(month, year)
-                                                                        .getResult().getRows());
+                .groupByOfferId(ozonService
+                        .getDetailReport(month, year)
+                        .getResult().getRows());
         return dataFunction.apply(operations);
     }
 
@@ -43,9 +43,9 @@ public class ExcelService {
                                                     Function<Map<String, List<OZON_DetailReport.Row>>, Map<String, Double>> dataFunction) {
         ozonService.setHeader(apiKey, clientId);
         Map<String, List<OZON_DetailReport.Row>> operations = OZON_dataProcessing
-                                                                .groupByOfferId(ozonService
-                                                                        .getDetailReport(month, year)
-                                                                        .getResult().getRows());
+                .groupByOfferId(ozonService
+                        .getDetailReport(month, year)
+                        .getResult().getRows());
         return dataFunction.apply(operations);
     }
 
@@ -56,17 +56,18 @@ public class ExcelService {
                                                          BiFunction<Map<String, List<Long>>, List<OZON_TransactionReport.Operation>, Map<String, Double>> dataFunction) {
         ozonService.setHeader(apiKey, clientId);
 
-        ArrayList<String> opT = new ArrayList<>();
-        opT.add("OperationAgentDeliveredToCustomer");
-        opT.add("OperationAgentStornoDeliveredToCustomer");
-        opT.add("OperationReturnGoodsFBSofRMS");
-        opT.add("MarketplaceRedistributionOfAcquiringOperation");
+        List<String> opT = List.of(
+                "OperationAgentDeliveredToCustomer",
+                "OperationAgentStornoDeliveredToCustomer",
+                "OperationReturnGoodsFBSofRMS",
+                "MarketplaceRedistributionOfAcquiringOperation"
+        );
 
         Map<String, List<Long>> offerSku = ozonService.getProductInfoByOfferId(
                         ozonService.getListOfferIdByDate(month, year))
                 .getSkuListByOfferId();
 
-        Pair<String, String> pairDate =getStartAndEndDateToUtc(month, year);
+        Pair<String, String> pairDate = getStartAndEndDateToUtc(month, year);
 
         OZON_TransactionReport request = ozonService.getTransactionReport(
                 pairDate.a, pairDate.b,
@@ -98,7 +99,7 @@ public class ExcelService {
         }
     }
 
-    public Pair<String,String> getStartAndEndDateToUtc(Integer month, Integer year) {
+    public Pair<String, String> getStartAndEndDateToUtc(Integer month, Integer year) {
         LocalDate date = LocalDate.of(year, month, 1);
 
         LocalDate startOfMonth = date.withDayOfMonth(1);
@@ -109,7 +110,7 @@ public class ExcelService {
         String endOfMonthString = endOfMonth.atStartOfDay(ZoneOffset.UTC)
                 .plusDays(1).minusNanos(1000000).toString();
 
-        return new Pair<>(startOfMonthString,endOfMonthString);
+        return new Pair<>(startOfMonthString, endOfMonthString);
     }
 
     public Pair<String, String> getStartAndEndDateToDate(Integer month, Integer year) {
@@ -194,8 +195,8 @@ public class ExcelService {
                                                       @NotNull Integer month,
                                                       @NotNull Integer year) {
         return getDataForMapTransaction(apiKey, clientId,
-                                        month, year,
-                                        OZON_dataProcessing::sumReturnProcessing);
+                month, year,
+                OZON_dataProcessing::sumReturnProcessing);
     }
 
     public Map<String, Double> getMapShipmentProcessing(@NotNull String apiKey,
