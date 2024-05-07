@@ -30,7 +30,7 @@ public class TransactionBody {
     @Getter
     @Setter
     @Data
-    public static class Filter {
+    private static class Filter {
         private Date date;
         private List<String> operation_type;
         private String posting_number = "";
