@@ -23,8 +23,8 @@ public class YANDEX_Api {
     private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public YANDEX_Api(){
-                restTemplate.getMessageConverters()
+    public YANDEX_Api() {
+        restTemplate.getMessageConverters()
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
@@ -36,10 +36,9 @@ public class YANDEX_Api {
     }
 
     public String getOrdersReport(@NotNull Long businessId,
-                                @NotNull String dateFrom,
-                                @NotNull String dateTo,
-                                @NotNull ArrayList<Long> campaignIds)
-    {
+                                  @NotNull String dateFrom,
+                                  @NotNull String dateTo,
+                                  @NotNull ArrayList<Long> campaignIds) {
         final String createOrdersReportUrl = "https://api.partner.market.yandex.ru/reports/united-orders/generate?format=FILE&language=RU";
 
         HttpEntity<String> request = new HttpEntity<>(new Gson()
@@ -52,15 +51,13 @@ public class YANDEX_Api {
                 YANDEX_CreateOrderReport.class);
 
 
-
-        if(createResponse.getStatus().equals(YANDEX_ApiResponseStatusType.OK))
+        if (createResponse.getStatus().equals(YANDEX_ApiResponseStatusType.OK))
             return "ok";
         else return "error";
     }
 
     private String asyncGetDownloadUrl(@NotNull String reportId,
-                                       @NotNull Long creationTime)
-    {
+                                       @NotNull Long creationTime) {
         final Link reportStatusUrl = Link
                 .create("https://api.partner.market.yandex.ru/reports/info/<arg>")
                 .setArgs(reportId);
@@ -87,18 +84,16 @@ public class YANDEX_Api {
                         YANDEX_ReportInfo.class);
 
 
-
             });
 
             getUrlThread.start();
             getUrlThread.join();
 
-        }catch (Exception exception){
+        } catch (Exception exception) {
             return "Exception!" + exception.getMessage();
         }
 
+        return "";
 
     }
-
-
 }
