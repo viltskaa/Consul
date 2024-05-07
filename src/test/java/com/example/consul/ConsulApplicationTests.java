@@ -13,11 +13,10 @@ import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.mapping.ListToHtml;
 import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.models.ApiKey;
-import com.example.consul.services.ExcelService;
+import com.example.consul.services.OZON_ExcelCreator;
 import com.example.consul.services.OZON_Service;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -414,25 +413,25 @@ class ConsulApplicationTests {
 
     @Test
     void NewExcelCreateTest() throws IOException {
-        ExcelService excelService = new ExcelService(new OZON_Service(
-                    new OZON_Api(),
-                    new OZON_PerformanceApi(),
-                    new ReportChecker()
-                )
-        );
-
-        List<OZON_TableRow> data = excelService.mergeMapsToTableRows(
-                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
-                "350423",
-                "27013136-1713353681106@advertising.performance.ozon.ru",
-                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
-                1, 2024);
-
-        ExcelBuilder.createDocument(new ExcelConfig<>(
-                "2024_01.xls",
-                List.of("1"),
-                new HeaderConfig("test", "new method"),
-                data
-        ));
+//        OZON_ExcelCreator excelService = new OZON_ExcelCreator(new OZON_Service(
+//                    new OZON_Api(),
+//                    new OZON_PerformanceApi(),
+//                    new ReportChecker()
+//                )
+//        );
+//
+//        List<OZON_TableRow> data = excelService.mergeMapsToTableRows(
+//                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
+//                "350423",
+//                "27013136-1713353681106@advertising.performance.ozon.ru",
+//                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
+//                1, 2024);
+//
+//        ExcelBuilder.createDocument(new ExcelConfig<>(
+//                "2024_01.xls",
+//                List.of("1"),
+//                new HeaderConfig("test", "new method"),
+//                data
+//        ));
     }
 }

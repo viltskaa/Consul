@@ -8,6 +8,8 @@ import lombok.*;
 @Setter
 @Getter
 @Data
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 @TotalCell(
         formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +

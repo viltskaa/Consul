@@ -3,6 +3,7 @@ package com.example.consul.services;
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
 import com.example.consul.conditions.ReportChecker;
+import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
 import org.jetbrains.annotations.NotNull;
@@ -13,12 +14,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class OZON_Service {
     private final OZON_Api ozonApi;
     private final OZON_PerformanceApi ozonPerformanceApi;
-    // key - client_id
     private final Map<String, OZON_PerformanceTokenExpires> performanceKey = new HashMap<>();
     private final ReportChecker reportChecker;
 
@@ -28,6 +30,17 @@ public class OZON_Service {
         this.ozonApi = ozonApi;
         this.ozonPerformanceApi = ozonPerformanceApi;
         this.reportChecker = reportChecker;
+    }
+
+    public List<OZON_TableRow> mergeMapsToTableRows() {
+        List<String> opT = Stream.of(
+                OZON_TransactionType.OperationAgentDeliveredToCustomer,
+                OZON_TransactionType.OperationAgentStornoDeliveredToCustomer,
+                OZON_TransactionType.OperationReturnGoodsFBSofRMS,
+                OZON_TransactionType.MarketplaceRedistributionOfAcquiringOperation
+        ).map(Object::toString).collect(Collectors.toList());
+
+        return null;
     }
 
     public void setHeader(@NotNull String apiKey, @NotNull String clientId) {
@@ -152,33 +165,6 @@ public class OZON_Service {
         } else {
             return null;
         }
-    }
-
-    @Nullable
-    public List<OZON_PerformanceReport> asyncGetPerformanceReportByUUID(@NotNull String clientId,
-                                                                        @NotNull String UUID) {
-        try {
-            Thread reportStatusThread = new Thread(() -> {
-                OZON_PerformanceReportStatus status;
-                do {
-                    status = getPerformanceReportStatusByUUID(
-                            clientId,
-                            UUID
-                    );
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                } while (!status.getState().equals(OZON_PerformanceReportStatus.State.OK));
-            });
-            reportStatusThread.start();
-            reportStatusThread.join();
-        } catch (Exception exception) {
-            return null;
-        }
-
-        return getPerformanceReportByUUID(clientId, UUID);
     }
 
     public List<OZON_PerformanceReport> scheduledGetPerformanceReportByUUID(@NotNull String clientId,
