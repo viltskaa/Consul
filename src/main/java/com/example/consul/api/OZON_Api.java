@@ -52,7 +52,7 @@ public class OZON_Api {
                                                        @NotNull String transaction_type,
                                                        @NotNull Integer page,
                                                        @NotNull Integer page_size) {
-        String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
+        final String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
 
         HttpEntity<String> request = new HttpEntity<>
                 (new Gson().toJson(new ForTransactions(from, to, operation_type, transaction_type, page, page_size)), headers);
