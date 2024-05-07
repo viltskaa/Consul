@@ -46,12 +46,13 @@ class YandexMarketTests {
         Workbook wb = WorkbookFactory.create(file);
         Sheet sheet = wb.getSheetAt(1);
         List<String> listHeader = new ArrayList<>();
-        DataFrame<Object> df = new DataFrame<>(listHeader);
         List<Object> listData = new ArrayList<>();
 
         for(int i = 0;i < sheet.getRow(13).getPhysicalNumberOfCells(); i++){
             listHeader.add(sheet.getRow(13).getCell(i).getStringCellValue());
         }
+
+        DataFrame<Object> df = new DataFrame<>(listHeader);
 
         for(int j = 14; j < sheet.getPhysicalNumberOfRows() - 1; j++){
             for(int i = 0; i < sheet.getRow(j).getPhysicalNumberOfCells(); i++){
@@ -72,5 +73,6 @@ class YandexMarketTests {
         }
 
         System.out.println(df);
+
     }
 }
