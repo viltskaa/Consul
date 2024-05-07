@@ -2,6 +2,7 @@ package com.example.consul.services;
 
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
+import com.example.consul.conditions.ReportChecker;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
 import org.jetbrains.annotations.NotNull;
@@ -19,11 +20,14 @@ public class OZON_Service {
     private final OZON_PerformanceApi ozonPerformanceApi;
     // key - client_id
     private final Map<String, OZON_PerformanceTokenExpires> performanceKey = new HashMap<>();
+    private final ReportChecker reportChecker;
 
     public OZON_Service(OZON_Api ozonApi,
-                        OZON_PerformanceApi ozonPerformanceApi) {
+                        OZON_PerformanceApi ozonPerformanceApi,
+                        ReportChecker reportChecker) {
         this.ozonApi = ozonApi;
         this.ozonPerformanceApi = ozonPerformanceApi;
+        this.reportChecker = reportChecker;
     }
 
     public void setHeader(@NotNull String apiKey, @NotNull String clientId) {
@@ -46,7 +50,7 @@ public class OZON_Service {
     public OZON_DetailReport getDetailReport(@NotNull Integer month,
                                              @NotNull Integer year) {
         try {
-            return ozonApi.getDetailReport(month,year);
+            return ozonApi.getDetailReport(month, year);
         } catch (NullPointerException exception) {
             return null;
         }
@@ -61,9 +65,9 @@ public class OZON_Service {
     }
 
     public String[] getListOfferIdByDate(@NotNull Integer month,
-                                         @NotNull Integer year){
+                                         @NotNull Integer year) {
         return OZON_dataProcessing
-                .groupByOfferId(ozonApi.getDetailReport(month,year)
+                .groupByOfferId(ozonApi.getDetailReport(month, year)
                         .getResult().getRows())
                 .keySet()
                 .toArray(new String[0]);
@@ -79,19 +83,18 @@ public class OZON_Service {
 
     public String getPerformanceToken(@NotNull String clientId,
                                       @NotNull String clientSecret) {
-        try {
-            if (!performanceKey.containsKey(clientId) ||
-                    (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired())) {
-                OZON_PerformanceTokenResult token = ozonPerformanceApi.getToken(clientId, clientSecret);
-                performanceKey.put(
-                        clientId, OZON_PerformanceTokenExpires.of(token)
-                );
-                return token.getAccess_token();
-            } else {
-                return performanceKey.get(clientId).getAccess_token();
+        if (!performanceKey.containsKey(clientId) ||
+                (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired())) {
+            OZON_PerformanceTokenResult token = ozonPerformanceApi.getToken(clientId, clientSecret);
+            if (token == null) {
+                return null;
             }
-        } catch (Exception exception) {
-            return "error";
+            performanceKey.put(
+                    clientId, OZON_PerformanceTokenExpires.of(token)
+            );
+            return token.getAccess_token();
+        } else {
+            return performanceKey.get(clientId).getAccess_token();
         }
     }
 
@@ -176,5 +179,21 @@ public class OZON_Service {
         }
 
         return getPerformanceReportByUUID(clientId, UUID);
+    }
+
+    public List<OZON_PerformanceReport> scheduledGetPerformanceReportByUUID(@NotNull String clientId,
+                                                                            @NotNull String UUID) {
+        reportChecker.init(() -> {
+            OZON_PerformanceReportStatus status = getPerformanceReportStatusByUUID(
+                    clientId,
+                    UUID
+            );
+            System.out.println(status.getState());
+            return status.getState().equals(OZON_PerformanceReportStatus.State.OK);
+        });
+        if (reportChecker.start(2L)) {
+            return getPerformanceReportByUUID(clientId, UUID);
+        }
+        return null;
     }
 }

@@ -248,7 +248,7 @@ public class ExcelService {
         );
 
         List<OZON_PerformanceReport> report
-                = ozonService.asyncGetPerformanceReportByUUID(clientId, statistic.getUUID());
+                = ozonService.scheduledGetPerformanceReportByUUID(clientId, statistic.getUUID());
         if (report == null) {
             return new HashMap<>();
         }
