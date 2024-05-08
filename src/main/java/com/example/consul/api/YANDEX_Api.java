@@ -53,8 +53,9 @@ public class YANDEX_Api {
                 YANDEX_CreateOrderReport.class);
 
 
-        if (createResponse.getStatus().equals(YANDEX_ApiResponseStatusType.OK))
-            return "ok";
+        if (createResponse.getStatus().equals(YANDEX_ApiResponseStatusType.OK)){
+            return asyncGetDownloadUrl(createResponse.getReportId(), createResponse.getCreationTime());
+        }
         else return "error";
     }
 

@@ -17,6 +17,14 @@ public class YANDEX_CreateOrderReport {
         this.result = result;
     }
 
+    public String getReportId(){
+        return result.getReportId();
+    }
+
+    public Long getCreationTime(){
+        return result.getEstimatedGenerationTime();
+    }
+
 
     @Setter
     @Getter
