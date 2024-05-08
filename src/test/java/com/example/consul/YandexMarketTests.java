@@ -12,6 +12,8 @@ import java.net.MalformedURLException;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 
 import java.io.*;
@@ -27,7 +29,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void RequestTest(){
+    public void RequestTest() throws IOException {
         final YANDEX_Api api = new YANDEX_Api();
         api.setHeaders("затычка");
 

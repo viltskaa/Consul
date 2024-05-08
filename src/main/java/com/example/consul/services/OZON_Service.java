@@ -137,35 +137,34 @@ public class OZON_Service {
 
     public String[] getListOfferIdByDate(@NotNull Integer month,
                                          @NotNull Integer year) {
-        return OZON_dataProcessing
-                .groupByOfferId(ozonApi.getDetailReport(month, year)
-                        .getResult().getRows())
+        OZON_DetailReport detailReport = getDetailReport(month, year);
+
+        if (detailReport == null) {
+            return new String[0];
+        }
+
+        if (detailReport.getResult() == null) {
+            return new String[0];
+        }
+
+        return OZON_dataProcessing.groupByOfferId(detailReport.getResult().getRows())
                 .keySet()
                 .toArray(new String[0]);
     }
 
-    public OZON_SkuProductsReport getProductInfo(@NotNull List<Long> skus) {
-        try {
-            return ozonApi.getProductInfo(skus);
-        } catch (NullPointerException exception) {
-            return null;
-        }
-    }
-
-    public String getPerformanceToken(@NotNull String clientId,
-                                      @NotNull String clientSecret) {
+    public void getPerformanceToken(@NotNull String clientId,
+                                    @NotNull String clientSecret) {
         if (!performanceKey.containsKey(clientId) ||
                 (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired())) {
             OZON_PerformanceTokenResult token = ozonPerformanceApi.getToken(clientId, clientSecret);
             if (token == null) {
-                return null;
+                return;
             }
             performanceKey.put(
                     clientId, OZON_PerformanceTokenExpires.of(token)
             );
-            return token.getAccess_token();
         } else {
-            return performanceKey.get(clientId).getAccess_token();
+            performanceKey.get(clientId);
         }
     }
 
