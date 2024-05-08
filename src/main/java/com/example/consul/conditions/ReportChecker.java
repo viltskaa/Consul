@@ -1,8 +1,5 @@
 package com.example.consul.conditions;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
@@ -23,13 +20,17 @@ public class ReportChecker {
         }
 
         Executor delayed = CompletableFuture.delayedExecutor(delay, TimeUnit.SECONDS);
-        CompletableFuture.supplyAsync(() -> {
-                    if (function.get()) {
-                        return true;
-                    }
-                    return null;
-                }, delayed)
-                .join();
+        try {
+            CompletableFuture.supplyAsync(() -> {
+                        if (function.get()) {
+                            return true;
+                        }
+                        return null;
+                    }, delayed)
+                    .get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
         return true;
     }
