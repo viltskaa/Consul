@@ -20,11 +20,6 @@ public class WB_Api {
     private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final Link detailReportUrl = Link.create(
-            "https://statistics-api.wildberries.ru/api/<arg>/supplier/reportDetailByPeriod?dateFrom=<arg>&dateTo=<arg>");
-    private final Link adReportUrl = Link.create(
-            "https://advert-api.wb.ru/adv/v1/upd?from=<arg>&to=<arg>");
-
     public WB_Api() {
         restTemplate.getMessageConverters()
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
@@ -41,6 +36,9 @@ public class WB_Api {
     public List<WB_DetailReport> getDetailReport(@NotNull String dateFrom,
                                                  @NotNull String dateTo) throws NullPointerException {
         if (dateTo.isEmpty() || dateFrom.isEmpty()) return null;
+
+        final Link detailReportUrl = Link.create(
+            "https://statistics-api.wildberries.ru/api/<arg>/supplier/reportDetailByPeriod?dateFrom=<arg>&dateTo=<arg>");
 
         HttpEntity<WB_DetailReport[]> request = new HttpEntity<>(headers);
         ResponseEntity<WB_DetailReport[]> response = restTemplate
@@ -60,6 +58,9 @@ public class WB_Api {
     public List<WB_AdReport> getAdReport(@NotNull String dateFrom,
                                          @NotNull String dateTo) throws NullPointerException {
         if (dateTo.isEmpty() || dateFrom.isEmpty()) return null;
+
+        final Link adReportUrl = Link.create(
+                "https://advert-api.wb.ru/adv/v1/upd?from=<arg>&to=<arg>");
 
         String url = adReportUrl.setArgs(dateFrom, dateTo).build();
         HttpEntity<WB_AdReport[]> request = new HttpEntity<>(headers);
