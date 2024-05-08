@@ -2,11 +2,13 @@ package com.example.consul.api;
 
 import com.example.consul.api.utils.Link;
 import com.example.consul.api.utils.YANDEX.YANDEX_ApiResponseStatusType;
+import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
 import com.example.consul.dto.YANDEX.YANDEX_CreateOrderReport;
 import com.example.consul.api.utils.YANDEX.YANDEX_CreateOrderBody;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -56,44 +58,44 @@ public class YANDEX_Api {
         else return "error";
     }
 
+    @Nullable
     private String asyncGetDownloadUrl(@NotNull String reportId,
                                        @NotNull Long creationTime) {
         final Link reportStatusUrl = Link
                 .create("https://api.partner.market.yandex.ru/reports/info/<arg>")
                 .setArgs(reportId);
 
+        // пока пусть будет так
         try {
             Thread getUrlThread = new Thread(() -> {
-
                 try {
-                    Thread.sleep(creationTime);
+                    Thread.sleep(creationTime + 100);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-
-                HttpEntity<String> request = new HttpEntity<>(null, headers);
-
-                ResponseEntity<String> response = restTemplate.exchange(
-                        reportStatusUrl.build(),
-                        HttpMethod.GET,
-                        request,
-                        String.class
-                );
-
-                YANDEX_ReportInfo reportInfo = new Gson().fromJson(response.getBody(),
-                        YANDEX_ReportInfo.class);
-
-
             });
 
             getUrlThread.start();
             getUrlThread.join();
-
         } catch (Exception exception) {
             return "Exception!" + exception.getMessage();
         }
 
-        return "";
+        HttpEntity<String> request = new HttpEntity<>(null, headers);
 
+        ResponseEntity<String> response = restTemplate.exchange(
+                reportStatusUrl.build(),
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        YANDEX_ReportInfo reportInfo = new Gson().fromJson(response.getBody(),
+                YANDEX_ReportInfo.class);
+
+        if(reportInfo.getReportStatus().equals(YANDEX_ReportStatusType.DONE))
+            return reportInfo.getFileUrl();
+
+        return null;
     }
 }
