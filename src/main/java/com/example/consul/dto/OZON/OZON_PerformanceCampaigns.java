@@ -1,19 +1,13 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
-@Setter
-@Getter
 @Data
 public class OZON_PerformanceCampaigns {
     private List<OZON_PerformanceCampaign> rows;
 
-    @Setter
-    @Getter
     @Data
     public static class OZON_PerformanceCampaign {
         private String id;

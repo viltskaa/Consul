@@ -1,32 +1,24 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
 /**
  * Отчет по трафаретам
  */
-@Getter
-@Setter
 @Data
 public class OZON_PerformanceReport {
     private String id;
     private String title;
     private Report report;
 
-    @Getter
-    @Setter
     @Data
     public static class Report {
         private List<Product> rows;
         private Totals totals;
     }
 
-    @Getter
-    @Setter
     @Data
     public static class Product {
         private String date;
@@ -44,8 +36,6 @@ public class OZON_PerformanceReport {
         private String title;
     }
 
-    @Getter
-    @Setter
     @Data
     private static class Totals {
         private String views;

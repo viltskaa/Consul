@@ -1,15 +1,11 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Setter
-@Getter
 @Data
 public class OZON_TransactionReport {
     private Result result;
@@ -18,19 +14,11 @@ public class OZON_TransactionReport {
         this.result = result;
     }
 
-    @Setter
-    @Getter
     @Data
     public static class Result{
         private List<Operation> operations;
         private Long page_count;
         private Long row_count;
-
-        public Result(List<Operation> operations, Long page_count, Long row_count) {
-            this.operations = operations;
-            this.page_count=page_count;
-            this.row_count=row_count;
-        }
     }
 
     @Data
@@ -39,35 +27,18 @@ public class OZON_TransactionReport {
         private String order_date;
         private String posting_number;
         private Long warehouse_id;
-
-        public Posting(String delivery_schema, String order_date, String posting_number, Long warehouse_id) {
-            this.delivery_schema = delivery_schema;
-            this.order_date = order_date;
-            this.posting_number=posting_number;
-            this.warehouse_id=warehouse_id;
-        }
     }
 
     @Data
     public static class Item{
         private String name;
         private Long sku;
-
-        public Item(String name, Long sku) {
-            this.name = name;
-            this.sku=sku;
-        }
     }
 
     @Data
     public static class Service{
         private String name;
         private Double price;
-
-        public Service(String name, Double price) {
-            this.name = name;
-            this.price=price;
-        }
     }
 
     @Data

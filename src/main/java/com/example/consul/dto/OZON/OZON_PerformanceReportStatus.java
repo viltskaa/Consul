@@ -1,13 +1,9 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
-@Setter
-@Getter
 @Data
 public class OZON_PerformanceReportStatus {
     private String UUID;
@@ -19,8 +15,6 @@ public class OZON_PerformanceReportStatus {
     private String link;
     private String kind;
 
-    @Setter
-    @Getter
     @Data
     private static class Request {
         private String attributionDays;

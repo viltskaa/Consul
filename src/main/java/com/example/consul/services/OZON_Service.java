@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,10 @@ public class OZON_Service {
         this.ozonExcelCreator = ozonExcelCreator;
         this.ozonPerformanceApi = ozonPerformanceApi;
         this.reportChecker = reportChecker;
+    }
+
+    public boolean isTokenNonExpired(@NotNull OZON_PerformanceTokenExpires token) {
+        return Instant.now().getEpochSecond() <= token.getExpires_in();
     }
 
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull String apiKey,
@@ -155,13 +160,17 @@ public class OZON_Service {
     public void getPerformanceToken(@NotNull String clientId,
                                     @NotNull String clientSecret) {
         if (!performanceKey.containsKey(clientId) ||
-                (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired())) {
+                (performanceKey.containsKey(clientId) && isTokenNonExpired(performanceKey.get(clientId)))) {
             OZON_PerformanceTokenResult token = ozonPerformanceApi.getToken(clientId, clientSecret);
             if (token == null) {
                 return;
             }
             performanceKey.put(
-                    clientId, OZON_PerformanceTokenExpires.of(token)
+                    clientId,
+                    OZON_PerformanceTokenExpires.builder()
+                            .access_token(token.getAccess_token())
+                            .expires_in(Instant.now().getEpochSecond() + token.getExpires_in())
+                            .build()
             );
         } else {
             performanceKey.get(clientId);
@@ -171,7 +180,7 @@ public class OZON_Service {
     public OZON_PerformanceCampaigns getCampaigns(@NotNull String clientId,
                                                   @NotNull String dateFrom,
                                                   @NotNull String dateTo) {
-        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+        if (performanceKey.containsKey(clientId) && isTokenNonExpired(performanceKey.get(clientId))) {
             return ozonPerformanceApi.getCampaigns(
                     performanceKey.get(clientId).getAccess_token(),
                     dateFrom,
@@ -189,7 +198,7 @@ public class OZON_Service {
             return new OZON_PerformanceStatistic();
         }
 
-        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+        if (performanceKey.containsKey(clientId) && isTokenNonExpired(performanceKey.get(clientId))) {
             return ozonPerformanceApi.getPerformanceStatisticByCampaignId(
                     performanceKey.get(clientId).getAccess_token(),
                     campaignId,
@@ -202,7 +211,7 @@ public class OZON_Service {
 
     public OZON_PerformanceReportStatus getPerformanceReportStatusByUUID(@NotNull String clientId,
                                                                          @NotNull String UUID) {
-        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+        if (performanceKey.containsKey(clientId) && isTokenNonExpired(performanceKey.get(clientId))) {
             return ozonPerformanceApi.getPerformanceReportStatusByUUID(
                     performanceKey.get(clientId).getAccess_token(),
                     UUID
@@ -214,7 +223,7 @@ public class OZON_Service {
 
     public List<OZON_PerformanceReport> getPerformanceReportByUUID(@NotNull String clientId,
                                                                    @NotNull String UUID) {
-        if (performanceKey.containsKey(clientId) && !performanceKey.get(clientId).isExpired()) {
+        if (performanceKey.containsKey(clientId) && isTokenNonExpired(performanceKey.get(clientId))) {
             return ozonPerformanceApi.getPerformanceReportByUUID(
                     performanceKey.get(clientId).getAccess_token(),
                     UUID
