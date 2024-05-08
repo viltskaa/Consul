@@ -19,6 +19,14 @@ public class YANDEX_ReportInfo {
         this.result = result;
     }
 
+    public YANDEX_ReportStatusType getReportStatus(){
+        return result.getStatus();
+    }
+
+    public String getFileUrl(){
+        return result.getFile();
+    }
+
 
     @Setter
     @Getter

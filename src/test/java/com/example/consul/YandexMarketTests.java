@@ -8,6 +8,10 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.junit.jupiter.api.Test;
 
+import java.net.MalformedURLException;
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 
 import java.io.*;
@@ -31,6 +35,16 @@ class YandexMarketTests {
                 "2024-01-01",
                 "2024-01-31",
                 new ArrayList<>());
+
+        URL website = null;
+        try {
+            website = new URL("http://www.website.com/information.asp");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+        FileOutputStream fos = new FileOutputStream("information.html");
+        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 
         System.out.println(res);
     }
