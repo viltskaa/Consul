@@ -21,13 +21,7 @@ public class ReportChecker {
 
         Executor delayed = CompletableFuture.delayedExecutor(delay, TimeUnit.SECONDS);
         try {
-            CompletableFuture.supplyAsync(() -> {
-                        if (function.get()) {
-                            return true;
-                        }
-                        return null;
-                    }, delayed)
-                    .get();
+            CompletableFuture.supplyAsync(() -> function.get(), delayed).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }

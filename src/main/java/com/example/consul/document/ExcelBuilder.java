@@ -12,16 +12,12 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.security.core.parameters.P;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -222,11 +218,11 @@ public class ExcelBuilder {
                 createTotalStyle(workbook));
 
         for (int i = 0 ; i < config.getPageNumber() ; i++) {
-            T obj = config.getData().get(i);
+            List<T> obj = config.getData().get(i);
             createSheet(workbook,
-                    obj instanceof List<?> ? (List)obj : config.getData(),
+                    obj,
                     config.getHeader(),
-                    config.getSheetName().get(i));
+                    config.getSheetsName().get(i));
         }
 
         workbook.write(new FileOutputStream(config.getFileName()));
