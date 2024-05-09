@@ -2,9 +2,10 @@ package com.example.consul.api;
 
 import com.example.consul.api.utils.Link;
 import com.example.consul.api.utils.YANDEX.YANDEX_ApiResponseStatusType;
+import com.example.consul.api.utils.YANDEX.YANDEX_CreateRealizationReportBody;
 import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
-import com.example.consul.dto.YANDEX.YANDEX_CreateOrderReport;
-import com.example.consul.api.utils.YANDEX.YANDEX_CreateOrderBody;
+import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
+import com.example.consul.api.utils.YANDEX.YANDEX_CreateOrderReportBody;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
@@ -44,20 +45,35 @@ public class YANDEX_Api {
         final String createOrdersReportUrl = "https://api.partner.market.yandex.ru/reports/united-orders/generate?format=FILE&language=RU";
 
         HttpEntity<String> request = new HttpEntity<>(new Gson()
-                .toJson(new YANDEX_CreateOrderBody(businessId, dateFrom, dateTo, campaignIds)), headers);
+                .toJson(new YANDEX_CreateOrderReportBody(businessId, dateFrom, dateTo, campaignIds)), headers);
 
+        return getDownloadUrl(createOrdersReportUrl, request);
+    }
+
+    public String getRealizationReport(@NotNull Long campaignId,
+                                       int year,
+                                       int month) {
+        final String createRealizationReportUrl = "https://api.partner.market.yandex.ru/reports/goods-realization/generate";
+
+        HttpEntity<String> request = new HttpEntity<>(new Gson()
+                .toJson(new YANDEX_CreateRealizationReportBody(campaignId, year, month)), headers);
+
+        return getDownloadUrl(createRealizationReportUrl, request);
+    }
+
+    private String getDownloadUrl(String url, HttpEntity<String> request){
         ResponseEntity<String> response = restTemplate
-                .postForEntity(createOrdersReportUrl, request, String.class);
+                .postForEntity(url, request, String.class);
 
-        YANDEX_CreateOrderReport createResponse = new Gson().fromJson(response.getBody(),
-                YANDEX_CreateOrderReport.class);
-
+        YANDEX_CreateReport createResponse = new Gson().fromJson(response.getBody(),
+                YANDEX_CreateReport.class);
 
         if (createResponse.getStatus().equals(YANDEX_ApiResponseStatusType.OK)){
             return asyncGetDownloadUrl(createResponse.getReportId(), createResponse.getCreationTime());
         }
         else return "error";
     }
+
 
     @Nullable
     private String asyncGetDownloadUrl(@NotNull String reportId,

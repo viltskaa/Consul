@@ -8,11 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-public class YANDEX_CreateOrderReport {
+public class YANDEX_CreateReport {
     private YANDEX_ApiResponseStatusType status;
     private Result result;
 
-    public YANDEX_CreateOrderReport(String status, Result result){
+    public YANDEX_CreateReport(String status, Result result){
         this.status = YANDEX_ApiResponseStatusType.valueOf(status);
         this.result = result;
     }

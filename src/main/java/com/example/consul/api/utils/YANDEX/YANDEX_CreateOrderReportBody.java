@@ -10,16 +10,16 @@ import java.util.ArrayList;
 @Getter
 @Setter
 @Data
-public class YANDEX_CreateOrderBody {
+public class YANDEX_CreateOrderReportBody {
     private Long businessId;
     private String dateFrom;
     private String dateTo;
     private ArrayList<Long> campaignIds;
 
-    public YANDEX_CreateOrderBody(Long businessId,
-                                  String dateFrom,
-                                  String dateTo,
-                                  ArrayList<Long> campaignIds)
+    public YANDEX_CreateOrderReportBody(Long businessId,
+                                        String dateFrom,
+                                        String dateTo,
+                                        ArrayList<Long> campaignIds)
     {
         this.businessId = businessId;
         this.dateFrom = dateFrom;
@@ -27,9 +27,9 @@ public class YANDEX_CreateOrderBody {
         this.campaignIds = campaignIds;
     }
 
-    public YANDEX_CreateOrderBody(Long businessId,
-                                  String dateFrom,
-                                  String dateTo)
+    public YANDEX_CreateOrderReportBody(Long businessId,
+                                        String dateFrom,
+                                        String dateTo)
     {
         this.businessId = businessId;
         this.dateFrom = dateFrom;
