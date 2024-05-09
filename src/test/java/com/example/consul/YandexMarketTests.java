@@ -8,8 +8,6 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.junit.jupiter.api.Test;
 
-import java.net.MalformedURLException;
-import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -29,26 +27,38 @@ class YandexMarketTests {
     }
 
     @Test
-    public void RequestTest() throws IOException {
+    public void OrdersReportTest() throws IOException {
         final YANDEX_Api api = new YANDEX_Api();
         api.setHeaders("затычка");
 
-        String res = api.getOrdersReport(5731759L,
+        String url = api.getOrdersReport(5731759L,
                 "2024-01-01",
                 "2024-01-31",
                 new ArrayList<>());
 
-        URL website = null;
-        try {
-            website = new URL("http://www.website.com/information.asp");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-        FileOutputStream fos = new FileOutputStream("information.html");
+        URL orders = new URL(url);
+        ReadableByteChannel rbc = Channels.newChannel(orders.openStream());
+        FileOutputStream fos = new FileOutputStream("Отчет по заказам.xlsx");
+        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        rbc.close();
+        fos.close();
+    }
+
+    @Test
+    public void RealizationReportTest() throws IOException{
+        final YANDEX_Api api = new YANDEX_Api();
+        api.setHeaders("затычка");
+
+        String url = api.getRealizationReport(23761421L, 2024, 1);
+
+        URL orders = new URL(url);
+        ReadableByteChannel rbc = Channels.newChannel(orders.openStream());
+        FileOutputStream fos = new FileOutputStream("Отчет по реализации.xlsx");
         fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 
-        System.out.println(res);
+        rbc.close();
+        fos.close();
+
     }
 
     @Test
