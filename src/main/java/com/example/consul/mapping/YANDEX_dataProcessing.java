@@ -34,6 +34,7 @@ public class YANDEX_dataProcessing {
         Sheet sheet = wb.getSheetAt(sheetNum);
         List<String> listHeader = new ArrayList<>();
         List<Object> listData = new ArrayList<>();
+        //нужна для нахождения строки в таблице эксель. Если ячейка содержит данную строку, то начинаем формировать датафрейм с нее
         String columnName = "Номер заказа";
 
         for (int i = 0; i < sheet.getRow(findRowNumberByString(sheet, columnName)).getPhysicalNumberOfCells(); i++) {
@@ -42,6 +43,7 @@ public class YANDEX_dataProcessing {
 
         DataFrame<Object> df = new DataFrame<>(listHeader);
 
+        //тернарный оператор для выяснения, какой файл обрабатывается (от этого зависит, читается последняя строка или нет)
         for(int j = findRowNumberByString(sheet,columnName)+1; j < (findRowNumberByString(sheet, columnName)>10 ? sheet.getLastRowNum() : sheet.getLastRowNum()+1); j++){
             for(int i = 0; i < sheet.getRow(j).getPhysicalNumberOfCells(); i++){
                 switch (sheet.getRow(j).getCell(i).getCellType()) {
