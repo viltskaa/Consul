@@ -40,11 +40,11 @@ public class OZON_Service {
     }
 
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull String apiKey,
-                                                                       @NotNull String clientId,
-                                                                       @NotNull String performanceClientId,
-                                                                       @NotNull String performanceClientSecret,
-                                                                       @NotNull Integer year,
-                                                                       @NotNull Integer month) {
+                                                    @NotNull String clientId,
+                                                    @NotNull String performanceClientId,
+                                                    @NotNull String performanceClientSecret,
+                                                    @NotNull Integer year,
+                                                    @NotNull Integer month) {
         List<String> opT = Stream.of(
                 OZON_TransactionType.OperationAgentDeliveredToCustomer,
                 OZON_TransactionType.OperationAgentStornoDeliveredToCustomer,
@@ -234,20 +234,44 @@ public class OZON_Service {
         }
     }
 
+    public List<OZON_PerformanceReport> asyncGetPerformanceReportByUUID(@NotNull String clientId,
+                                                                        @NotNull String UUID) {
+        Thread reportStatusThread = new Thread(() -> {
+            OZON_PerformanceReportStatus status;
+            do {
+                status = getPerformanceReportStatusByUUID(
+                        clientId,
+                        UUID
+                );
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            } while (!status.getState().equals(OZON_PerformanceReportStatus.State.OK));
+        });
+        reportStatusThread.start();
+        try {
+            reportStatusThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return getPerformanceReportByUUID(clientId, UUID);
+    }
+
     public List<OZON_PerformanceReport> scheduledGetPerformanceReportByUUID(@NotNull String clientId,
                                                                             @NotNull String UUID) {
-        reportChecker.init(() -> {
+        Boolean value = reportChecker.start(() -> {
             OZON_PerformanceReportStatus status = getPerformanceReportStatusByUUID(
                     clientId,
                     UUID
             );
-            if (status == null) {
-                return false;
-            }
-            System.out.println(status.getState());
-            return status.getState().equals(OZON_PerformanceReportStatus.State.OK);
-        });
-        if (reportChecker.start(2L)) {
+
+            return status != null && status.getState().equals(OZON_PerformanceReportStatus.State.OK);
+        }, 2L);
+
+        if (value) {
             return getPerformanceReportByUUID(clientId, UUID);
         }
         return null;

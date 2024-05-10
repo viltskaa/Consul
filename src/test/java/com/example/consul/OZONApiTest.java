@@ -1,5 +1,6 @@
 package com.example.consul;
 
+import com.example.consul.conditions.ReportChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.models.HeaderConfig;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SpringBootTest
 public class OZONApiTest {
@@ -49,5 +52,16 @@ public class OZONApiTest {
                         .sheetsName(List.of("1"))
                         .build()
         );
+    }
+
+    @Test
+    public void reportCheckerTest(@Autowired ReportChecker reportChecker) {
+        AtomicInteger i = new AtomicInteger();
+        reportChecker.start(() -> {
+            System.out.println(Instant.now().getEpochSecond());
+            i.getAndIncrement();
+            return i.get() == 5;
+        }, 2L);
+        System.out.print(Instant.now().getEpochSecond());
     }
 }

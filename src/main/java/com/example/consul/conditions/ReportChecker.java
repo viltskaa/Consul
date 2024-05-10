@@ -1,5 +1,6 @@
 package com.example.consul.conditions;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
@@ -8,24 +9,22 @@ import java.util.function.Supplier;
 
 @Component
 public class ReportChecker {
-    private Supplier<Boolean> function;
-
-    public void init(Supplier<Boolean> function) {
-        this.function = function;
-    }
-
-    public boolean start(Long delay) {
+    public Boolean start(Supplier<Boolean> function, Long delay) {
         if (function == null) {
             return false;
         }
 
-        Executor delayed = CompletableFuture.delayedExecutor(delay, TimeUnit.SECONDS);
-        try {
-            CompletableFuture.supplyAsync(() -> function.get(), delayed).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+        Executor delayed = CompletableFuture
+                .delayedExecutor(delay, TimeUnit.SECONDS);
+        for (int i = 0; i < 10; i++) {
+            Boolean value = CompletableFuture
+                    .supplyAsync(function, delayed)
+                    .join();
 
-        return true;
+            if (value) {
+                return true;
+            }
+        }
+        return false;
     }
 }
