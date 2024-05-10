@@ -59,7 +59,7 @@ public class OZON_dataProcessing {
     /**
      * Нахождение количества возвращенных товаров по артикулу
      *
-     * @param groupMap  Map [offer_id, (rows с этим offer_id)]
+     * @param groupMap Map [offer_id, (rows с этим offer_id)]
      * @return Map [offer_id, (возвращено для этого товара)]
      */
     static public Map<String, Integer> returnCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
@@ -109,7 +109,7 @@ public class OZON_dataProcessing {
     /**
      * Нахождение эквайринга по артикулу
      *
-     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (эквайринг для этого товара)]
      */
@@ -129,10 +129,11 @@ public class OZON_dataProcessing {
     }
 
     // Нахождение последней мили по артикулу
+
     /**
      * Нахождение последней мили по артикулу
      *
-     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (последняя для этого товара)]
      */
@@ -163,7 +164,7 @@ public class OZON_dataProcessing {
     /**
      * Нахождение логистики по артикулу
      *
-     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (последняя для этого товара)]
      */
@@ -187,7 +188,7 @@ public class OZON_dataProcessing {
     /**
      * Нахождение обработки отправления по артикулу
      *
-     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (обработка отправления для этого товара)]
      */
@@ -210,7 +211,7 @@ public class OZON_dataProcessing {
     /**
      * Нахождение обработки возврата по артикулу
      *
-     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (обработка отправления для этого товара)]
      */
@@ -233,7 +234,7 @@ public class OZON_dataProcessing {
     /**
      * Нахождение доставки возврата по артикулу
      *
-     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (доставка возврата для этого товара)]
      */
@@ -281,7 +282,7 @@ public class OZON_dataProcessing {
      * Нахождение трафарета(реклама) по sku
      *
      * @param stencilsBySku Map [sku, (сумма этого sku)]
-     * @param offerSku Map [offer_id, (sku этого offer_id)]
+     * @param offerSku      Map [offer_id, (sku этого offer_id)]
      * @return Map [offer_id, (трафарет для этого offer_id)]
      */
     static public Map<String, Double> sumStencilByOfferId(@NotNull Map<String, Double> stencilsBySku,

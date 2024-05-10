@@ -1,6 +1,7 @@
 package com.example.consul;
 
 import com.example.consul.api.YANDEX_Api;
+import com.example.consul.mapping.YANDEX_dataProcessing;
 import joinery.DataFrame;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -8,8 +9,6 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.junit.jupiter.api.Test;
 
-import java.net.MalformedURLException;
-import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -29,61 +28,48 @@ class YandexMarketTests {
     }
 
     @Test
-    public void RequestTest() throws IOException {
+    public void OrdersReportTest() throws IOException {
         final YANDEX_Api api = new YANDEX_Api();
         api.setHeaders("затычка");
 
-        String res = api.getOrdersReport(5731759L,
+        String url = api.getOrdersReport(5731759L,
                 "2024-01-01",
                 "2024-01-31",
                 new ArrayList<>());
 
-        URL website = null;
-        try {
-            website = new URL("http://www.website.com/information.asp");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-        FileOutputStream fos = new FileOutputStream("information.html");
+        URL orders = new URL(url);
+        ReadableByteChannel rbc = Channels.newChannel(orders.openStream());
+        FileOutputStream fos = new FileOutputStream("Отчет по заказам.xlsx");
+        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        rbc.close();
+        fos.close();
+    }
+
+    @Test
+    public void RealizationReportTest() throws IOException{
+        final YANDEX_Api api = new YANDEX_Api();
+        api.setHeaders("затычка");
+
+        String url = api.getRealizationReport(23761421L, 2024, 1);
+
+        URL orders = new URL(url);
+        ReadableByteChannel rbc = Channels.newChannel(orders.openStream());
+        FileOutputStream fos = new FileOutputStream("Отчет по реализации.xlsx");
         fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 
-        System.out.println(res);
+        rbc.close();
+        fos.close();
+
     }
 
     @Test
     public void readingYandexXls() throws IOException {
-        File file = new File("statistics-report-2024-01.xls");
-        Workbook wb = WorkbookFactory.create(file);
-        Sheet sheet = wb.getSheetAt(1);
-        List<String> listHeader = new ArrayList<>();
-        List<Object> listData = new ArrayList<>();
+        DataFrame<Object> df1 = YANDEX_dataProcessing.getDataFromSheet("statistics-report-2024-01.xls",4);
+        DataFrame<Object> df2 = YANDEX_dataProcessing.getDataFromSheet("statistics-report-2024-01.xls",2);
+        DataFrame<Object> df3 = YANDEX_dataProcessing.getDataFromSheet("1eff27ea-100f-4870-b5b6-ffea4b4f49b4.xls",2);
 
-        for(int i = 0;i < sheet.getRow(13).getPhysicalNumberOfCells(); i++){
-            listHeader.add(sheet.getRow(13).getCell(i).getStringCellValue());
-        }
-
-        DataFrame<Object> df = new DataFrame<>(listHeader);
-
-        for(int j = 14; j < sheet.getPhysicalNumberOfRows() - 1; j++){
-            for(int i = 0; i < sheet.getRow(j).getPhysicalNumberOfCells(); i++){
-                switch (sheet.getRow(j).getCell(i).getCellType()) {
-                    case BOOLEAN:
-                        listData.add(sheet.getRow(j).getCell(i).getBooleanCellValue());
-                        break;
-                    case NUMERIC:
-                        listData.add(sheet.getRow(j).getCell(i).getNumericCellValue());
-                        break;
-                    case STRING:
-                        listData.add(sheet.getRow(j).getCell(i).getRichStringCellValue());
-                        break;
-                }
-            }
-            df.append(listData);
-            listData = new ArrayList<>();
-        }
-
-        System.out.println(df);
-
+        System.out.println(YANDEX_dataProcessing.getReturnData(df1));
+        System.out.println(YANDEX_dataProcessing.getDeliveredData(df2));
+        System.out.println(YANDEX_dataProcessing.getFavorData(df3,df2));
     }
 }

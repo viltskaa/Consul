@@ -38,6 +38,14 @@ public class YANDEX_Api {
         headers.add("Content-Type", "application/json");
     }
 
+    /**
+     *
+     * @param businessId
+     * @param dateFrom
+     * @param dateTo
+     * @param campaignIds
+     * @return
+     */
     public String getOrdersReport(@NotNull Long businessId,
                                   @NotNull String dateFrom,
                                   @NotNull String dateTo,
@@ -50,10 +58,17 @@ public class YANDEX_Api {
         return getDownloadUrl(createOrdersReportUrl, request);
     }
 
+    /**
+     *
+     * @param campaignId 23761421
+     * @param year
+     * @param month
+     * @return
+     */
     public String getRealizationReport(@NotNull Long campaignId,
                                        int year,
                                        int month) {
-        final String createRealizationReportUrl = "https://api.partner.market.yandex.ru/reports/goods-realization/generate";
+        final String createRealizationReportUrl = "https://api.partner.market.yandex.ru/reports/goods-realization/generate?format=FILE";
 
         HttpEntity<String> request = new HttpEntity<>(new Gson()
                 .toJson(new YANDEX_CreateRealizationReportBody(campaignId, year, month)), headers);
