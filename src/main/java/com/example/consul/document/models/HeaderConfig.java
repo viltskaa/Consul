@@ -1,11 +1,11 @@
 package com.example.consul.document.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.Setter;
 
-@Setter
 @Data
+@Builder
 @AllArgsConstructor
 public class HeaderConfig {
     private String title;
