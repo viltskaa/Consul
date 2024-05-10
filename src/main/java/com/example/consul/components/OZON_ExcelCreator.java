@@ -1,4 +1,4 @@
-package com.example.consul.services;
+package com.example.consul.components;
 
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;

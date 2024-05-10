@@ -2,6 +2,7 @@ package com.example.consul.services;
 
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
+import com.example.consul.components.OZON_ExcelCreator;
 import com.example.consul.conditions.ReportChecker;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;
@@ -39,11 +40,11 @@ public class OZON_Service {
     }
 
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull String apiKey,
-                                                    @NotNull String clientId,
-                                                    @NotNull String performanceClientId,
-                                                    @NotNull String performanceClientSecret,
-                                                    @NotNull Integer year,
-                                                    @NotNull Integer month) {
+                                                                       @NotNull String clientId,
+                                                                       @NotNull String performanceClientId,
+                                                                       @NotNull String performanceClientSecret,
+                                                                       @NotNull Integer year,
+                                                                       @NotNull Integer month) {
         List<String> opT = Stream.of(
                 OZON_TransactionType.OperationAgentDeliveredToCustomer,
                 OZON_TransactionType.OperationAgentStornoDeliveredToCustomer,
@@ -243,6 +244,7 @@ public class OZON_Service {
             if (status == null) {
                 return false;
             }
+            System.out.println(status.getState());
             return status.getState().equals(OZON_PerformanceReportStatus.State.OK);
         });
         if (reportChecker.start(2L)) {
