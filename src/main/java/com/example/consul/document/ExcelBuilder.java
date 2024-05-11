@@ -128,8 +128,8 @@ public class ExcelBuilder {
                 .filter(x -> !x.getAnnotatedReturnType().getType().equals(void.class)).toList();
 
         List<Pair<Field, Method>> fieldMethodList = fields.stream()
-                .map(x -> new Pair<>(x, methods.stream().filter(y -> y.getName().toLowerCase()
-                                .contains(x.getName().toLowerCase()))
+                .map(x -> new Pair<>(x, methods.stream()
+                        .filter(y -> y.getName().equals("get" + x.getName().substring(0, 1).toUpperCase() + x.getName().substring(1)))
                         .findFirst().orElse(null))).toList();
 
         addHeader(sheet, headerConfig, 0, 4, 0, fields.size());
