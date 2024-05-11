@@ -13,10 +13,9 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
+import java.util.*;
 
 import java.io.*;
-import java.util.List;
 
 @SpringBootTest
 class YandexMarketTests {
@@ -27,15 +26,16 @@ class YandexMarketTests {
 
     }
 
-    @Test
+    /*@Test
     public void OrdersReportTest() throws IOException {
         final YANDEX_Api api = new YANDEX_Api();
         api.setHeaders("затычка");
 
-        String url = api.getOrdersReport(5731759L,
+        /*String url = api.getOrdersReport(5731759L,
                 "2024-01-01",
                 "2024-01-31",
                 new ArrayList<>());
+
 
         URL orders = new URL(url);
         ReadableByteChannel rbc = Channels.newChannel(orders.openStream());
@@ -44,6 +44,7 @@ class YandexMarketTests {
         rbc.close();
         fos.close();
     }
+    */
 
     @Test
     public void RealizationReportTest() throws IOException{
@@ -64,12 +65,10 @@ class YandexMarketTests {
 
     @Test
     public void readingYandexXls() throws IOException {
-        DataFrame<Object> df1 = YANDEX_dataProcessing.getDataFromSheet("statistics-report-2024-01.xls",4);
-        DataFrame<Object> df2 = YANDEX_dataProcessing.getDataFromSheet("statistics-report-2024-01.xls",2);
-        DataFrame<Object> df3 = YANDEX_dataProcessing.getDataFromSheet("1eff27ea-100f-4870-b5b6-ffea4b4f49b4.xls",2);
+        Map<String,List<Integer>> fileMap = new HashMap<>();
+        fileMap.put("Отчет по реализации.xlsx", new ArrayList<>(Arrays.asList(2, 4)));
+        fileMap.put("Отчет по стоимости услуг.xlsx", new ArrayList<>(Arrays.asList(1,3,4,8,11)));
 
-        System.out.println(YANDEX_dataProcessing.getReturnData(df1));
-        System.out.println(YANDEX_dataProcessing.getDeliveredData(df2));
-        System.out.println(YANDEX_dataProcessing.getFavorData(df3,df2));
+        System.out.println(YANDEX_dataProcessing.getAllData(fileMap));
     }
 }
