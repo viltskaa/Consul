@@ -2,10 +2,6 @@ package com.example.consul;
 
 import com.example.consul.api.YANDEX_Api;
 import com.example.consul.mapping.YANDEX_dataProcessing;
-import joinery.DataFrame;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.junit.jupiter.api.Test;
 
