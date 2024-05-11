@@ -3,7 +3,7 @@ package com.example.consul;
 import com.example.consul.conditions.ReportChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
-import com.example.consul.document.models.HeaderConfig;
+import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.services.OZON_Service;
 import org.junit.jupiter.api.Test;

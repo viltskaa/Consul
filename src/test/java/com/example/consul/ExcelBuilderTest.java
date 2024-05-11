@@ -1,15 +1,9 @@
 package com.example.consul;
 
-import com.example.consul.document.ExcelBuilder;
-import com.example.consul.document.configurations.ExcelConfig;
-import com.example.consul.document.models.HeaderConfig;
-import com.example.consul.document.models.OZON_TableRow;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @SpringBootTest
 public class ExcelBuilderTest {

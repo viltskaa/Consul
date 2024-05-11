@@ -1,6 +1,5 @@
 package com.example.consul.document.configurations;
 
-import com.example.consul.document.models.HeaderConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
