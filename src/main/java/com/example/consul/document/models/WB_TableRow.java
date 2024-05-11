@@ -13,17 +13,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @TotalCell(
-        formula = "(sumSale - sumReturn + partSumCompensationForLost - compensation " +
+        formula = "(retailSum - sumReturn + partSumCompensationForLost - compensation " +
                 "- acquiringSale + acquiringReturn + acquiringPvzReturn + additional - penalty " +
-                "- logistic - deduction) / (saleAmount - returnAmount - amountCompensationForLost)"
+                "- logistic - deduction) / (retailAmount - returnAmount - amountCompensationForLost)"
 )
 public class WB_TableRow {
     @CellUnit(name="Артикул", total = false)
     private String saName;
     @CellUnit(name="Кол-во")
-    private Integer saleAmount;
+    private Integer retailAmount;
     @CellUnit(name="Начислено")
-    private Double sumSale;
+    private Double retailSum;
     @CellUnit(name="Возврат (Кол-во)", type = ExcelCellType.EXPENSIVE)
     private Integer returnAmount;
     @CellUnit(name="Возврат (Сумма)")

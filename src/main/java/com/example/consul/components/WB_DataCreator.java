@@ -48,8 +48,8 @@ public class WB_DataCreator {
            List<Object> values = x.getValue();
            return WB_TableRow.builder()
                    .saName(x.getKey())
-                   .saleAmount((Integer) values.get(0))
-                   .sumSale((Double) values.get(1))
+                   .retailAmount((Integer) values.get(0))
+                   .retailSum((Double) values.get(1))
                    .returnAmount((Integer) values.get(2))
                    .sumReturn((Double) values.get(3))
                    .stornoReturn(0.0)
