@@ -1,6 +1,5 @@
 package com.example.consul.conditions;
 
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
@@ -8,7 +7,7 @@ import java.util.function.Supplier;
 
 
 @Component
-public class ReportChecker {
+public class ConditionalWithDelayChecker {
     public Boolean start(Supplier<Boolean> function, Long delay) {
         if (function == null) {
             return false;

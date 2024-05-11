@@ -34,6 +34,6 @@ public class WB_ReportController {
             @RequestParam String apiKey
     ) {
         wbService.setApiKey(apiKey);
-        return wbService.getDetailReport(dateFrom, dateTo);
+        return wbService.getDetailReportV1(dateFrom, dateTo);
     }
 }

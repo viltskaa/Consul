@@ -5,8 +5,6 @@ import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
 import lombok.*;
 
-@Setter
-@Getter
 @Data
 @Builder
 @NoArgsConstructor

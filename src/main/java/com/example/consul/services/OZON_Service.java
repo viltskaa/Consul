@@ -2,8 +2,8 @@ package com.example.consul.services;
 
 import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
-import com.example.consul.components.OZON_ExcelCreator;
-import com.example.consul.conditions.ReportChecker;
+import com.example.consul.components.OZON_DataCreator;
+import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
@@ -21,15 +21,15 @@ import java.util.stream.Stream;
 @Service
 public class OZON_Service {
     private final OZON_Api ozonApi;
-    private final OZON_ExcelCreator ozonExcelCreator;
+    private final OZON_DataCreator ozonExcelCreator;
     private final OZON_PerformanceApi ozonPerformanceApi;
     private final Map<String, OZON_PerformanceTokenExpires> performanceKey = new HashMap<>();
-    private final ReportChecker reportChecker;
+    private final ConditionalWithDelayChecker reportChecker;
 
     public OZON_Service(OZON_Api ozonApi,
-                        OZON_ExcelCreator ozonExcelCreator,
+                        OZON_DataCreator ozonExcelCreator,
                         OZON_PerformanceApi ozonPerformanceApi,
-                        ReportChecker reportChecker) {
+                        ConditionalWithDelayChecker reportChecker) {
         this.ozonApi = ozonApi;
         this.ozonExcelCreator = ozonExcelCreator;
         this.ozonPerformanceApi = ozonPerformanceApi;

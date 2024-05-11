@@ -1,6 +1,6 @@
 package com.example.consul;
 
-import com.example.consul.conditions.ReportChecker;
+import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
@@ -80,7 +80,7 @@ public class OZONApiTest {
     }
 
     @Test
-    public void reportCheckerTest(@Autowired ReportChecker reportChecker) {
+    public void reportCheckerTest(@Autowired ConditionalWithDelayChecker reportChecker) {
         AtomicInteger i = new AtomicInteger();
         reportChecker.start(() -> {
             System.out.println(Instant.now().getEpochSecond());

@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-public class OZON_ExcelCreator {
+public class OZON_DataCreator {
     private Map<String, Integer> getDataForMapInt(@NotNull OZON_DetailReport ozonDetailReport,
                                                   @NotNull Function<Map<String, List<OZON_DetailReport.Row>>, Map<String, Integer>> dataFunction) {
         return dataFunction.apply(
