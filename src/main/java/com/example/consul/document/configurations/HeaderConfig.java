@@ -1,4 +1,4 @@
-package com.example.consul.document.models;
+package com.example.consul.document.configurations;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
