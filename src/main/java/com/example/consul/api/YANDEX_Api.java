@@ -1,11 +1,8 @@
 package com.example.consul.api;
 
 import com.example.consul.api.utils.Link;
-import com.example.consul.api.utils.YANDEX.YANDEX_ApiResponseStatusType;
-import com.example.consul.api.utils.YANDEX.YANDEX_CreateRealizationReportBody;
-import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
+import com.example.consul.api.utils.YANDEX.*;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
-import com.example.consul.api.utils.YANDEX.YANDEX_CreateOrderReportBody;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class YANDEX_Api {
@@ -39,32 +37,34 @@ public class YANDEX_Api {
     }
 
     /**
-     *
-     * @param businessId
-     * @param dateFrom
-     * @param dateTo
-     * @param campaignIds
-     * @return
+     * Отчет по стоимости услуг
+     * @param businessId (5731759) Идентификатор бизнеса.
+     * @param dateFrom Начало периода, включительно.
+     * @param dateTo Конец периода, включительно. Максимальный период — 1 год.
+     * @param placementPrograms Список моделей (которым работает магазин), которые нужны в отчете.
+     * @return url для загрузки файла
      */
-    public String getOrdersReport(@NotNull Long businessId,
-                                  @NotNull String dateFrom,
-                                  @NotNull String dateTo,
-                                  @NotNull ArrayList<Long> campaignIds) {
-        final String createOrdersReportUrl = "https://api.partner.market.yandex.ru/reports/united-orders/generate?format=FILE&language=RU";
+    @Nullable
+    public String getServicesReport(@NotNull Long businessId,
+                                    @NotNull String dateFrom,
+                                    @NotNull String dateTo,
+                                    @NotNull List<YANDEX_PlacementType> placementPrograms) {
+        final String createServicesReportUrl = "https://api.partner.market.yandex.ru/reports/united-marketplace-services/generate?format=FILE&language=RU";
 
         HttpEntity<String> request = new HttpEntity<>(new Gson()
-                .toJson(new YANDEX_CreateOrderReportBody(businessId, dateFrom, dateTo, campaignIds)), headers);
+                .toJson(new YANDEX_CreateServicesReportBody(businessId, dateFrom, dateTo, placementPrograms)), headers);
 
-        return getDownloadUrl(createOrdersReportUrl, request);
+        return getDownloadUrl(createServicesReportUrl, request);
     }
 
     /**
-     *
-     * @param campaignId 23761421
-     * @param year
-     * @param month
-     * @return
+     * Отчет по реализации
+     * @param campaignId (23761421) Идентификатор кампании.
+     * @param year Год.
+     * @param month Месяц.
+     * @return url для загрузки файла
      */
+    @Nullable
     public String getRealizationReport(@NotNull Long campaignId,
                                        int year,
                                        int month) {
@@ -76,6 +76,7 @@ public class YANDEX_Api {
         return getDownloadUrl(createRealizationReportUrl, request);
     }
 
+    @Nullable
     private String getDownloadUrl(String url, HttpEntity<String> request){
         ResponseEntity<String> response = restTemplate
                 .postForEntity(url, request, String.class);
@@ -86,9 +87,8 @@ public class YANDEX_Api {
         if (createResponse.getStatus().equals(YANDEX_ApiResponseStatusType.OK)){
             return asyncGetDownloadUrl(createResponse.getReportId(), createResponse.getCreationTime());
         }
-        else return "error";
+        else return null;
     }
-
 
     @Nullable
     private String asyncGetDownloadUrl(@NotNull String reportId,
