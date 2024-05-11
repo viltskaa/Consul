@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 @Service
@@ -71,6 +72,53 @@ public class OZON_Service {
                 getProductInfoByOfferId(offerIds),
                 ozonTransactionReport,
                 scheduledGetPerformanceReport(performanceClientId, performanceClientSecret, year, month)
+        );
+    }
+
+    public List<OZON_TableRow> asyncMergeToTableRows(@NotNull String apiKey,
+                                                     @NotNull String clientId,
+                                                     @NotNull String performanceClientId,
+                                                     @NotNull String performanceClientSecret,
+                                                     @NotNull Integer year,
+                                                     @NotNull Integer month) {
+        Pair<String, String> pairDate = ozonExcelCreator.getStartAndEndDateToUtc(month, year);
+        List<String> operationsType = Stream.of(
+                OZON_TransactionType.OperationAgentDeliveredToCustomer,
+                OZON_TransactionType.OperationAgentStornoDeliveredToCustomer,
+                OZON_TransactionType.OperationReturnGoodsFBSofRMS,
+                OZON_TransactionType.MarketplaceRedistributionOfAcquiringOperation
+        ).map(Object::toString).toList();
+
+        ozonApi.setHeaders(apiKey, clientId);
+
+        CompletableFuture<OZON_DetailReport> detailReportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getDetailReport(month, year));
+
+        CompletableFuture<OZON_SkuProductsReport> ozonSkuProductsReportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getListOfferIdByDate(month, year))
+                .thenApplyAsync(this::getProductInfoByOfferId);
+
+        CompletableFuture<OZON_TransactionReport> ozonTransactionReportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getTransactionReport(
+                        pairDate.a,
+                        pairDate.b,
+                        operationsType,
+                        OZON_TransactionType.all.toString()
+                ));
+
+        CompletableFuture<List<OZON_PerformanceReport>> ozonPerformanceReportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> scheduledGetPerformanceReport(
+                        performanceClientId,
+                        performanceClientSecret,
+                        year,
+                        month
+                ));
+
+        return ozonExcelCreator.mergeMapsToTableRows(
+                detailReportCompletableFuture.join(),
+                ozonSkuProductsReportCompletableFuture.join(),
+                ozonTransactionReportCompletableFuture.join(),
+                ozonPerformanceReportCompletableFuture.join()
         );
     }
 

@@ -32,6 +32,31 @@ public class OZONApiTest {
     }
 
     @Test
+    public void getAsyncTest() {
+        long start = System.currentTimeMillis();
+        ozonService.mergeMapsToTableRows(
+                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
+                "350423",
+                "27013136-1713353681106@advertising.performance.ozon.ru",
+                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
+                2024, 1);
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println(timeElapsed);
+
+        start = System.currentTimeMillis();
+        ozonService.asyncMergeToTableRows(
+                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
+                "350423",
+                "27013136-1713353681106@advertising.performance.ozon.ru",
+                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
+                2024, 1);
+        finish = System.currentTimeMillis();
+        timeElapsed = finish - start;
+        System.out.println(timeElapsed);
+    }
+
+    @Test
     public void generateExcel() throws IOException {
         List<OZON_TableRow> data = ozonService.mergeMapsToTableRows(
                 "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
