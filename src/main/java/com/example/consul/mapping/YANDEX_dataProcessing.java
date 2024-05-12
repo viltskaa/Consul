@@ -11,6 +11,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -94,7 +95,7 @@ public class YANDEX_dataProcessing {
         return df;
     }
 
-    static public DataFrame<Object> getDataFromSheet(String fileName, Integer sheetNum) throws IOException {
+    public static DataFrame<Object> getDataFromSheet(String fileName, Integer sheetNum) throws IOException {
 
         File file = new File(fileName);
         Workbook wb = WorkbookFactory.create(file);
@@ -105,6 +106,19 @@ public class YANDEX_dataProcessing {
         DataFrame<Object> df = new DataFrame<>(getTitleForDataFrame(sheet));
 
         return setDataToDataFrame(sheet, df);
+    }
+
+    public static DataFrame<Object> getFavorSortingCenter(DataFrame<Object> dfSortingCenter,
+                                                          DataFrame<Object> dfDelivery,
+                                                          DataFrame<Object> dfPayment) {
+        return dfDelivery.concat(dfPayment)
+                .groupBy(7,8)
+                .sum()
+                .reindex(0)
+                .join(dfSortingCenter.groupBy(7).sum(), DataFrame.JoinType.OUTER)
+                .groupBy(0)
+                .sum()
+                .retain(31);
     }
 
     public static DataFrame<Object> getDeliveredData(DataFrame<Object> df) throws IOException {
@@ -123,7 +137,7 @@ public class YANDEX_dataProcessing {
                 .rename("Цена с НДС с учётом всех скидок, руб. за шт.","Стоимость возврата");
     }
 
-    public static DataFrame<Object> getPlacingOnShowcase(DataFrame<Object> df) throws IOException {
+    public static DataFrame<Object> getPlacingOnShowcase(DataFrame<Object> df) {
         df = df.groupBy(9)
                 .sum()
                 .retain(33);
@@ -182,7 +196,7 @@ public class YANDEX_dataProcessing {
 
             for (Integer list : fileLists) {
                 switch (fileName) {
-                    case "Отчет по стоимости услуг.xlsx":
+                    case "Отчет по стоимости услуг_февраль.xlsx":
                         switch (list) {
                             case 1 ->
                                     tempDataFrame = tempDataFrame.join(getPlacingOnShowcase(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
@@ -194,9 +208,11 @@ public class YANDEX_dataProcessing {
                                     tempDataFrame = tempDataFrame.join(getDeliveryToConsumer(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
                             case 11 ->
                                     tempDataFrame = tempDataFrame.join(getAcceptAndTransferPayment(getDataFromSheet(fileName, list), getDataFromSheet(fileName, list + 1)), DataFrame.JoinType.OUTER);
+                            case 18 ->
+                                    tempDataFrame = tempDataFrame.join(getFavorSortingCenter(getDataFromSheet(fileName, list), getDataFromSheet(fileName, list - 10), getDataFromSheet(fileName, list - 7)), DataFrame.JoinType.OUTER);
                         }
                         break;
-                    case "Отчет по реализации.xlsx":
+                    case "Отчет по реализации_февраль.xlsx":
                         switch (list) {
                             case 2 ->
                                     tempDataFrame = tempDataFrame.join(getDeliveredData(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
