@@ -7,16 +7,12 @@ import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -45,16 +41,16 @@ public class YANDEX_Api {
      * @return url для загрузки файла
      */
     @Nullable
-    public String getServicesReport(@NotNull Long businessId,
-                                    @NotNull String dateFrom,
-                                    @NotNull String dateTo,
-                                    @NotNull List<YANDEX_PlacementType> placementPrograms) {
+    public YANDEX_CreateReport createServicesReport(@NotNull Long businessId,
+                                                    @NotNull String dateFrom,
+                                                    @NotNull String dateTo,
+                                                    @NotNull List<YANDEX_PlacementType> placementPrograms) {
         final String createServicesReportUrl = "https://api.partner.market.yandex.ru/reports/united-marketplace-services/generate?format=FILE&language=RU";
 
         HttpEntity<String> request = new HttpEntity<>(new Gson()
                 .toJson(new YANDEX_CreateServicesReportBody(businessId, dateFrom, dateTo, placementPrograms)), headers);
 
-        return getDownloadUrl(createServicesReportUrl, request);
+        return getResponse(createServicesReportUrl, request);
     }
 
     /**
@@ -65,69 +61,64 @@ public class YANDEX_Api {
      * @return url для загрузки файла
      */
     @Nullable
-    public String getRealizationReport(@NotNull Long campaignId,
-                                       int year,
-                                       int month) {
+    public YANDEX_CreateReport createRealizationReport(@NotNull Long campaignId,
+                                                       int year,
+                                                       int month) {
         final String createRealizationReportUrl = "https://api.partner.market.yandex.ru/reports/goods-realization/generate?format=FILE";
 
         HttpEntity<String> request = new HttpEntity<>(new Gson()
                 .toJson(new YANDEX_CreateRealizationReportBody(campaignId, year, month)), headers);
 
-        return getDownloadUrl(createRealizationReportUrl, request);
+        return getResponse(createRealizationReportUrl, request);
     }
 
+    /**
+     * Получение информации о заказанном отчете
+     * @param reportId идентификатор отчета
+     * @return инфмормация по отчету
+     */
     @Nullable
-    private String getDownloadUrl(String url, HttpEntity<String> request){
-        ResponseEntity<String> response = restTemplate
-                .postForEntity(url, request, String.class);
-
-        YANDEX_CreateReport createResponse = new Gson().fromJson(response.getBody(),
-                YANDEX_CreateReport.class);
-
-        if (createResponse.getStatus().equals(YANDEX_ApiResponseStatusType.OK)){
-            return asyncGetDownloadUrl(createResponse.getReportId(), createResponse.getCreationTime());
-        }
-        else return null;
-    }
-
-    @Nullable
-    private String asyncGetDownloadUrl(@NotNull String reportId,
-                                       @NotNull Long creationTime) {
-        final Link reportStatusUrl = Link
+    public YANDEX_ReportInfo getReportInfo(@NotNull String reportId) {
+        final String reportStatusUrl = Link
                 .create("https://api.partner.market.yandex.ru/reports/info/<arg>")
-                .setArgs(reportId);
-
-        // пока пусть будет так
-        try {
-            Thread getUrlThread = new Thread(() -> {
-                try {
-                    Thread.sleep(creationTime + 100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            getUrlThread.start();
-            getUrlThread.join();
-        } catch (Exception exception) {
-            return "Exception!" + exception.getMessage();
-        }
+                .setArgs(reportId)
+                .build();
 
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
-                reportStatusUrl.build(),
+                reportStatusUrl,
                 HttpMethod.GET,
                 request,
                 String.class
         );
 
-        YANDEX_ReportInfo reportInfo = new Gson().fromJson(response.getBody(),
-                YANDEX_ReportInfo.class);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return new Gson().fromJson(response.getBody(),
+                    YANDEX_ReportInfo.class
+            );
+        } else {
+            return null;
+        }
+    }
 
-        if(reportInfo.getReportStatus().equals(YANDEX_ReportStatusType.DONE))
-            return reportInfo.getFileUrl();
+    /**
+     * Метод получения ответа (для обоих отчетов ответ одинаковый)
+     * @param url ссылка запроса
+     * @param request сам запрос
+     * @return ответ на завпрос
+     */
+    @Nullable
+    private YANDEX_CreateReport getResponse(String url, HttpEntity<String> request){
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(url, request, String.class);
 
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return new Gson().fromJson(
+                    response.getBody(),
+                    YANDEX_CreateReport.class
+            );
+        }
         return null;
     }
 }

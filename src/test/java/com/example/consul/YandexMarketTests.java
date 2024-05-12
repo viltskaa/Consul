@@ -2,6 +2,9 @@ package com.example.consul;
 
 import com.example.consul.api.YANDEX_Api;
 import com.example.consul.mapping.YANDEX_dataProcessing;
+import com.example.consul.services.OZON_Service;
+import com.example.consul.services.YANDEX_Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +18,8 @@ import java.io.*;
 
 @SpringBootTest
 class YandexMarketTests {
-
+    @Autowired
+    private YANDEX_Service yandexService;
 
     @Test
     public void DownloadFileTest(){
@@ -23,11 +27,11 @@ class YandexMarketTests {
     }
 
     @Test
-    public void OrdersReportTest() throws IOException {
+    public void ServicesReportTest() throws IOException {
         final YANDEX_Api api = new YANDEX_Api();
         api.setHeaders("затычка");
 
-        String url = api.getServicesReport(5731759L,
+        String url = yandexService.scheduledGetServicesReport(5731759L,
                 "2024-02-01",
                 "2024-02-29",
                 new ArrayList<>());
@@ -41,13 +45,12 @@ class YandexMarketTests {
         fos.close();
     }
 
-
     @Test
     public void RealizationReportTest() throws IOException{
         final YANDEX_Api api = new YANDEX_Api();
         api.setHeaders("затычка");
 
-        String url = api.getRealizationReport(23761421L, 2024, 1);
+        String url = yandexService.scheduledGetRealizationReport(23761421L, 2024, 1);
 
         URL orders = new URL(url);
         ReadableByteChannel rbc = Channels.newChannel(orders.openStream());
