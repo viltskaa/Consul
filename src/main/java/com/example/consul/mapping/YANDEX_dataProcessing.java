@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class YANDEX_dataProcessing {
 
@@ -92,67 +93,64 @@ public class YANDEX_dataProcessing {
         return df;
     }
 
-    public static DataFrame<Object> getDataFromInputStream(InputStream inputStream) throws IOException {
+    public static DataFrame<Object> getDataFromServiceInputStream(InputStream inputStream) throws IOException {
+        DataFrame<Object> mainDataFrame;
         Workbook wb = WorkbookFactory.create(inputStream);
-        DataFrame<Object> mainDataFrame = new DataFrame<>();
 
-        if (wb.getNumberOfSheets()>5) {
-            for (int list = 0; list < wb.getNumberOfSheets(); list++) {
-                switch (list) {
-                    case 1:
-                        Sheet sheet = wb.getSheetAt(list);
-                        ungroupCells(sheet);
-                        mainDataFrame = getPlacingOnShowcase(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))));
-                        break;
-                    case 3:
-                        sheet = wb.getSheetAt(list);
-                        mainDataFrame = mainDataFrame.join(getLoyaltyProgram(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
-                                                            DataFrame.JoinType.OUTER);
-                        break;
-                    case 4:
-                        sheet = wb.getSheetAt(list);
-                        mainDataFrame = mainDataFrame.join(getBoostSales(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
-                                                            DataFrame.JoinType.OUTER);
-                        break;
-                    case 8:
-                        sheet = wb.getSheetAt(list);
-                        mainDataFrame = mainDataFrame.join(getDeliveryToConsumer(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
-                                                            DataFrame.JoinType.OUTER);
-                        break;
-                    case 11:
-                        sheet = wb.getSheetAt(list);
-                        Sheet sheet2 = wb.getSheetAt(list + 1);
-                        mainDataFrame = mainDataFrame.join(getAcceptAndTransferPayment(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))),
-                                                                                        setDataToDataFrame(sheet2, new DataFrame<>(getTitleForDataFrame(sheet2)))),
-                                                            DataFrame.JoinType.OUTER);
-                        break;
-                    case 18:
-                        sheet = wb.getSheetAt(list);
-                        sheet2 = wb.getSheetAt(list - 10);
-                        Sheet sheet3 = wb.getSheetAt(list - 7);
-                        mainDataFrame = mainDataFrame.join(getFavorSortingCenter(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))),
-                                                                                    setDataToDataFrame(sheet2, new DataFrame<>(getTitleForDataFrame(sheet2))),
-                                                                                    setDataToDataFrame(sheet3, new DataFrame<>(getTitleForDataFrame(sheet3)))),
-                                                            DataFrame.JoinType.OUTER);
-                        break;
-                }
-            }
-        }
-        else {
-            for (int list = 0; list < wb.getNumberOfSheets(); list++) {
-                switch (list) {
-                    case 2:
-                        Sheet sheet = wb.getSheetAt(list);
-                        mainDataFrame = getDeliveredData(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))));
-                        break;
-                    case 4:
-                        sheet = wb.getSheetAt(list);
-                        mainDataFrame = mainDataFrame.join(getReturnData(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
-                                                            DataFrame.JoinType.OUTER);
-                        break;
-                }
-            }
-        }
+        final Sheet[] sheet = {wb.getSheetAt(1), wb.getSheetAt(3), wb.getSheetAt(4), wb.getSheetAt(8),
+                wb.getSheetAt(11), wb.getSheetAt(18), wb.getSheetAt(12), wb.getSheetAt(2)};
+
+        CompletableFuture<DataFrame<Object>> placingOnShowcaseCompletableFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    ungroupCells(sheet[0]);
+                    return getPlacingOnShowcase(setDataToDataFrame(sheet[0], new DataFrame<>(getTitleForDataFrame(sheet[0]))));
+                });
+
+        CompletableFuture<DataFrame<Object>> loyaltyProgramCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getLoyaltyProgram(setDataToDataFrame(sheet[1], new DataFrame<>(getTitleForDataFrame(sheet[1])))));
+
+        CompletableFuture<DataFrame<Object>> boostSalesCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getBoostSales(setDataToDataFrame(sheet[2], new DataFrame<>(getTitleForDataFrame(sheet[2])))));
+
+        CompletableFuture<DataFrame<Object>> deliveryToConsumerCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getDeliveryToConsumer(setDataToDataFrame(sheet[3], new DataFrame<>(getTitleForDataFrame(sheet[3])))));
+
+        CompletableFuture<DataFrame<Object>> acceptAndTransferPaymentCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getAcceptAndTransferPayment(
+                        setDataToDataFrame(sheet[4], new DataFrame<>(getTitleForDataFrame(sheet[4]))),
+                        setDataToDataFrame(sheet[6], new DataFrame<>(getTitleForDataFrame(sheet[6])))
+                ));
+
+        CompletableFuture<DataFrame<Object>> favorSortingCenterPaymentCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getFavorSortingCenter(
+                        setDataToDataFrame(sheet[5], new DataFrame<>(getTitleForDataFrame(sheet[5]))),
+                        setDataToDataFrame(sheet[3], new DataFrame<>(getTitleForDataFrame(sheet[3]))),
+                        setDataToDataFrame(sheet[4], new DataFrame<>(getTitleForDataFrame(sheet[4])))));
+
+        mainDataFrame = placingOnShowcaseCompletableFuture.join();
+        mainDataFrame = mainDataFrame.join(loyaltyProgramCompletableFuture.join(), DataFrame.JoinType.OUTER);
+        mainDataFrame = mainDataFrame.join(boostSalesCompletableFuture.join(), DataFrame.JoinType.OUTER);
+        mainDataFrame = mainDataFrame.join(deliveryToConsumerCompletableFuture.join(), DataFrame.JoinType.OUTER);
+        mainDataFrame = mainDataFrame.join(acceptAndTransferPaymentCompletableFuture.join(), DataFrame.JoinType.OUTER);
+        mainDataFrame = mainDataFrame.join(favorSortingCenterPaymentCompletableFuture.join(), DataFrame.JoinType.OUTER);
+
+        return mainDataFrame;
+    }
+
+    public static DataFrame<Object> getDataFromRealizationInputStream(InputStream inputStream) throws IOException {
+        DataFrame<Object> mainDataFrame;
+        Workbook wb = WorkbookFactory.create(inputStream);
+
+        final Sheet[] sheet = {wb.getSheetAt(2), wb.getSheetAt(4)};
+
+        CompletableFuture<DataFrame<Object>> deliveredDataCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getDeliveredData(setDataToDataFrame(sheet[0], new DataFrame<>(getTitleForDataFrame(sheet[0])))));
+
+        CompletableFuture<DataFrame<Object>> returnDataCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getReturnData(setDataToDataFrame(sheet[1], new DataFrame<>(getTitleForDataFrame(sheet[1])))));
+
+        mainDataFrame = deliveredDataCompletableFuture.join();
+        mainDataFrame = mainDataFrame.join(returnDataCompletableFuture.join(), DataFrame.JoinType.OUTER);
 
         return mainDataFrame;
     }
