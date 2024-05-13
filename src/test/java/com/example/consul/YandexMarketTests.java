@@ -24,8 +24,7 @@ class YandexMarketTests {
 
     @Test
     public void ServicesReportTest() throws IOException {
-        final YANDEX_Api api = new YANDEX_Api();
-        api.setHeaders("затычка");
+        yandexService.setHeaders("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA");
 
         String url = yandexService.scheduledGetServicesReport(5731759L,
                 "2024-02-01",
@@ -43,8 +42,7 @@ class YandexMarketTests {
 
     @Test
     public void RealizationReportTest() throws IOException{
-        final YANDEX_Api api = new YANDEX_Api();
-        api.setHeaders("затычка");
+        yandexService.setHeaders("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA");
 
         String url = yandexService.scheduledGetRealizationReport(23761421L, 2024, 1);
 

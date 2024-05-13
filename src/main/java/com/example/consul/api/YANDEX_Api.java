@@ -25,10 +25,10 @@ public class YANDEX_Api {
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
+    // y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA
     public void setHeaders(@NotNull String auth) {
         headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA");
-//        headers.add("Authorization", "Bearer " + auth);
+        headers.add("Authorization", "Bearer " + auth);
         headers.add("Content-Type", "application/json");
     }
 
