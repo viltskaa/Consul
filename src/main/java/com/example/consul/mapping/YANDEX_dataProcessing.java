@@ -98,7 +98,7 @@ public class YANDEX_dataProcessing {
         Workbook wb = WorkbookFactory.create(inputStream);
 
         final Sheet[] sheet = {wb.getSheetAt(1), wb.getSheetAt(3), wb.getSheetAt(4), wb.getSheetAt(8),
-                wb.getSheetAt(11), wb.getSheetAt(18), wb.getSheetAt(12), wb.getSheetAt(2)};
+                wb.getSheetAt(11), wb.getSheetAt(18), wb.getSheetAt(12)};
 
         CompletableFuture<DataFrame<Object>> placingOnShowcaseCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
