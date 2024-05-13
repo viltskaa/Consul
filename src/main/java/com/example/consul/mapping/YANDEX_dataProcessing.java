@@ -8,12 +8,10 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class YANDEX_dataProcessing {
 
@@ -46,8 +44,7 @@ public class YANDEX_dataProcessing {
 
     // Если на листе есть автофильтр, вернуть строку, где содержится автофильтр (нахождение расположения заголовков)
     private static Integer findAutofilterRow(Sheet sheet) {
-        if (sheet instanceof XSSFSheet) {
-            XSSFSheet xssfSheet = (XSSFSheet) sheet;
+        if (sheet instanceof XSSFSheet xssfSheet) {
             if (xssfSheet.getCTWorksheet().getAutoFilter() != null) {
                 AreaReference ref = new AreaReference(xssfSheet.getCTWorksheet().getAutoFilter().getRef(), SpreadsheetVersion.EXCEL2007);
                 CellReference firstCell = ref.getFirstCell();
@@ -58,7 +55,7 @@ public class YANDEX_dataProcessing {
     }
 
     // Получить заголовки для датафрейма
-    private static List<String> getTitleForDataFrame(Sheet sheet){
+    private static List<String> getTitleForDataFrame(Sheet sheet) {
         List<String> listHeader = new ArrayList<>();
         int numSuffix = 1;
 
@@ -77,7 +74,7 @@ public class YANDEX_dataProcessing {
         return listHeader;
     }
 
-    private static DataFrame<Object> setDataToDataFrame(Sheet sheet, DataFrame<Object> df){
+    private static DataFrame<Object> setDataToDataFrame(Sheet sheet, DataFrame<Object> df) {
         List<Object> listData = new ArrayList<>();
 
         for(int j = findAutofilterRow(sheet) + 1; j < sheet.getLastRowNum() + 1; j++){
@@ -95,20 +92,72 @@ public class YANDEX_dataProcessing {
         return df;
     }
 
-    public static DataFrame<Object> getDataFromSheet(String fileName, Integer sheetNum) throws IOException {
+    public static DataFrame<Object> getDataFromInputStream(InputStream inputStream) throws IOException {
+        Workbook wb = WorkbookFactory.create(inputStream);
+        DataFrame<Object> mainDataFrame = new DataFrame<>();
 
-        File file = new File(fileName);
-        Workbook wb = WorkbookFactory.create(file);
-        Sheet sheet = wb.getSheetAt(sheetNum);
+        if (wb.getNumberOfSheets()>5) {
+            for (int list = 0; list < wb.getNumberOfSheets(); list++) {
+                switch (list) {
+                    case 1:
+                        Sheet sheet = wb.getSheetAt(list);
+                        ungroupCells(sheet);
+                        mainDataFrame = getPlacingOnShowcase(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))));
+                        break;
+                    case 3:
+                        sheet = wb.getSheetAt(list);
+                        mainDataFrame = mainDataFrame.join(getLoyaltyProgram(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
+                                                            DataFrame.JoinType.OUTER);
+                        break;
+                    case 4:
+                        sheet = wb.getSheetAt(list);
+                        mainDataFrame = mainDataFrame.join(getBoostSales(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
+                                                            DataFrame.JoinType.OUTER);
+                        break;
+                    case 8:
+                        sheet = wb.getSheetAt(list);
+                        mainDataFrame = mainDataFrame.join(getDeliveryToConsumer(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
+                                                            DataFrame.JoinType.OUTER);
+                        break;
+                    case 11:
+                        sheet = wb.getSheetAt(list);
+                        Sheet sheet2 = wb.getSheetAt(list + 1);
+                        mainDataFrame = mainDataFrame.join(getAcceptAndTransferPayment(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))),
+                                                                                        setDataToDataFrame(sheet2, new DataFrame<>(getTitleForDataFrame(sheet2)))),
+                                                            DataFrame.JoinType.OUTER);
+                        break;
+                    case 18:
+                        sheet = wb.getSheetAt(list);
+                        sheet2 = wb.getSheetAt(list - 10);
+                        Sheet sheet3 = wb.getSheetAt(list - 7);
+                        mainDataFrame = mainDataFrame.join(getFavorSortingCenter(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))),
+                                                                                    setDataToDataFrame(sheet2, new DataFrame<>(getTitleForDataFrame(sheet2))),
+                                                                                    setDataToDataFrame(sheet3, new DataFrame<>(getTitleForDataFrame(sheet3)))),
+                                                            DataFrame.JoinType.OUTER);
+                        break;
+                }
+            }
+        }
+        else {
+            for (int list = 0; list < wb.getNumberOfSheets(); list++) {
+                switch (list) {
+                    case 2:
+                        Sheet sheet = wb.getSheetAt(list);
+                        mainDataFrame = getDeliveredData(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet))));
+                        break;
+                    case 4:
+                        sheet = wb.getSheetAt(list);
+                        mainDataFrame = mainDataFrame.join(getReturnData(setDataToDataFrame(sheet, new DataFrame<>(getTitleForDataFrame(sheet)))),
+                                                            DataFrame.JoinType.OUTER);
+                        break;
+                }
+            }
+        }
 
-        ungroupCells(sheet);
-
-        DataFrame<Object> df = new DataFrame<>(getTitleForDataFrame(sheet));
-
-        return setDataToDataFrame(sheet, df);
+        return mainDataFrame;
     }
 
-    public static DataFrame<Object> getFavorSortingCenter(DataFrame<Object> dfSortingCenter,
+    private static DataFrame<Object> getFavorSortingCenter(DataFrame<Object> dfSortingCenter,
                                                           DataFrame<Object> dfDelivery,
                                                           DataFrame<Object> dfPayment) {
         return dfDelivery.concat(dfPayment)
@@ -118,10 +167,11 @@ public class YANDEX_dataProcessing {
                 .join(dfSortingCenter.groupBy(7).sum(), DataFrame.JoinType.OUTER)
                 .groupBy(0)
                 .sum()
-                .retain(31);
+                .retain(31)
+                .rename("Тариф за заказ или отправление, ₽", "Услуги по обработке в сортировочном центре");
     }
 
-    public static DataFrame<Object> getDeliveredData(DataFrame<Object> df) throws IOException {
+    private static DataFrame<Object> getDeliveredData(DataFrame<Object> df) {
         return df.head(df.length()-1)
                 .groupBy(3)
                 .sum()
@@ -129,7 +179,7 @@ public class YANDEX_dataProcessing {
                 .rename("Цена с НДС с учётом всех скидок, руб. за шт.","Начислено");
     }
 
-    public static DataFrame<Object> getReturnData(DataFrame<Object> df) throws IOException {
+    private static DataFrame<Object> getReturnData(DataFrame<Object> df) {
         return df.head(df.length()-1)
                 .groupBy(3)
                 .sum()
@@ -137,7 +187,7 @@ public class YANDEX_dataProcessing {
                 .rename("Цена с НДС с учётом всех скидок, руб. за шт.","Стоимость возврата");
     }
 
-    public static DataFrame<Object> getPlacingOnShowcase(DataFrame<Object> df) {
+    private static DataFrame<Object> getPlacingOnShowcase(DataFrame<Object> df) {
         df = df.groupBy(9)
                 .sum()
                 .retain(33);
@@ -146,14 +196,14 @@ public class YANDEX_dataProcessing {
                 .rename("Стоимость услуги без скидок и наценок (гр.34=гр.12*гр.27), ₽","Размещение товаров на витрине");
     }
 
-    public static DataFrame<Object> getDeliveryToConsumer(DataFrame<Object> df) throws IOException {
+    private static DataFrame<Object> getDeliveryToConsumer(DataFrame<Object> df) {
         return df.groupBy(8)
                 .sum()
                 .retain(21)
                 .rename("Стоимость услуги, ₽","Доставка покупателю");
     }
 
-    public static DataFrame<Object> getAcceptAndTransferPayment(DataFrame<Object> dfAccept,DataFrame<Object> dfTransfer) throws IOException {
+    private static DataFrame<Object> getAcceptAndTransferPayment(DataFrame<Object> dfAccept,DataFrame<Object> dfTransfer) {
         DataFrame<Object> dfJoin = dfAccept.groupBy(8)
                                             .sum()
                                             .retain(6)
@@ -171,60 +221,18 @@ public class YANDEX_dataProcessing {
                 .rename(null,"Приём и перевод платежа покупателя");
     }
 
-    public static DataFrame<Object> getLoyaltyProgram(DataFrame<Object> df) throws IOException {
+    private static DataFrame<Object> getLoyaltyProgram(DataFrame<Object> df) {
         return df.groupBy(8)
                 .sum()
                 .retain(9)
                 .rename("Стоимость услуги, ₽","Программа лояльности");
     }
 
-    public static DataFrame<Object> getBoostSales(DataFrame<Object> df) throws IOException {
+    private static DataFrame<Object> getBoostSales(DataFrame<Object> df) {
         return df.groupBy(8)
                 .sum()
                 .retain(8)
                 .rename("Постоплата, ₽","Буст продаж");
     }
 
-    public static DataFrame<Object> getAllData(Map<String, List<Integer>> files) throws IOException {
-        DataFrame<Object> dataFrame = new DataFrame<>();
-
-        for (Map.Entry<String, List<Integer>> file : files.entrySet()) {
-            String fileName = file.getKey();
-            List<Integer> fileLists = file.getValue();
-
-            DataFrame<Object> tempDataFrame = new DataFrame<>();
-
-            for (Integer list : fileLists) {
-                switch (fileName) {
-                    case "Отчет по стоимости услуг_февраль.xlsx":
-                        switch (list) {
-                            case 1 ->
-                                    tempDataFrame = tempDataFrame.join(getPlacingOnShowcase(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
-                            case 3 ->
-                                    tempDataFrame = tempDataFrame.join(getLoyaltyProgram(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
-                            case 4 ->
-                                    tempDataFrame = tempDataFrame.join(getBoostSales(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
-                            case 8 ->
-                                    tempDataFrame = tempDataFrame.join(getDeliveryToConsumer(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
-                            case 11 ->
-                                    tempDataFrame = tempDataFrame.join(getAcceptAndTransferPayment(getDataFromSheet(fileName, list), getDataFromSheet(fileName, list + 1)), DataFrame.JoinType.OUTER);
-                            case 18 ->
-                                    tempDataFrame = tempDataFrame.join(getFavorSortingCenter(getDataFromSheet(fileName, list), getDataFromSheet(fileName, list - 10), getDataFromSheet(fileName, list - 7)), DataFrame.JoinType.OUTER);
-                        }
-                        break;
-                    case "Отчет по реализации_февраль.xlsx":
-                        switch (list) {
-                            case 2 ->
-                                    tempDataFrame = tempDataFrame.join(getDeliveredData(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
-                            case 4 ->
-                                    tempDataFrame = tempDataFrame.join(getReturnData(getDataFromSheet(fileName, list)), DataFrame.JoinType.OUTER);
-                        }
-                        break;
-                }
-            }
-            dataFrame = dataFrame.join(tempDataFrame, DataFrame.JoinType.OUTER);
-        }
-
-        return dataFrame;
-    }
 }
