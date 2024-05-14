@@ -76,6 +76,6 @@ public class YANDEX_Service {
         return reportChecker.start(() -> {
             YANDEX_ReportInfo info = getReportInfo(reportId);
             return info != null && info.getReportStatus().equals(YANDEX_ReportStatusType.DONE);
-        }, creationTime);
+        }, creationTime / 1000);
     }
 }

@@ -30,7 +30,6 @@ class YandexMarketTests {
                 "2024-02-29",
                 new ArrayList<>());
 
-
         URL orders = new URL(url);
         InputStream inputStream = new ByteArrayInputStream(orders.openStream().readAllBytes());
 
