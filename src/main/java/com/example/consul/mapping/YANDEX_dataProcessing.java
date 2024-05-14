@@ -1,5 +1,6 @@
 package com.example.consul.mapping;
 
+import com.example.consul.document.models.YANDEX_TableRow;
 import joinery.DataFrame;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.*;
@@ -93,7 +94,7 @@ public class YANDEX_dataProcessing {
         return df;
     }
 
-    public static DataFrame<Object> getDataFromServiceInputStream(InputStream inputStream) throws IOException {
+    private static DataFrame<Object> getDataFromServiceInputStream(InputStream inputStream) throws IOException {
         DataFrame<Object> mainDataFrame;
         Workbook wb = WorkbookFactory.create(inputStream);
 
@@ -137,7 +138,7 @@ public class YANDEX_dataProcessing {
         return mainDataFrame;
     }
 
-    public static DataFrame<Object> getDataFromRealizationInputStream(InputStream inputStream) throws IOException {
+    private static DataFrame<Object> getDataFromRealizationInputStream(InputStream inputStream) throws IOException {
         DataFrame<Object> mainDataFrame;
         Workbook wb = WorkbookFactory.create(inputStream);
 
@@ -173,8 +174,8 @@ public class YANDEX_dataProcessing {
         return df.head(df.length()-1)
                 .groupBy(3)
                 .sum()
-                .retain(2,8)
-                .rename("Цена с НДС с учётом всех скидок, руб. за шт.","Начислено");
+                .retain(2,11)
+                .rename("Стоимость всех доставленных штук с НДС с учётом всех скидок, руб.","Начислено");
     }
 
     private static DataFrame<Object> getReturnData(DataFrame<Object> df) {
@@ -233,4 +234,41 @@ public class YANDEX_dataProcessing {
                 .rename("Постоплата, ₽","Буст продаж");
     }
 
+    //кринж (почему у списка нет метода, который бы заменил все null)
+    public static List<YANDEX_TableRow> getTableRowList(InputStream inputStreamRealization, InputStream inputStreamServices) throws IOException {
+        DataFrame<Object> tempDataFrame = new DataFrame<>();
+        List<YANDEX_TableRow> listRows = new ArrayList<>();
+
+        tempDataFrame = tempDataFrame.join(getDataFromServiceInputStream(inputStreamServices), DataFrame.JoinType.OUTER)
+                                        .join(getDataFromRealizationInputStream(inputStreamRealization), DataFrame.JoinType.OUTER);
+
+        Object[] skus = tempDataFrame.index().toArray();
+
+        for(int i = 0; i < tempDataFrame.length(); i++) {
+            List<Object> listDF = tempDataFrame.row(i);
+            listRows.add(YANDEX_TableRow.builder()
+                            .offerId(skus[i].toString())
+                            .deliveryCount(listDF.get(6) != null ? (Double) listDF.get(6) : 0.0)
+                            .accrued(listDF.get(7) != null ? (Double) listDF.get(7) : 0.0)
+                            .returnCount(listDF.get(8) != null ? (Double) listDF.get(8) : 0.0)
+                            .returnCost(listDF.get(9) != null ? (Double) listDF.get(9) : 0.0)
+                            .showcasePlacing(listDF.get(0) != null ? (Double) listDF.get(0) : 0.0)
+                            .deliveryToConsumer(listDF.get(3) != null ? (Double) listDF.get(3) : 0.0)
+                            .acceptAndTransferPayment(listDF.get(4) != null ? (Double) listDF.get(4) : 0.0)
+                            .favorSorting(listDF.get(5) != null ? (Double) listDF.get(5) : 0.0)
+                            .unredeemedStorage(0.0)
+                            .adCampaignCost(0.0)
+                            .loyaltyProgram(listDF.get(1) != null ? (Double) listDF.get(1) : 0.0)
+                            .boostSales(listDF.get(2) != null ? (Double) listDF.get(2) : 0.0)
+                            .promotionFavor(0.0)
+                            //крииинж...
+                            .count(((listDF.get(6) != null ? (Double) listDF.get(6) : 0.0) -
+                                    (listDF.get(8) != null ? (Double) listDF.get(8) : 0.0)) == 0.0 ? -1 :
+                                    ((listDF.get(6) != null ? (Double) listDF.get(6) : 0.0) -
+                                            (listDF.get(8) != null ? (Double) listDF.get(8) : 0.0)))
+                    .build());
+        }
+
+        return listRows;
+    }
 }

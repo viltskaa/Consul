@@ -16,7 +16,7 @@ import lombok.*;
                 "-crossDockingDelivery-claimsAccruals-other)/(delivered-returned)-2.47"
 )
 public class OZON_TableRow {
-    @CellUnit(name = "Артикуль", total = false)
+    @CellUnit(name = "Артикул", total = false)
     private String offerId;
     @CellUnit(name = "Доставлено")
     private Integer delivered;

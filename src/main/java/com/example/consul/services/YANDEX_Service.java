@@ -4,11 +4,19 @@ import com.example.consul.api.YANDEX_Api;
 import com.example.consul.api.utils.YANDEX.YANDEX_PlacementType;
 import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
+import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
+import com.example.consul.mapping.YANDEX_dataProcessing;
+import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -77,5 +85,38 @@ public class YANDEX_Service {
             YANDEX_ReportInfo info = getReportInfo(reportId);
             return info != null && info.getReportStatus().equals(YANDEX_ReportStatusType.DONE);
         }, creationTime / 1000);
+    }
+
+    public Pair<String, String> getStartAndEndDateToDate(Integer month, Integer year) {
+        LocalDate date = LocalDate.of(year, month, 1);
+        return new Pair<>(date.withDayOfMonth(1).toString(), date.withDayOfMonth(date.lengthOfMonth()).toString());
+    }
+
+    public List<YANDEX_TableRow> getDataForExcel(@NotNull Long campaignId,
+                                                 int year,
+                                                 int month,
+                                                 @NotNull Long businessId,
+                                                 @NotNull List<YANDEX_PlacementType> placementPrograms) throws IOException {
+        Pair<String, String> date = getStartAndEndDateToDate(month, year);
+
+        InputStream inputStreamRealization = new ByteArrayInputStream(new URL(scheduledGetRealizationReport(campaignId,
+                                                                                                            year,
+                                                                                                            month))
+                                                                                    .openStream()
+                                                                                    .readAllBytes());
+
+        InputStream inputStreamServices = new ByteArrayInputStream(new URL(scheduledGetServicesReport(businessId,
+                                                                                                        date.a,
+                                                                                                        date.b,
+                                                                                                        placementPrograms))
+                                                                                    .openStream()
+                                                                                    .readAllBytes());
+
+        List<YANDEX_TableRow> data = YANDEX_dataProcessing.getTableRowList(inputStreamRealization,inputStreamServices);
+
+        inputStreamRealization.close();
+        inputStreamServices.close();
+
+        return data;
     }
 }
