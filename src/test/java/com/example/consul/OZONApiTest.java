@@ -45,7 +45,7 @@ public class OZONApiTest {
         System.out.println(timeElapsed);
 
         start = System.currentTimeMillis();
-        ozonService.asyncMergeToTableRows(
+        ozonService.getData(
                 "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
                 "350423",
                 "27013136-1713353681106@advertising.performance.ozon.ru",

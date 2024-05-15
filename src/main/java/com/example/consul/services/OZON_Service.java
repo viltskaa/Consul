@@ -40,6 +40,7 @@ public class OZON_Service {
         return Instant.now().getEpochSecond() <= token.getExpires_in();
     }
 
+    @Deprecated
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull String apiKey,
                                                     @NotNull String clientId,
                                                     @NotNull String performanceClientId,
@@ -75,12 +76,12 @@ public class OZON_Service {
         );
     }
 
-    public List<OZON_TableRow> asyncMergeToTableRows(@NotNull String apiKey,
-                                                     @NotNull String clientId,
-                                                     @NotNull String performanceClientId,
-                                                     @NotNull String performanceClientSecret,
-                                                     @NotNull Integer year,
-                                                     @NotNull Integer month) {
+    public List<OZON_TableRow> getData(@NotNull String apiKey,
+                                       @NotNull String clientId,
+                                       @NotNull String performanceClientId,
+                                       @NotNull String performanceClientSecret,
+                                       @NotNull Integer year,
+                                       @NotNull Integer month) {
         Pair<String, String> pairDate = ozonExcelCreator.getStartAndEndDateToUtc(month, year);
         List<String> operationsType = Stream.of(
                 OZON_TransactionType.OperationAgentDeliveredToCustomer,
@@ -120,10 +121,6 @@ public class OZON_Service {
                 ozonTransactionReportCompletableFuture.join(),
                 ozonPerformanceReportCompletableFuture.join()
         );
-    }
-
-    public void setHeader(@NotNull String apiKey, @NotNull String clientId) {
-        ozonApi.setHeaders(apiKey, clientId);
     }
 
     public OZON_TransactionReport getTransactionReport(@NotNull String from,

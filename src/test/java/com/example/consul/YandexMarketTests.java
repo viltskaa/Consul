@@ -20,18 +20,14 @@ class YandexMarketTests {
     private YANDEX_Service yandexService;
 
     @Test
-    public void DownloadFileTest(){
+    public void DownloadFileTest() {
 
     }
 
     @Test
     public void ServicesReportTest() throws IOException {
-        yandexService.setHeaders("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA");
 
-        String url = yandexService.scheduledGetServicesReport(5731759L,
-                "2024-02-01",
-                "2024-02-29",
-                new ArrayList<>());
+        String url = yandexService.scheduledGetServicesReport("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA", 5731759L, "2024-02-01", "2024-02-29", new ArrayList<>());
 
         URL orders = new URL(url);
         InputStream inputStream = new ByteArrayInputStream(orders.openStream().readAllBytes());
@@ -43,9 +39,7 @@ class YandexMarketTests {
 
     @Test
     public void RealizationReportTest() throws IOException {
-        yandexService.setHeaders("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA");
-
-        String url = yandexService.scheduledGetRealizationReport(23761421L, 2024, 1);
+        String url = yandexService.scheduledGetRealizationReport("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA", 23761421L, 2024, 1);
 
         URL orders = new URL(url);
         InputStream inputStream = new ByteArrayInputStream(orders.openStream().readAllBytes());
@@ -57,26 +51,8 @@ class YandexMarketTests {
 
     @Test
     public void generateExcel() throws IOException {
-        yandexService.setHeaders("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA");
+        List<YANDEX_TableRow> data = yandexService.getData("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA", 23761421L, 2024, 2, 5731759L, new ArrayList<>());
 
-        List<YANDEX_TableRow> data = yandexService.getDataForExcel(23761421L,
-                                                                    2024,
-                                                                    2,
-                                                                    5731759L,
-                                                                    new ArrayList<>());
-
-        ExcelBuilder.createDocument(
-                ExcelConfig.<YANDEX_TableRow>builder()
-                        .fileName("2024-02.xls")
-                        .header(
-                                HeaderConfig.builder()
-                                        .title("TEST")
-                                        .description("NEW METHOD")
-                                        .build()
-                        )
-                        .data(List.of(data))
-                        .sheetsName(List.of("1"))
-                        .build()
-        );
+        ExcelBuilder.createDocument(ExcelConfig.<YANDEX_TableRow>builder().fileName("2024-02.xls").header(HeaderConfig.builder().title("TEST").description("NEW METHOD").build()).data(List.of(data)).sheetsName(List.of("1")).build());
     }
 }

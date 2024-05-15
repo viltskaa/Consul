@@ -19,44 +19,41 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class YANDEX_Service {
-    private final YANDEX_Api api;
+    private final YANDEX_Api yandexApi;
     private final ConditionalWithDelayChecker reportChecker;
 
     public YANDEX_Service(YANDEX_Api api,
                           ConditionalWithDelayChecker reportChecker) {
-        this.api = api;
+        this.yandexApi = api;
         this.reportChecker = reportChecker;
-    }
-
-    public void setHeaders(@NotNull String auth) {
-        api.setHeaders(auth);
     }
 
     public YANDEX_CreateReport getServicesReport(@NotNull Long businessId,
                                                  @NotNull String dateFrom,
                                                  @NotNull String dateTo,
                                                  @NotNull List<YANDEX_PlacementType> placementPrograms) {
-        return api.createServicesReport(businessId, dateFrom, dateTo, placementPrograms);
+        return yandexApi.createServicesReport(businessId, dateFrom, dateTo, placementPrograms);
     }
 
     public YANDEX_CreateReport getRealizationReport(@NotNull Long campaignId,
                                                     int year,
                                                     int month) {
-        return api.createRealizationReport(campaignId, year, month);
+        return yandexApi.createRealizationReport(campaignId, year, month);
     }
 
     public YANDEX_ReportInfo getReportInfo(@NotNull String reportId) {
-        return api.getReportInfo(reportId);
+        return yandexApi.getReportInfo(reportId);
     }
 
-    public String scheduledGetServicesReport(@NotNull Long businessId,
+    public String scheduledGetServicesReport(@NotNull String auth,
+                                             @NotNull Long businessId,
                                              @NotNull String dateFrom,
                                              @NotNull String dateTo,
                                              @NotNull List<YANDEX_PlacementType> placementPrograms) {
+        yandexApi.setHeaders(auth);
         YANDEX_CreateReport report = getServicesReport(businessId, dateFrom, dateTo, placementPrograms);
         Boolean value = reportChecker.start(() -> {
             YANDEX_ReportInfo info = getReportInfo(report.getReportId());
@@ -69,9 +66,11 @@ public class YANDEX_Service {
         return null;
     }
 
-    public String scheduledGetRealizationReport(@NotNull Long campaignId,
+    public String scheduledGetRealizationReport(@NotNull String auth,
+                                                @NotNull Long campaignId,
                                                 int year,
                                                 int month) {
+        yandexApi.setHeaders(auth);
         YANDEX_CreateReport report = getRealizationReport(campaignId, year, month);
         Boolean value = checkReport(report.getReportId(), report.getCreationTime());
 
@@ -94,16 +93,18 @@ public class YANDEX_Service {
         return new Pair<>(date.withDayOfMonth(1).toString(), date.withDayOfMonth(date.lengthOfMonth()).toString());
     }
 
-    public List<YANDEX_TableRow> getDataForExcel(@NotNull Long campaignId,
-                                                 int year,
-                                                 int month,
-                                                 @NotNull Long businessId,
-                                                 @NotNull List<YANDEX_PlacementType> placementPrograms) {
+    public List<YANDEX_TableRow> getData(@NotNull String auth,
+                                         @NotNull Long campaignId,
+                                         int year,
+                                         int month,
+                                         @NotNull Long businessId,
+                                         @NotNull List<YANDEX_PlacementType> placementPrograms) {
+        yandexApi.setHeaders(auth);
         Pair<String, String> date = getStartAndEndDateToDate(month, year);
 
         try {
-            URL realizationUrl = new URL(scheduledGetRealizationReport(campaignId, year, month));
-            URL servicesUrl = new URL(scheduledGetServicesReport(businessId, date.a, date.b, placementPrograms));
+            URL realizationUrl = new URL(scheduledGetRealizationReport(auth, campaignId, year, month));
+            URL servicesUrl = new URL(scheduledGetServicesReport(auth, businessId, date.a, date.b, placementPrograms));
 
             try (
                     InputStream realizationInputStream = realizationUrl.openStream();

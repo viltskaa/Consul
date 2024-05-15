@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,10 +46,10 @@ public class WB_Service {
         return month.equals(1);
     }
 
-    public List<WB_TableRow> asyncGetData(@NotNull String apiKey,
-                                          @NotNull Integer year,
-                                          @NotNull Integer month) {
-        setApiKey(apiKey);
+    public List<WB_TableRow> getData(@NotNull String apiKey,
+                                     @NotNull Integer year,
+                                     @NotNull Integer month) {
+        wbApi.setApiKey(apiKey);
         CompletableFuture<List<WB_DetailReport>> reportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
                     List<WB_DetailReport> report = getDetailReportByYearAndMonth(year, month);
@@ -73,10 +72,6 @@ public class WB_Service {
                 });
 
         return wbDataCreator.createTableRows(reportCompletableFuture.join());
-    }
-
-    public void setApiKey(@NotNull String apiKey) {
-        wbApi.setApiKey(apiKey);
     }
 
     public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year,
