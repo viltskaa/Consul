@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class YANDEX_Service {
@@ -96,27 +98,27 @@ public class YANDEX_Service {
                                                  int year,
                                                  int month,
                                                  @NotNull Long businessId,
-                                                 @NotNull List<YANDEX_PlacementType> placementPrograms) throws IOException {
+                                                 @NotNull List<YANDEX_PlacementType> placementPrograms) {
         Pair<String, String> date = getStartAndEndDateToDate(month, year);
 
-        InputStream inputStreamRealization = new ByteArrayInputStream(new URL(scheduledGetRealizationReport(
-                campaignId,
-                year,
-                month)
-        ).openStream().readAllBytes());
+        try {
+            URL realizationUrl = new URL(scheduledGetRealizationReport(campaignId, year, month));
+            URL servicesUrl = new URL(scheduledGetServicesReport(businessId, date.a, date.b, placementPrograms));
 
-        InputStream inputStreamServices = new ByteArrayInputStream(new URL(scheduledGetServicesReport(
-                businessId,
-                date.a,
-                date.b,
-                placementPrograms)
-        ).openStream().readAllBytes());
+            try (
+                    InputStream realizationInputStream = realizationUrl.openStream();
+                    InputStream servicesInputStream = servicesUrl.openStream()
+            ) {
+                InputStream inputStreamRealization = new ByteArrayInputStream(realizationInputStream.readAllBytes());
+                InputStream inputStreamServices = new ByteArrayInputStream(servicesInputStream.readAllBytes());
 
-        List<YANDEX_TableRow> data = YANDEX_dataProcessing.getTableRowList(inputStreamRealization, inputStreamServices);
+                return YANDEX_dataProcessing.getTableRowList(inputStreamRealization, inputStreamServices);
+            } catch (IOException exception) {
+                return new ArrayList<>();
+            }
 
-        inputStreamRealization.close();
-        inputStreamServices.close();
-
-        return data;
+        } catch (IOException exception) {
+            return new ArrayList<>();
+        }
     }
 }
