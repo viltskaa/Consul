@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class YANDEX_dataProcessing {
-
     // Разгруппировка строк и запись названия заголовка ниже (если строка ниже пустая)
     private static void ungroupCells(Sheet sheet) {
         for (int i = sheet.getNumMergedRegions() - 1; i >= 0; i--) {
@@ -79,8 +78,8 @@ public class YANDEX_dataProcessing {
     private static DataFrame<Object> setDataToDataFrame(Sheet sheet, DataFrame<Object> df) {
         List<Object> listData = new ArrayList<>();
 
-        for(int j = findAutofilterRow(sheet) + 1; j < sheet.getLastRowNum() + 1; j++){
-            for(int i = 0; i < sheet.getRow(j).getPhysicalNumberOfCells(); i++){
+        for (int j = findAutofilterRow(sheet) + 1; j < sheet.getLastRowNum() + 1; j++) {
+            for (int i = 0; i < sheet.getRow(j).getPhysicalNumberOfCells(); i++) {
                 switch (sheet.getRow(j).getCell(i).getCellType()) {
                     case BLANK, NUMERIC -> listData.add(sheet.getRow(j).getCell(i).getNumericCellValue());
                     case BOOLEAN -> listData.add(sheet.getRow(j).getCell(i).getBooleanCellValue());
@@ -98,8 +97,15 @@ public class YANDEX_dataProcessing {
         DataFrame<Object> mainDataFrame;
         Workbook wb = WorkbookFactory.create(inputStream);
 
-        final Sheet[] sheet = {wb.getSheetAt(1), wb.getSheetAt(3), wb.getSheetAt(4), wb.getSheetAt(8),
-                wb.getSheetAt(11), wb.getSheetAt(18), wb.getSheetAt(12)};
+        final Sheet[] sheet = {
+                wb.getSheetAt(1),
+                wb.getSheetAt(3),
+                wb.getSheetAt(4),
+                wb.getSheetAt(8),
+                wb.getSheetAt(11),
+                wb.getSheetAt(18),
+                wb.getSheetAt(12)
+        };
 
         CompletableFuture<DataFrame<Object>> placingOnShowcaseCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
@@ -142,7 +148,10 @@ public class YANDEX_dataProcessing {
         DataFrame<Object> mainDataFrame;
         Workbook wb = WorkbookFactory.create(inputStream);
 
-        final Sheet[] sheet = {wb.getSheetAt(2), wb.getSheetAt(4)};
+        final Sheet[] sheet = {
+                wb.getSheetAt(2),
+                wb.getSheetAt(4)
+        };
 
         CompletableFuture<DataFrame<Object>> deliveredDataCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getDeliveredData(setDataToDataFrame(sheet[0], new DataFrame<>(getTitleForDataFrame(sheet[0])))));
@@ -157,10 +166,10 @@ public class YANDEX_dataProcessing {
     }
 
     private static DataFrame<Object> getFavorSortingCenter(DataFrame<Object> dfSortingCenter,
-                                                          DataFrame<Object> dfDelivery,
-                                                          DataFrame<Object> dfPayment) {
+                                                           DataFrame<Object> dfDelivery,
+                                                           DataFrame<Object> dfPayment) {
         return dfDelivery.concat(dfPayment)
-                .groupBy(7,8)
+                .groupBy(7, 8)
                 .sum()
                 .reindex(0)
                 .join(dfSortingCenter.groupBy(7).sum(), DataFrame.JoinType.OUTER)
@@ -171,19 +180,19 @@ public class YANDEX_dataProcessing {
     }
 
     private static DataFrame<Object> getDeliveredData(DataFrame<Object> df) {
-        return df.head(df.length()-1)
+        return df.head(df.length() - 1)
                 .groupBy(3)
                 .sum()
-                .retain(2,11)
-                .rename("Стоимость всех доставленных штук с НДС с учётом всех скидок, руб.","Начислено");
+                .retain(2, 11)
+                .rename("Стоимость всех доставленных штук с НДС с учётом всех скидок, руб.", "Начислено");
     }
 
     private static DataFrame<Object> getReturnData(DataFrame<Object> df) {
-        return df.head(df.length()-1)
+        return df.head(df.length() - 1)
                 .groupBy(3)
                 .sum()
-                .retain(3,8)
-                .rename("Цена с НДС с учётом всех скидок, руб. за шт.","Стоимость возврата");
+                .retain(3, 8)
+                .rename("Цена с НДС с учётом всех скидок, руб. за шт.", "Стоимость возврата");
     }
 
     private static DataFrame<Object> getPlacingOnShowcase(DataFrame<Object> df) {
@@ -191,25 +200,25 @@ public class YANDEX_dataProcessing {
                 .sum()
                 .retain(33);
 
-        return df.tail(df.length()-1)
-                .rename("Стоимость услуги без скидок и наценок (гр.34=гр.12*гр.27), ₽","Размещение товаров на витрине");
+        return df.tail(df.length() - 1)
+                .rename("Стоимость услуги без скидок и наценок (гр.34=гр.12*гр.27), ₽", "Размещение товаров на витрине");
     }
 
     private static DataFrame<Object> getDeliveryToConsumer(DataFrame<Object> df) {
         return df.groupBy(8)
                 .sum()
                 .retain(21)
-                .rename("Стоимость услуги, ₽","Доставка покупателю");
+                .rename("Стоимость услуги, ₽", "Доставка покупателю");
     }
 
-    private static DataFrame<Object> getAcceptAndTransferPayment(DataFrame<Object> dfAccept,DataFrame<Object> dfTransfer) {
+    private static DataFrame<Object> getAcceptAndTransferPayment(DataFrame<Object> dfAccept, DataFrame<Object> dfTransfer) {
         DataFrame<Object> dfJoin = dfAccept.groupBy(8)
-                                            .sum()
-                                            .retain(6)
-                                            .join(dfTransfer.groupBy(8)
-                                                            .sum()
-                                                            .retain(6),
-                                                    DataFrame.JoinType.OUTER);
+                .sum()
+                .retain(6)
+                .join(dfTransfer.groupBy(8)
+                                .sum()
+                                .retain(6),
+                        DataFrame.JoinType.OUTER);
 
         return dfJoin.transpose()
                 .add(0)
@@ -217,55 +226,56 @@ public class YANDEX_dataProcessing {
                 .sum()
                 .transpose()
                 .tail(dfJoin.length())
-                .rename(null,"Приём и перевод платежа покупателя");
+                .rename(null, "Приём и перевод платежа покупателя");
     }
 
     private static DataFrame<Object> getLoyaltyProgram(DataFrame<Object> df) {
         return df.groupBy(8)
                 .sum()
                 .retain(9)
-                .rename("Стоимость услуги, ₽","Программа лояльности");
+                .rename("Стоимость услуги, ₽", "Программа лояльности");
     }
 
     private static DataFrame<Object> getBoostSales(DataFrame<Object> df) {
         return df.groupBy(8)
                 .sum()
                 .retain(8)
-                .rename("Постоплата, ₽","Буст продаж");
+                .rename("Постоплата, ₽", "Буст продаж");
     }
 
     //кринж (почему у списка нет метода, который бы заменил все null)
+    // !!!!! Переделать !!!!!
     public static List<YANDEX_TableRow> getTableRowList(InputStream inputStreamRealization, InputStream inputStreamServices) throws IOException {
         DataFrame<Object> tempDataFrame = new DataFrame<>();
         List<YANDEX_TableRow> listRows = new ArrayList<>();
 
         tempDataFrame = tempDataFrame.join(getDataFromServiceInputStream(inputStreamServices), DataFrame.JoinType.OUTER)
-                                        .join(getDataFromRealizationInputStream(inputStreamRealization), DataFrame.JoinType.OUTER);
+                .join(getDataFromRealizationInputStream(inputStreamRealization), DataFrame.JoinType.OUTER);
 
         Object[] skus = tempDataFrame.index().toArray();
 
-        for(int i = 0; i < tempDataFrame.length(); i++) {
-            List<Object> listDF = tempDataFrame.row(i);
+        for (int i = 0; i < tempDataFrame.length(); i++) {
+            List<Object> listDF = tempDataFrame.row(i).stream()
+                    .map(x -> x == null ? 0.0 : x).toList();
+
             listRows.add(YANDEX_TableRow.builder()
-                            .offerId(skus[i].toString())
-                            .deliveryCount(listDF.get(6) != null ? (Double) listDF.get(6) : 0.0)
-                            .accrued(listDF.get(7) != null ? (Double) listDF.get(7) : 0.0)
-                            .returnCount(listDF.get(8) != null ? (Double) listDF.get(8) : 0.0)
-                            .returnCost(listDF.get(9) != null ? (Double) listDF.get(9) : 0.0)
-                            .showcasePlacing(listDF.get(0) != null ? (Double) listDF.get(0) : 0.0)
-                            .deliveryToConsumer(listDF.get(3) != null ? (Double) listDF.get(3) : 0.0)
-                            .acceptAndTransferPayment(listDF.get(4) != null ? (Double) listDF.get(4) : 0.0)
-                            .favorSorting(listDF.get(5) != null ? (Double) listDF.get(5) : 0.0)
-                            .unredeemedStorage(0.0)
-                            .adCampaignCost(0.0)
-                            .loyaltyProgram(listDF.get(1) != null ? (Double) listDF.get(1) : 0.0)
-                            .boostSales(listDF.get(2) != null ? (Double) listDF.get(2) : 0.0)
-                            .promotionFavor(0.0)
-                            //крииинж...
-                            .count(((listDF.get(6) != null ? (Double) listDF.get(6) : 0.0) -
-                                    (listDF.get(8) != null ? (Double) listDF.get(8) : 0.0)) == 0.0 ? -1 :
-                                    ((listDF.get(6) != null ? (Double) listDF.get(6) : 0.0) -
-                                            (listDF.get(8) != null ? (Double) listDF.get(8) : 0.0)))
+                    .offerId(skus[i].toString())
+                    .deliveryCount((Double) listDF.get(6))
+                    .accrued((Double) listDF.get(7))
+                    .returnCount((Double) listDF.get(8))
+                    .returnCost((Double) listDF.get(9))
+                    .showcasePlacing((Double) listDF.get(0))
+                    .deliveryToConsumer((Double) listDF.get(3))
+                    .acceptAndTransferPayment((Double) listDF.get(4))
+                    .favorSorting((Double) listDF.get(5))
+                    .unredeemedStorage(0.0)
+                    .adCampaignCost(0.0)
+                    .loyaltyProgram((Double) listDF.get(1))
+                    .boostSales((Double) listDF.get(2))
+                    .promotionFavor(0.0)
+                    .count((Double) listDF.get(6) - (Double) listDF.get(8) == 0.0
+                            ? -1
+                            : ((Double) listDF.get(6) - (Double) listDF.get(8)))
                     .build());
         }
 
