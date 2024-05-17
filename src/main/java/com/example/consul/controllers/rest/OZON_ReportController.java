@@ -1,7 +1,10 @@
 package com.example.consul.controllers.rest;
 
+import com.example.consul.controllers.rest.requestBodies.OZON_RequestBody;
+import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -17,18 +20,13 @@ public class OZON_ReportController {
         this.ozonService = ozonService;
     }
 
-    @GetMapping(path = "/transaction")
-    public OZON_TransactionReport getTransactionReport(
-            @RequestParam String from,
-            @RequestParam String to,
-            @RequestParam(value = "") ArrayList<String> operation_type,
-            @RequestParam(value = "all") String transaction_type,
-            @RequestParam String apiKey,
-            @RequestParam String clientId,
-            @RequestParam int page,
-            @RequestParam int page_size
-    ) {
-        ozonService.setHeader(apiKey,clientId);
-        return ozonService.getTransactionReport(from, to,operation_type,transaction_type,page,page_size);
+    @GetMapping(path = "/get")
+    public List<OZON_TableRow> getReport(@RequestBody OZON_RequestBody body){
+        return ozonService.getData(body.getApiKey(),
+                body.getClientId(),
+                body.getPerformanceClientId(),
+                body.getPerformanceClientSecret(),
+                body.getYear(),
+                body.getMonth());
     }
 }

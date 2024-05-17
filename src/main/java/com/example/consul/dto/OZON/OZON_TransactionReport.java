@@ -1,13 +1,11 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@Setter
-@Getter
 @Data
 public class OZON_TransactionReport {
     private Result result;
@@ -16,15 +14,11 @@ public class OZON_TransactionReport {
         this.result = result;
     }
 
-    @Setter
-    @Getter
     @Data
     public static class Result{
         private List<Operation> operations;
-
-        public Result(List<Operation> operations) {
-            this.operations = operations;
-        }
+        private Long page_count;
+        private Long row_count;
     }
 
     @Data
@@ -33,35 +27,18 @@ public class OZON_TransactionReport {
         private String order_date;
         private String posting_number;
         private Long warehouse_id;
-
-        public Posting(String delivery_schema, String order_date, String posting_number, Long warehouse_id) {
-            this.delivery_schema = delivery_schema;
-            this.order_date = order_date;
-            this.posting_number=posting_number;
-            this.warehouse_id=warehouse_id;
-        }
     }
 
     @Data
     public static class Item{
         private String name;
         private Long sku;
-
-        public Item(String name, Long sku) {
-            this.name = name;
-            this.sku=sku;
-        }
     }
 
     @Data
     public static class Service{
         private String name;
         private Double price;
-
-        public Service(String name, Double price) {
-            this.name = name;
-            this.price=price;
-        }
     }
 
     @Data
@@ -84,8 +61,8 @@ public class OZON_TransactionReport {
             return getPosting().getPosting_number();
         }
 
-        public Boolean hasSku(Long sku) {
-            return getItems().stream().anyMatch(x -> x.getSku().equals(sku));
+        public Boolean hasSkus(List<Long> skus) {
+            return getItems().stream().anyMatch(x -> skus.contains(x.getSku()));
         }
 
         public static OZON_TransactionReport.Operation of(OZON_TransactionReport.Operation operation) {
@@ -133,11 +110,26 @@ public class OZON_TransactionReport {
         }
 
         public Long getSku(){
-            return items.get(0).getSku();
+                return items.get(0).getSku();
         }
 
-        public double getPrice(){
+        public Double getPrice(){
             return services.get(0).getPrice();
+        }
+
+        public List<String> getAllServicesName(){
+            return services.stream().flatMap(service -> Stream.of(service.getName())).collect(Collectors.toList());
+        }
+
+        public Double getPriceByServiceName(String serviceName){
+            if (!checkServiceName(serviceName))
+                return null;
+            return services.stream().filter(service -> service.getName().equals(serviceName))
+                    .findFirst().get().getPrice();
+        }
+
+        public boolean checkServiceName(String serviceName){
+            return getAllServicesName().contains(serviceName);
         }
     }
 }

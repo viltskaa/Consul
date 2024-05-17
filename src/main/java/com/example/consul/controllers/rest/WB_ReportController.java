@@ -1,7 +1,7 @@
 package com.example.consul.controllers.rest;
 
-import com.example.consul.dto.WB.WB_AdReport;
-import com.example.consul.dto.WB.WB_DetailReport;
+import com.example.consul.controllers.rest.requestBodies.WB_RequestBody;
+import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.services.WB_Service;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,23 +17,10 @@ public class WB_ReportController {
         this.wbService = wbService;
     }
 
-    @GetMapping(path = "/ad")
-    public List<WB_AdReport> getAdReport(
-            @RequestParam String dateTo,
-            @RequestParam String dateFrom,
-            @RequestParam String apiKey
-    ) {
-        wbService.setApiKey(apiKey);
-        return wbService.getAdReport(dateFrom, dateTo);
-    }
-
-    @GetMapping(path = "/detail")
-    public List<WB_DetailReport> getDetailReport(
-            @RequestParam String dateTo,
-            @RequestParam String dateFrom,
-            @RequestParam String apiKey
-    ) {
-        wbService.setApiKey(apiKey);
-        return wbService.getDetailReport(dateFrom, dateTo);
+    @GetMapping(path = "/get")
+    public List<WB_TableRow> getReport(@RequestBody WB_RequestBody body){
+        return wbService.getData(body.getApiKey(),
+                body.getYear(),
+                body.getMonth());
     }
 }

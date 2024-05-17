@@ -20,11 +20,6 @@ public class WB_Api {
     private HttpHeaders headers = new HttpHeaders();
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final Link detailReportUrl = Link.create(
-            "https://statistics-api.wildberries.ru/api/<arg>/supplier/reportDetailByPeriod?dateFrom=<arg>&dateTo=<arg>");
-    private final Link adReportUrl = Link.create(
-            "https://advert-api.wb.ru/adv/v1/upd?from=<arg>&to=<arg>");
-
     public WB_Api() {
         restTemplate.getMessageConverters()
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
@@ -38,19 +33,47 @@ public class WB_Api {
     }
 
     @Nullable
-    public List<WB_DetailReport> getDetailReport(@NotNull String dateFrom,
-                                                 @NotNull String dateTo) throws NullPointerException {
+    public List<WB_DetailReport> getDetailReportV1(@NotNull String dateFrom,
+                                                   @NotNull String dateTo) {
+        return getDetailReport(dateFrom, dateTo, 0L, "v1");
+    }
+
+    @Nullable
+    public List<WB_DetailReport> getDetailReportV5(@NotNull String dateFrom,
+                                                   @NotNull String dateTo) {
+        return getDetailReport(dateFrom, dateTo, 0L, "v5");
+    }
+
+    @Nullable
+    public List<WB_DetailReport> getDetailReportWithOffsetV1(@NotNull String dateFrom,
+                                                             @NotNull String dateTo,
+                                                             @NotNull Long rrdId) {
+        return getDetailReport(dateFrom, dateTo, rrdId, "v1");
+    }
+
+    @Nullable
+    public List<WB_DetailReport> getDetailReportWithOffsetV5(@NotNull String dateFrom,
+                                                         @NotNull String dateTo,
+                                                         @NotNull Long rrdId) {
+        return getDetailReport(dateFrom, dateTo, rrdId, "v5");
+    }
+
+    @Nullable
+    private List<WB_DetailReport> getDetailReport(@NotNull String dateFrom,
+                                                  @NotNull String dateTo,
+                                                  @NotNull Long rrdid,
+                                                  @NotNull String version) {
         if (dateTo.isEmpty() || dateFrom.isEmpty()) return null;
+
+        final String detailReportUrl = "https://statistics-api.wildberries.ru/api/%s/supplier/reportDetailByPeriod?dateFrom=%s&dateTo=%s&rrdid=%s"
+                        .formatted(version, dateFrom, dateTo, rrdid);
 
         HttpEntity<WB_DetailReport[]> request = new HttpEntity<>(headers);
         ResponseEntity<WB_DetailReport[]> response = restTemplate
-                .exchange(detailReportUrl.setArgs("v1",dateFrom, dateTo).build(),
-                        HttpMethod.GET, request,
-                        WB_DetailReport[].class);
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return Arrays.asList(
-                    Objects.requireNonNull(response.getBody())
-            );
+                .exchange(detailReportUrl, HttpMethod.GET, request, WB_DetailReport[].class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return Arrays.asList(response.getBody());
         } else {
             return null;
         }
@@ -60,6 +83,9 @@ public class WB_Api {
     public List<WB_AdReport> getAdReport(@NotNull String dateFrom,
                                          @NotNull String dateTo) throws NullPointerException {
         if (dateTo.isEmpty() || dateFrom.isEmpty()) return null;
+
+        final Link adReportUrl = Link.create(
+                "https://advert-api.wb.ru/adv/v1/upd?from=<arg>&to=<arg>");
 
         String url = adReportUrl.setArgs(dateFrom, dateTo).build();
         HttpEntity<WB_AdReport[]> request = new HttpEntity<>(headers);

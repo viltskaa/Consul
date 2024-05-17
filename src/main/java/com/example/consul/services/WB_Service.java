@@ -1,41 +1,129 @@
 package com.example.consul.services;
 
 import com.example.consul.api.WB_Api;
+import com.example.consul.components.WB_DataCreator;
+import com.example.consul.conditions.ConditionalWithDelayChecker;
+import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.dto.WB.WB_AdReport;
 import com.example.consul.dto.WB.WB_DetailReport;
+import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class WB_Service {
     private final WB_Api wbApi;
+    private final WB_DataCreator wbDataCreator;
+    private final ConditionalWithDelayChecker withDelayChecker;
 
-    public WB_Service(WB_Api wbApi) {
+    public WB_Service(WB_Api wbApi, WB_DataCreator wbDataCreator, ConditionalWithDelayChecker withDelayChecker) {
         this.wbApi = wbApi;
+        this.wbDataCreator = wbDataCreator;
+        this.withDelayChecker = withDelayChecker;
     }
 
-    public void setApiKey(@NotNull String apiKey) {
+    private Pair<String, String> getDateFrom(@NotNull Integer year, @NotNull Integer month) {
+        LocalDate date = LocalDate.of(year, month, 1);
+
+        LocalDate startOfMonth = date.withDayOfMonth(1);
+        LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth());
+
+        String startOfMonthString = startOfMonth.atStartOfDay(ZoneOffset.UTC)
+                .toString().replace("T00:00", "T00:00:00.000");
+        String endOfMonthString = endOfMonth.atStartOfDay(ZoneOffset.UTC)
+                .plusDays(1).minusNanos(1000000).toString();
+
+        return new Pair<>(startOfMonthString, endOfMonthString);
+    }
+
+    private boolean isNeedV1(@NotNull Integer month) {
+        return month.equals(1);
+    }
+
+    public List<WB_TableRow> getData(@NotNull String apiKey,
+                                     @NotNull Integer year,
+                                     @NotNull Integer month) {
         wbApi.setApiKey(apiKey);
+        CompletableFuture<List<WB_DetailReport>> reportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    List<WB_DetailReport> report = getDetailReportByYearAndMonth(year, month);
+
+                    if (report.size() == 100_000) {
+                        withDelayChecker.start(() -> {
+                            Long lastPageRrId = report.get(report.size() - 1).getRrd_id();
+                            List<WB_DetailReport> nextPageReport = getDetailReportByYearAndMonthWithOffset(
+                                    year,
+                                    month,
+                                    lastPageRrId
+                            );
+                            if (nextPageReport == null) return true;
+                            report.addAll(nextPageReport);
+                            return false;
+                        }, 65L);
+                    }
+
+                    return report;
+                });
+
+        return wbDataCreator.createTableRows(reportCompletableFuture.join());
     }
 
-    public List<WB_DetailReport> getDetailReport(
-            @NotNull String dateFrom,
-            @NotNull String dateTo
-    ) {
+    public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year,
+                                                               @NotNull Integer month) {
+        Pair<String, String> dates = getDateFrom(year, month);
+        return isNeedV1(month)
+                ? getDetailReportV1(dates.a, dates.b)
+                : getDetailReportV5(dates.a, dates.b);
+    }
+
+    public List<WB_DetailReport> getDetailReportByYearAndMonthWithOffset(@NotNull Integer year,
+                                                                         @NotNull Integer month,
+                                                                         @NotNull Long rrdId) {
+        Pair<String, String> dates = getDateFrom(year, month);
+        return isNeedV1(month)
+                ? getDetailReportV1(dates.a, dates.b, rrdId)
+                : getDetailReportV5(dates.a, dates.b, rrdId);
+    }
+
+    public List<WB_DetailReport> getDetailReportV1(@NotNull String dateFrom, @NotNull String dateTo) {
         try {
-            return wbApi.getDetailReport(dateFrom, dateTo);
+            return wbApi.getDetailReportV1(dateFrom, dateTo);
         } catch (NullPointerException exception) {
             return new ArrayList<>();
         }
     }
 
-    public List<WB_AdReport> getAdReport(
-            @NotNull String dateFrom,
-            @NotNull String dateTo
-    ) {
+    public List<WB_DetailReport> getDetailReportV5(@NotNull String dateFrom, @NotNull String dateTo) {
+        try {
+            return wbApi.getDetailReportV5(dateFrom, dateTo);
+        } catch (NullPointerException exception) {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<WB_DetailReport> getDetailReportV1(@NotNull String dateFrom, @NotNull String dateTo, @NotNull Long rrdId) {
+        try {
+            return wbApi.getDetailReportWithOffsetV1(dateFrom, dateTo, rrdId);
+        } catch (NullPointerException exception) {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<WB_DetailReport> getDetailReportV5(@NotNull String dateFrom, @NotNull String dateTo, @NotNull Long rrdId) {
+        try {
+            return wbApi.getDetailReportWithOffsetV5(dateFrom, dateTo, rrdId);
+        } catch (NullPointerException exception) {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<WB_AdReport> getAdReport(@NotNull String dateFrom, @NotNull String dateTo) {
         try {
             return wbApi.getAdReport(dateFrom, dateTo);
         } catch (NullPointerException exception) {

@@ -1,7 +1,7 @@
 package com.example.consul.api;
 
 
-import com.example.consul.api.utils.ForTransactions;
+import com.example.consul.api.utils.TransactionBody;
 import com.example.consul.dto.OZON.OZON_DetailReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
@@ -26,28 +26,48 @@ public class OZON_Api {
                 .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
-    public void setHeaders(@NotNull String apiKey,@NotNull String clientId) {
+    public void setHeaders(@NotNull String apiKey, @NotNull String clientId) {
         headers = new HttpHeaders();
         headers.add("Api-Key", apiKey);
         headers.add("Client-Id", clientId);
         headers.add("Content-Type", "application/json");
     }
 
-    // Финансовые отчеты => Список транзакций
+
+    /**
+     * Финансовые отчеты => Список транзакций
+     *
+     * @param from начало периода
+     * @param to конец периода
+     * @param operation_type тип операции
+     * @param transaction_type тип начисления
+     * @param page номер страницы, возвращаемой в запросе
+     * @param page_size количество элементов на странице
+     * @return
+     */
     @Nullable
     public OZON_TransactionReport getTransactionReport(@NotNull String from,
-                                                             @NotNull String to,
-                                                             @NotNull ArrayList<String> operation_type,
-                                                             @NotNull String transaction_type,
-                                                       @NotNull int page,
-                                                       @NotNull int page_size){
-        String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
+                                                       @NotNull String to,
+                                                       @NotNull List<String> operation_type,
+                                                       @NotNull String transaction_type,
+                                                       @NotNull Integer page,
+                                                       @NotNull Integer page_size) {
+        final String transactionReportUrl = "https://api-seller.ozon.ru/v3/finance/transaction/list";
 
-        HttpEntity<String> request = new HttpEntity<>
-                (new Gson().toJson(new ForTransactions(from, to, operation_type, transaction_type, page,page_size)), headers);
+        HttpEntity<String> request = new HttpEntity<>(new Gson()
+                .toJson(new TransactionBody(from,
+                                            to,
+                                            operation_type,
+                                            transaction_type,
+                                            page,
+                                            page_size)
+                        ),
+                headers
+        );
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity(transactionReportUrl, request, String.class );
+                .postForEntity(transactionReportUrl, request, String.class);
+
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_TransactionReport.class);
         } else {
@@ -55,18 +75,27 @@ public class OZON_Api {
         }
     }
 
-    // Финансовые отчеты => Отчёт о реализации товаров
+    /**
+     * Финансовые отчеты => Отчёт о реализации товаров
+     *
+     * @param month месяц для отчетного периода
+     * @param year год для отчетного периода
+     * @return
+     */
+
     @Nullable
-    public OZON_DetailReport getDetailReport(@NotNull String date){
-        String detailReportUrl = "https://api-seller.ozon.ru/v1/finance/realization";
+    public OZON_DetailReport getDetailReport(@NotNull Integer month,
+                                             @NotNull Integer year) {
+        String detailReportUrl = "https://api-seller.ozon.ru/v2/finance/realization";
 
-        Map<String, String> map= new HashMap<>();
-        map.put("date", date);
+        Map<String, Integer> map = new HashMap<>();
+        map.put("month", month);
+        map.put("year", year);
 
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<Map<String, Integer>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity(detailReportUrl, request, String.class );
+                .postForEntity(detailReportUrl, request, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_DetailReport.class);
@@ -75,12 +104,18 @@ public class OZON_Api {
         }
     }
 
-    //Загрузка и обновление товаров => Получить список товаров по идентификаторам
+    /**
+     * Загрузка и обновление товаров => Получить список товаров по идентификаторам.
+     * Получение списка товаров по идентификатору в системе OZON - SKU
+     *
+     * @param skus идентификатор товара в системе Ozon
+     * @return
+     */
     @Nullable
-    public OZON_SkuProductsReport getProductInfo(List<Long> skus){
+    public OZON_SkuProductsReport getProductInfo(List<Long> skus) {
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
 
-        Map<String, Long[]> map= new HashMap<>();
+        Map<String, Long[]> map = new HashMap<>();
         map.put("sku", skus.toArray(new Long[0]));
 
         HttpEntity<Map<String, Long[]>> request = new HttpEntity<>(map, headers);
@@ -95,12 +130,18 @@ public class OZON_Api {
         }
     }
 
-    //Загрузка и обновление товаров => Получить список товаров по идентификаторам
+    /**
+     * Загрузка и обновление товаров => Получить список товаров по идентификаторам.
+     * Получение списка товаров по идентификатору в системе продавца - артикул
+     *
+     * @param offerIds идентификатор товара в системе продавца
+     * @return
+     */
     @Nullable
-    public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds){
+    public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds) {
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
 
-        Map<String, String[]> map= new HashMap<>();
+        Map<String, String[]> map = new HashMap<>();
         map.put("offer_id", offerIds);
 
         HttpEntity<Map<String, String[]>> request = new HttpEntity<>(map, headers);

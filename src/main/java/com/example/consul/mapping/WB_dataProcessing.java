@@ -1,20 +1,133 @@
 package com.example.consul.mapping;
 
 import com.example.consul.dto.WB.WB_DetailReport;
-import com.example.consul.dto.WB.WB_DetailReportShort;
+import com.example.consul.dto.WB.WB_OperationName;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class WB_dataProcessing {
-    public static Map<String, List<WB_DetailReportShort>> groupBySaName(List<WB_DetailReport> wbDetailReports) {
-        return wbDetailReports.stream()
-                .filter(x -> x.getSa_name() != null)
-                .map(WB_DetailReportShort::of)
-                .collect(Collectors.groupingBy(WB_DetailReportShort::getSa_name));
+    private static String checkOnDouble(@NotNull String sku) {
+        int center = sku.length() / 2;
+        return sku.substring(0, center)
+                .equals(sku.substring(center)) ? sku.substring(center) : sku;
     }
 
-    // todo Суммация WB_AdReport по цене, с фильтром "!= пробный"
-    // todo Собрать детализацию в таблицу
+    public static Map<String, List<WB_DetailReport>> groupBySaName(@NotNull List<WB_DetailReport> wbDetailReports) {
+        return wbDetailReports.stream()
+                .filter(x -> x.getSa_name() != null && !x.getSa_name().isEmpty())
+                .peek(x -> {
+                    String sku = checkOnDouble(x.getSa_name());
+                    x.setSa_name(sku);
+                })
+                .collect(Collectors.groupingBy(
+                        WB_DetailReport::getSa_name,
+                        Collectors.toList()
+                ));
+    }
+
+    public static Map<String, Integer> sumDeliveryAmount(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.SALE.toString()))
+                                .mapToInt(WB_DetailReport::getQuantity)
+                                .sum()));
+    }
+
+    public static Map<String, Integer> sumReturnAmount(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.RETURN.toString()))
+                                .mapToInt(WB_DetailReport::getQuantity)
+                                .sum()));
+    }
+
+    public static Map<String, Double> sumRetail(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.SALE.toString()))
+                                .mapToDouble(WB_DetailReport::getRetail_amount)
+                                .sum()));
+    }
+
+    public static Map<String, Double> sumReturn(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.RETURN.toString()))
+                                .mapToDouble(WB_DetailReport::getRetail_amount)
+                                .sum()));
+    }
+
+    public static Map<String, Double> sumCommission(
+            @NotNull Map<String,
+            @NotNull List<WB_DetailReport>> groupMap,
+            @NotNull WB_OperationName operationName
+    ) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(operationName.toString()))
+                                .mapToDouble(
+                                        x -> x.getPpvz_vw() + x.getPpvz_vw_nds()
+                                                + x.getAcquiring_fee() + x.getPpvz_reward()
+                                )
+                                .sum()));
+    }
+
+    public static Map<String, Double> sumAdditional(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.RETURN.toString()))
+                                .mapToDouble(WB_DetailReport::getAdditional_payment)
+                                .sum()));
+    }
+
+    public static Map<String, Double> sumLogistic(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.LOGISTIC.toString()))
+                                .mapToDouble(WB_DetailReport::getDelivery_rub)
+                                .sum()));
+    }
+
+    public static Map<String, Double> sumPenalty(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.PENALTY.toString()))
+                                .mapToDouble(WB_DetailReport::getPenalty)
+                                .sum()));
+    }
 }

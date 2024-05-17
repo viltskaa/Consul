@@ -37,7 +37,9 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.springframework.data:spring-data-jpa:3.2.4'
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+    implementation 'sh.joinery:joinery-dataframe:1.10'
 }
 
 tasks.named('test') {

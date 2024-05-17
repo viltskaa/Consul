@@ -1,8 +1,6 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,14 +8,10 @@ import java.util.stream.Collectors;
 /**
  * https://api-seller.ozon.ru/v2/product/info
  */
-@Setter
-@Getter
 @Data
 public class OZON_SkuProductsReport {
     private Result result;
 
-    @Setter
-    @Getter
     @Data
     private static class Result {
         private List<OZON_SkuProduct> items;
@@ -31,16 +25,6 @@ public class OZON_SkuProductsReport {
                                 .collect(Collectors.toList())));
     }
 
-
-    public OZON_SkuProduct findBySku(Long sku) {
-        return result.getItems().stream()
-                .filter(x ->
-                        x.getSources().stream().anyMatch(y -> y.sku.equals(sku))
-                ).findFirst().orElse(null);
-    }
-
-    @Setter
-    @Getter
     @Data
     public static class OZON_SkuProduct {
         private Long id;
@@ -79,10 +63,6 @@ public class OZON_SkuProductsReport {
         private String primary_image;
         private Status status;
 
-
-
-        @Setter
-        @Getter
         @Data
         private static class Sources{
             private Boolean is_enabled;
@@ -90,8 +70,6 @@ public class OZON_SkuProductsReport {
             private String source;
         }
 
-        @Setter
-        @Getter
         @Data
         private static class Stocks {
             private Integer coming;
@@ -99,8 +77,6 @@ public class OZON_SkuProductsReport {
             private Integer reserved;
         }
 
-        @Setter
-        @Getter
         @Data
         private static class Details {
             private Boolean has_price;
@@ -109,8 +85,6 @@ public class OZON_SkuProductsReport {
             private Object reasons;
         }
 
-        @Setter
-        @Getter
         @Data
         private static class Status {
             private String status;
