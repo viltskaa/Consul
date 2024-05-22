@@ -5,5 +5,7 @@ public enum OZON_TransactionType {
     OperationAgentStornoDeliveredToCustomer,
     OperationReturnGoodsFBSofRMS,
     MarketplaceRedistributionOfAcquiringOperation,
+    OperationMarketplacePremiumSubscribtion,
+    MarketplaceMarketingActionCostOperation,
     all
 }

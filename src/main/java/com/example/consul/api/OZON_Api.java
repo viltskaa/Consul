@@ -175,7 +175,7 @@ public class OZON_Api {
      * Получение списка товаров по идентификатору в системе продавца - артикул
      *
      * @param offerIds идентификатор товара в системе продавца
-     * @return 
+     * @return
      */
     @Nullable
     public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds) {

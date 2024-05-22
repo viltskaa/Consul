@@ -51,7 +51,9 @@ public class OZON_Service {
                 OZON_TransactionType.OperationAgentDeliveredToCustomer,
                 OZON_TransactionType.OperationAgentStornoDeliveredToCustomer,
                 OZON_TransactionType.OperationReturnGoodsFBSofRMS,
-                OZON_TransactionType.MarketplaceRedistributionOfAcquiringOperation
+                OZON_TransactionType.MarketplaceRedistributionOfAcquiringOperation,
+                OZON_TransactionType.OperationMarketplacePremiumSubscribtion,
+                OZON_TransactionType.MarketplaceMarketingActionCostOperation
         ).map(Object::toString).toList();
 
         ozonApi.setHeaders(apiKey, clientId);

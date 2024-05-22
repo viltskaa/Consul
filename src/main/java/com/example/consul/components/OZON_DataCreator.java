@@ -91,6 +91,11 @@ public class OZON_DataCreator {
         return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumAcquiring);
     }
 
+    public Map<String, Double> getInstallments(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+                                               @NotNull OZON_TransactionReport ozonTransactionReport) {
+        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumInstallments);
+    }
+
     public Map<String, Double> getMapReturnDelivery(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
                                                     @NotNull OZON_TransactionReport ozonTransactionReport) {
         return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumReturnDelivery);
@@ -123,6 +128,14 @@ public class OZON_DataCreator {
         return OZON_dataProcessing.getAccrualInternalClaim(ozonFinanceReport);
     }
 
+    public Double getOzonPremium(@NotNull OZON_TransactionReport ozonTransactionReport) {
+        return OZON_dataProcessing.sumOzonPremium(ozonTransactionReport.getResult().getOperations());
+    }
+
+    public Double getActionCost(@NotNull OZON_TransactionReport ozonTransactionReport) {
+        return OZON_dataProcessing.sumActionCost(ozonTransactionReport.getResult().getOperations());
+    }
+
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull OZON_DetailReport ozonDetailReport,
                                                     @NotNull OZON_SkuProductsReport ozonSkuProductsReport,
                                                     @NotNull OZON_TransactionReport ozonTransactionReport,
@@ -142,6 +155,9 @@ public class OZON_DataCreator {
         Map<String, Double> returnDelivery = getMapReturnDelivery(ozonSkuProductsReport, ozonTransactionReport);
         Map<String, Double> stencilProduct = getMapStencils(ozonSkuProductsReport, ozonPerformanceReports);
         Double accrualInternalClaim = getAccrualInternalClaim(ozonFinanceReport);
+        Double ozonPremium = getOzonPremium(ozonTransactionReport);
+        Double actionCost = getActionCost(ozonTransactionReport);
+        Map<String, Double> installments = getInstallments(ozonSkuProductsReport, ozonTransactionReport);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue(),
@@ -155,7 +171,8 @@ public class OZON_DataCreator {
                         acquiring.getOrDefault(entry.getKey(), 0.0),
                         returnProcessing.getOrDefault(entry.getKey(), 0.0),
                         returnDelivery.getOrDefault(entry.getKey(), 0.0),
-                        stencilProduct.getOrDefault(entry.getKey(), 0.0)
+                        stencilProduct.getOrDefault(entry.getKey(), 0.0),
+                        installments.getOrDefault(entry.getKey(), 0.0)
                 ))));
 
         return mergedMap.entrySet().stream().map(x -> {
@@ -171,14 +188,14 @@ public class OZON_DataCreator {
                     .logistic((Double) values.get(6) * -1)
                     .lastMile((Double) values.get(7) * -1)
                     .acquiring((Double) values.get(8) * -1)
-                    .installment(0.0)
+                    .installment((Double) values.get(12) * -1)
                     .returnProcessing((Double) values.get(9) * -1)
                     .returnDelivery((Double) values.get(10) * -1)
-                    .promotion(0.0)
+                    .promotion(actionCost/mergedMap.size() * -1)
                     .compensation(accrualInternalClaim/mergedMap.size())
                     .searchPromotion(0.0)
                     .stencilProduct((Double) values.get(11))
-                    .ozonPremium(0.0)
+                    .ozonPremium(ozonPremium/mergedMap.size() * -1)
                     .crossDockingDelivery(0.0)
                     .claimsAccruals(0.0)
                     .build();

@@ -133,6 +133,54 @@ public class OZON_dataProcessing {
     }
 
     /**
+     * Нахождение Ozon Рассрочки по артикулу
+     *
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param operations список операций ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (Ozon Рассрочка для товара)]
+     */
+    static public Map<String, Double> sumInstallments(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
+        return offerSku.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().stream()
+                        .mapToDouble(row -> operations.stream()
+                                .filter(op -> op.hasSkus(entry.getValue())
+                                        && op.getPriceByServiceName("MarketplaceServiceItemInstallment") != null)
+                                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku,
+                                        Collectors.summingDouble(OZON_TransactionReport.Operation::getPrice)))
+                                .entrySet().stream().filter(o -> o.getKey().equals(row))
+                                .mapToDouble(Map.Entry::getValue).sum())
+                        .sum()
+        ));
+    }
+
+    /**
+     * Нахождение Ozon Премиум
+     *
+     * @param operations список операций ( OZON_TransactionReport => result => operations )
+     * @return Общая сумма Ozon Premium
+     */
+    static public Double sumOzonPremium(List<OZON_TransactionReport.Operation> operations) {
+        return operations.stream()
+                .filter(op -> Objects.equals(op.getOperation_type(), "OperationMarketplacePremiumSubscribtion"))
+                .mapToDouble(OZON_TransactionReport.Operation::getAmount)
+                .sum();
+    }
+
+    /**
+     * Нахождение Услуг продвижения товаров
+     *
+     * @param operations список операций ( OZON_TransactionReport => result => operations )
+     * @return Общая сумма Услуг продвижения товаров
+     */
+    static public Double sumActionCost(List<OZON_TransactionReport.Operation> operations) {
+        return operations.stream()
+                .filter(op -> Objects.equals(op.getOperation_type(), "MarketplaceMarketingActionCostOperation"))
+                .mapToDouble(OZON_TransactionReport.Operation::getAmount)
+                .sum();
+    }
+
+    /**
      * Нахождение последней мили по артикулу
      *
      * @param offerSku   Map [offer_id, (sku этого offer_id)]
