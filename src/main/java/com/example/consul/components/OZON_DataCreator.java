@@ -119,10 +119,15 @@ public class OZON_DataCreator {
         );
     }
 
+    public Double getAccrualInternalClaim (@NotNull OZON_FinanceReport ozonFinanceReport) {
+        return OZON_dataProcessing.getAccrualInternalClaim(ozonFinanceReport);
+    }
+
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull OZON_DetailReport ozonDetailReport,
                                                     @NotNull OZON_SkuProductsReport ozonSkuProductsReport,
                                                     @NotNull OZON_TransactionReport ozonTransactionReport,
-                                                    @NotNull List<OZON_PerformanceReport> ozonPerformanceReports) {
+                                                    @NotNull List<OZON_PerformanceReport> ozonPerformanceReports,
+                                                    @NotNull OZON_FinanceReport ozonFinanceReport) {
 
         Map<String, Integer> saleCount = getMapSaleCount(ozonDetailReport);
         Map<String, Integer> returnCount = getMapReturnCount(ozonDetailReport);
@@ -136,6 +141,7 @@ public class OZON_DataCreator {
         Map<String, Double> returnProcessing = getMapReturnProcessing(ozonSkuProductsReport, ozonTransactionReport);
         Map<String, Double> returnDelivery = getMapReturnDelivery(ozonSkuProductsReport, ozonTransactionReport);
         Map<String, Double> stencilProduct = getMapStencils(ozonSkuProductsReport, ozonPerformanceReports);
+        Double accrualInternalClaim = getAccrualInternalClaim(ozonFinanceReport);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue(),
@@ -169,7 +175,7 @@ public class OZON_DataCreator {
                     .returnProcessing((Double) values.get(9) * -1)
                     .returnDelivery((Double) values.get(10) * -1)
                     .promotion(0.0)
-                    .compensation(0.0)
+                    .compensation(accrualInternalClaim/mergedMap.size())
                     .searchPromotion(0.0)
                     .stencilProduct((Double) values.get(11))
                     .ozonPremium(0.0)

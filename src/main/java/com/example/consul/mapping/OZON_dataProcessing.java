@@ -1,6 +1,7 @@
 package com.example.consul.mapping;
 
 import com.example.consul.dto.OZON.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_FinanceReport;
 import com.example.consul.dto.OZON.OZON_PerformanceReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import org.jetbrains.annotations.NotNull;
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class OZON_dataProcessing {
@@ -36,6 +38,7 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
+                                .filter(row -> row.getDelivery_commission() != null)
                                 .mapToDouble(row -> row.getSeller_price_per_instance() * row.getDelivery_commission().getQuantity())
                                 .sum()));
     }
@@ -52,6 +55,7 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
+                                .filter(row -> row.getDelivery_commission() != null)
                                 .mapToInt(row -> row.getDelivery_commission().getQuantity())
                                 .sum()));
     }
@@ -102,7 +106,7 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .mapToDouble(row -> row.getSeller_price_per_instance() * row.getCommission_ratio() * (row.getDelivery_commission().getQuantity() - (row.getReturn_commission() == null ? 0 : row.getReturn_commission().getQuantity())))
+                                .mapToDouble(row -> row.getSeller_price_per_instance() * row.getCommission_ratio() * ((row.getDelivery_commission() == null ? 0 : row.getDelivery_commission().getQuantity()) - (row.getReturn_commission() == null ? 0 : row.getReturn_commission().getQuantity())))
                                 .sum()));
     }
 
@@ -127,8 +131,6 @@ public class OZON_dataProcessing {
                         .sum()
         ));
     }
-
-    // Нахождение последней мили по артикулу
 
     /**
      * Нахождение последней мили по артикулу
@@ -295,5 +297,20 @@ public class OZON_dataProcessing {
                                 .mapToDouble(Map.Entry::getValue)
                                 .sum()
                 ));
+    }
+
+    /**
+     * Нахождение компенсаций
+     *
+     * @param report отчет, полученный от API
+     * @return сумма компенсаций за месяц в формате Double
+     */
+    static public Double getAccrualInternalClaim(@NotNull OZON_FinanceReport report) {
+        return report.getResult().getDetails()
+                .stream()
+                .flatMap(detail -> detail.getOthers().getItems().stream())
+                .filter(item -> Objects.equals(item.getName(), "AccrualInternalClaim"))
+                .mapToDouble(OZON_FinanceReport.Items::getPrice)
+                .sum();
     }
 }

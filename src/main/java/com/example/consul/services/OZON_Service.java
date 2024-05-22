@@ -66,13 +66,19 @@ public class OZON_Service {
                 OZON_TransactionType.all.toString()
         );
 
+        OZON_FinanceReport ozonFinanceReport = getFinanceReport(
+                pairDate.a,
+                pairDate.b
+        );
+
         String[] offerIds = getListOfferIdByDate(month, year);
 
         return ozonExcelCreator.mergeMapsToTableRows(
                 getDetailReport(month, year),
                 getProductInfoByOfferId(offerIds),
                 ozonTransactionReport,
-                scheduledGetPerformanceReport(performanceClientId, performanceClientSecret, year, month)
+                scheduledGetPerformanceReport(performanceClientId, performanceClientSecret, year, month),
+                ozonFinanceReport
         );
     }
 
@@ -107,6 +113,12 @@ public class OZON_Service {
                         OZON_TransactionType.all.toString()
                 ));
 
+        CompletableFuture<OZON_FinanceReport> ozonFinanceReportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getFinanceReport(
+                        pairDate.a,
+                        pairDate.b
+                ));
+
         CompletableFuture<List<OZON_PerformanceReport>> ozonPerformanceReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> scheduledGetPerformanceReport(
                         performanceClientId,
@@ -119,7 +131,8 @@ public class OZON_Service {
                 detailReportCompletableFuture.join(),
                 ozonSkuProductsReportCompletableFuture.join(),
                 ozonTransactionReportCompletableFuture.join(),
-                ozonPerformanceReportCompletableFuture.join()
+                ozonPerformanceReportCompletableFuture.join(),
+                ozonFinanceReportCompletableFuture.join()
         );
     }
 
@@ -134,6 +147,46 @@ public class OZON_Service {
         } catch (NullPointerException exception) {
             return null;
         }
+    }
+
+    public OZON_FinanceReport getFinanceReport(@NotNull String from,
+                                               @NotNull String to,
+                                               @NotNull Boolean withDetails,
+                                               @NotNull Integer page,
+                                               @NotNull Integer pageSize) {
+        try {
+            return ozonApi.getFinanceReport(from, to, withDetails, page, pageSize);
+        } catch (NullPointerException exception) {
+            return null;
+        }
+    }
+
+    public OZON_FinanceReport getFinanceReport(@NotNull String from,
+                                               @NotNull String to) {
+        final int pageSize = 1000;
+        OZON_FinanceReport ozonFinanceReport = getFinanceReport(
+                from,
+                to,
+                true,
+                1,
+                pageSize
+        );
+
+        for (int i = 2; i <= ozonFinanceReport.getResult().getPageCount(); i++) {
+            OZON_FinanceReport ozonFinanceReportAdditional = getFinanceReport(
+                    from,
+                    to,
+                    true,
+                    i,
+                    pageSize
+            );
+
+            ozonFinanceReport.getResult().getDetails().addAll(
+                    ozonFinanceReportAdditional.getResult().getDetails()
+            );
+        }
+
+        return ozonFinanceReport;
     }
 
     public OZON_TransactionReport getTransactionReport(@NotNull String from,

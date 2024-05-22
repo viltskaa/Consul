@@ -1,8 +1,10 @@
 package com.example.consul.api;
 
 
+import com.example.consul.api.utils.OZON.FinanceReportRequest;
 import com.example.consul.api.utils.TransactionBody;
 import com.example.consul.dto.OZON.OZON_DetailReport;
+import com.example.consul.dto.OZON.OZON_FinanceReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.google.gson.Gson;
@@ -33,6 +35,44 @@ public class OZON_Api {
         headers.add("Content-Type", "application/json");
     }
 
+    /**
+     * Отчеты => Финансовый отчет
+     *
+     * @param from начало периода
+     * @param to конец периода
+     * @param withDetails получить отчет с детализацией
+     * @param page номер страницы, возвращаемой в запросе
+     * @param pageSize количество элементов на странице
+     * @return Финансовый отчет в виде OZON_FinanceReport
+     */
+    @Nullable
+    public OZON_FinanceReport getFinanceReport(@NotNull String from,
+                                               @NotNull String to,
+                                               @NotNull Boolean withDetails,
+                                               @NotNull Integer page,
+                                               @NotNull Integer pageSize) {
+        final String financeReportUrl = "https://api-seller.ozon.ru/v1/finance/cash-flow-statement/list";
+
+        HttpEntity<String> request = new HttpEntity<>(new Gson()
+                .toJson(new FinanceReportRequest(page,
+                                                 pageSize,
+                                                 withDetails,
+                                                 from,
+                                                 to
+                        )
+                ),
+                headers
+        );
+
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(financeReportUrl, request, String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return new Gson().fromJson(response.getBody(), OZON_FinanceReport.class);
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Финансовые отчеты => Список транзакций
@@ -135,7 +175,7 @@ public class OZON_Api {
      * Получение списка товаров по идентификатору в системе продавца - артикул
      *
      * @param offerIds идентификатор товара в системе продавца
-     * @return
+     * @return 
      */
     @Nullable
     public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds) {
