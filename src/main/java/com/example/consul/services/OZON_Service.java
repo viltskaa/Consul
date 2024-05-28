@@ -4,6 +4,9 @@ import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
 import com.example.consul.components.OZON_DataCreator;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
+import com.example.consul.document.ExcelBuilder;
+import com.example.consul.document.configurations.ExcelConfig;
+import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
@@ -38,6 +41,36 @@ public class OZON_Service {
 
     public boolean isTokenNonExpired(@NotNull OZON_PerformanceTokenExpires token) {
         return Instant.now().getEpochSecond() <= token.getExpires_in();
+    }
+
+    public byte[] createReport(@NotNull String apiKey,
+                               @NotNull String clientId,
+                               @NotNull String performanceClientId,
+                               @NotNull String performanceClientSecret,
+                               @NotNull Integer year,
+                               @NotNull Integer month) {
+        List<OZON_TableRow> data = getData(
+                apiKey,
+                clientId,
+                performanceClientId,
+                performanceClientSecret,
+                year,
+                month
+        );
+
+        return ExcelBuilder.createDocumentToByteArray(
+                ExcelConfig.<OZON_TableRow>builder()
+                        .fileName("report_" + clientId + "_" + month + "_" + year + ".xls")
+                        .header(
+                                HeaderConfig.builder()
+                                        .title("OZON")
+                                        .description("NEW METHOD")
+                                        .build()
+                        )
+                        .data(List.of(data))
+                        .sheetsName(List.of("1"))
+                        .build()
+        );
     }
 
     @Deprecated

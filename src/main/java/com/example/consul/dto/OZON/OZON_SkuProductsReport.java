@@ -30,6 +30,8 @@ public class OZON_SkuProductsReport {
         private Long id;
         private String name;
         private String offer_id;
+        private Boolean is_archived;
+        private Boolean is_autoarchived;
         private Long sku;
         private String barcode;
         private List<String> barcodes;
@@ -42,7 +44,6 @@ public class OZON_SkuProductsReport {
         private String marketing_price;
         private String min_price;
         private String old_price;
-        private String premium_price;
         private String price;
         private String recommended_price;
         private List<Sources> sources;

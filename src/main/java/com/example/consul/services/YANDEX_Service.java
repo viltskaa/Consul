@@ -4,6 +4,10 @@ import com.example.consul.api.YANDEX_Api;
 import com.example.consul.api.utils.YANDEX.YANDEX_PlacementType;
 import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
+import com.example.consul.document.ExcelBuilder;
+import com.example.consul.document.configurations.ExcelConfig;
+import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
@@ -29,6 +33,36 @@ public class YANDEX_Service {
                           ConditionalWithDelayChecker reportChecker) {
         this.yandexApi = api;
         this.reportChecker = reportChecker;
+    }
+
+    public byte[] createReport(@NotNull String auth,
+                               @NotNull Long campaignId,
+                               int year,
+                               int month,
+                               @NotNull Long businessId,
+                               @NotNull List<YANDEX_PlacementType> placementPrograms) {
+        List<YANDEX_TableRow> data = getData(
+                auth,
+                campaignId,
+                year,
+                month,
+                businessId,
+                placementPrograms
+        );
+
+        return ExcelBuilder.createDocumentToByteArray(
+                ExcelConfig.<YANDEX_TableRow>builder()
+                        .fileName("report_yandex_" + month + "_" + year + ".xls")
+                        .header(
+                                HeaderConfig.builder()
+                                        .title("yandex")
+                                        .description("NEW METHOD")
+                                        .build()
+                        )
+                        .data(List.of(data))
+                        .sheetsName(List.of("1"))
+                        .build()
+        );
     }
 
     public YANDEX_CreateReport getServicesReport(@NotNull Long businessId,

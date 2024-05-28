@@ -20,13 +20,27 @@ public class OZON_ReportController {
         this.ozonService = ozonService;
     }
 
-    @GetMapping(path = "/get")
-    public List<OZON_TableRow> getReport(@RequestBody OZON_RequestBody body){
-        return ozonService.getData(body.getApiKey(),
+    @PostMapping(path = "/get")
+    public List<OZON_TableRow> getReport(@RequestBody OZON_RequestBody body) {
+        return ozonService.getData(
+                body.getApiKey(),
                 body.getClientId(),
                 body.getPerformanceClientId(),
                 body.getPerformanceClientSecret(),
                 body.getYear(),
-                body.getMonth());
+                body.getMonth()
+        );
+    }
+
+    @PostMapping(path = "/getExcel")
+    public @ResponseBody byte[] getReportExcel(@RequestBody OZON_RequestBody body) {
+        return ozonService.createReport(
+                body.getApiKey(),
+                body.getClientId(),
+                body.getPerformanceClientId(),
+                body.getPerformanceClientSecret(),
+                body.getYear(),
+                body.getMonth()
+        );
     }
 }

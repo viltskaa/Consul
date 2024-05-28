@@ -13,6 +13,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -210,12 +211,13 @@ public class ExcelBuilder {
         }
     }
 
-    public static <T> void createDocument(@NotNull ExcelConfig<T> config) throws IOException {
+    private static <T> Workbook createWorkbook(@NotNull ExcelConfig<T> config) {
         Workbook workbook = new HSSFWorkbook();
         cellStyles = List.of(
                 createBaseStyle(workbook),
                 createExpenseStyle(workbook),
-                createTotalStyle(workbook));
+                createTotalStyle(workbook)
+        );
 
         for (int i = 0 ; i < config.getPageNumber() ; i++) {
             List<T> obj = config.getData().get(i);
@@ -225,7 +227,27 @@ public class ExcelBuilder {
                     config.getSheetsName().get(i));
         }
 
+        return workbook;
+    }
+
+    public static <T> void createDocument(@NotNull ExcelConfig<T> config) throws IOException {
+        Workbook workbook = createWorkbook(config);
+
         workbook.write(new FileOutputStream(config.getFileName()));
         workbook.close();
+    }
+
+    public static <T> byte[] createDocumentToByteArray(@NotNull ExcelConfig<T> config) {
+        Workbook workbook = createWorkbook(config);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            workbook.write(bos);
+            bos.close();
+        }
+        catch (IOException ioException) {
+            return null;
+        }
+        return bos.toByteArray();
     }
 }

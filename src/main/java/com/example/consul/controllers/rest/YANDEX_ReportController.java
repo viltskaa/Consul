@@ -19,9 +19,20 @@ public class YANDEX_ReportController {
         this.yandexService = service;
     }
 
-    @GetMapping(path = "/get")
+    @PostMapping(path = "/get")
     public List<YANDEX_TableRow> getReport(@RequestBody YANDEX_RequestBody body){
         return yandexService.getData(body.getAuth(),
+                body.getCampaignId(),
+                body.getYear(),
+                body.getMonth(),
+                body.getBusinessId(),
+                body.getPlacementPrograms());
+    }
+
+    @PostMapping(path = "/getExcel")
+    public @ResponseBody byte[] getReportExcel(@RequestBody YANDEX_RequestBody body){
+        return yandexService.createReport(
+                body.getAuth(),
                 body.getCampaignId(),
                 body.getYear(),
                 body.getMonth(),

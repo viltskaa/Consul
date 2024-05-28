@@ -3,6 +3,10 @@ package com.example.consul.services;
 import com.example.consul.api.WB_Api;
 import com.example.consul.components.WB_DataCreator;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
+import com.example.consul.document.ExcelBuilder;
+import com.example.consul.document.configurations.ExcelConfig;
+import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.dto.WB.WB_AdReport;
 import com.example.consul.dto.WB.WB_DetailReport;
@@ -26,6 +30,30 @@ public class WB_Service {
         this.wbApi = wbApi;
         this.wbDataCreator = wbDataCreator;
         this.withDelayChecker = withDelayChecker;
+    }
+
+    public byte[] createReport(@NotNull String apiKey,
+                               @NotNull Integer year,
+                               @NotNull Integer month) {
+        List<WB_TableRow> data = getData(
+                apiKey,
+                year,
+                month
+        );
+
+        return ExcelBuilder.createDocumentToByteArray(
+                ExcelConfig.<WB_TableRow>builder()
+                        .fileName("report_wb_" + month + "_" + year + ".xls")
+                        .header(
+                                HeaderConfig.builder()
+                                        .title("WB")
+                                        .description("NEW METHOD")
+                                        .build()
+                        )
+                        .data(List.of(data))
+                        .sheetsName(List.of("1"))
+                        .build()
+        );
     }
 
     private Pair<String, String> getDateFrom(@NotNull Integer year, @NotNull Integer month) {

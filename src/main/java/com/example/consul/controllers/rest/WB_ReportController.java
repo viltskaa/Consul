@@ -17,10 +17,21 @@ public class WB_ReportController {
         this.wbService = wbService;
     }
 
-    @GetMapping(path = "/get")
+    @PostMapping(path = "/get")
     public List<WB_TableRow> getReport(@RequestBody WB_RequestBody body){
-        return wbService.getData(body.getApiKey(),
+        return wbService.getData(
+                body.getApiKey(),
                 body.getYear(),
-                body.getMonth());
+                body.getMonth()
+        );
+    }
+
+    @PostMapping(path = "/getExcel")
+    public @ResponseBody byte[] getReportExcel(@RequestBody WB_RequestBody body){
+        return wbService.createReport(
+                body.getApiKey(),
+                body.getYear(),
+                body.getMonth()
+        );
     }
 }
