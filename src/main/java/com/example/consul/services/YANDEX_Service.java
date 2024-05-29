@@ -7,7 +7,6 @@ import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
-import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;

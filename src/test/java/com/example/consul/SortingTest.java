@@ -1,8 +1,6 @@
 package com.example.consul;
 
-import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.document.models.WB_TableRow;
-import com.example.consul.services.OZON_Service;
 import com.example.consul.services.WB_Service;
 import com.example.consul.utils.Clustering;
 import org.junit.jupiter.api.Test;
