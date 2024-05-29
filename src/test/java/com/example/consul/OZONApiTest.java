@@ -1,5 +1,6 @@
 package com.example.consul;
 
+import com.example.consul.api.OZON_Api;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
@@ -20,14 +21,15 @@ public class OZONApiTest {
     @Test
     public void generateExcel() throws IOException {
         List<OZON_TableRow> data = ozonService.getData(
-                "ace0b5ec-e3f6-4eb4-a9a6-33a1a5c84f66",
+                "9e98a805-4717-4ea4-a852-41ed1e5948ac",
                 "350423",
-                "27013136-1713353681106@advertising.performance.ozon.ru",
-                "w8jTBuPxzAr5iW2dvioeroGh_7aDVHOyS8LhwD4lzK2x5kUQeYytrJ7HeD4yEygPU2iAO9AaU-XOdV7Z1Q",
-                2024, 1);
+                "29156444-1716905674931@advertising.performance.ozon.ru",
+                "PSCVDiFfWGgV0rWcF6MrA_0gZAW8iyYXH6AFTDk5ZviS4JRETHIBXHLX0033IVnRzr106ULnGks5le2SPg",
+                2024, 4);
+
         ExcelBuilder.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("2024-01.xls")
+                        .fileName("2024-04.xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("TEST")
@@ -39,4 +41,20 @@ public class OZONApiTest {
                         .build()
         );
     }
+
+    @Test
+    public void testDetailReport(){
+        OZON_Api api = new OZON_Api();
+        api.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423");
+
+        System.out.println(api.getDetailReport(4, 2024));
+    }
+
+//    @Test
+//    public void testDetailReport(){
+//        OZON_Api api = new OZON_Api();
+//        api.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423");
+//
+//        System.out.println(api.getDetailReport(4, 2024));
+//    }
 }

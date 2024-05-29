@@ -11,10 +11,6 @@ import java.util.stream.Stream;
 public class OZON_TransactionReport {
     private Result result;
 
-    public OZON_TransactionReport(Result result) {
-        this.result = result;
-    }
-
     @Data
     public static class Result{
         private List<Operation> operations;

@@ -155,6 +155,8 @@ public class OZON_PerformanceApi {
     }
 
     /**
+     * Статистика => получить отчеты
+     *
      * @param token bearer token
      * @param UUID id report
      * @return list of reports

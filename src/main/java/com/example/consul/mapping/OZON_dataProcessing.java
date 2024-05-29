@@ -17,13 +17,13 @@ public class OZON_dataProcessing {
     /**
      * Группировка отчета о реализации товаров по артикулу(offer_id)
      *
-     * @param ozonDetailReports таблица отчета (rows из result в OZON_DetailReport)
+     * @param ozonDetailReports таблица отчета (rows из result в OZON_DetailReport)F
      * @return Map [offer_id, (rows с этим offer_id)]
      */
     static public Map<String, List<OZON_DetailReport.Row>> groupByOfferId(List<OZON_DetailReport.Row> ozonDetailReports) {
         return ozonDetailReports.stream()
                 .filter(x -> x.getItem() != null)
-                .collect(Collectors.groupingBy(row -> row.getItem().getOffer_id()));
+                .collect(Collectors.groupingBy(row -> row.getItem().getOfferId()));
     }
 
     /**

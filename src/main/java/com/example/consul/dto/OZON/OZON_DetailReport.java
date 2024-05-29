@@ -38,16 +38,16 @@ public class OZON_DetailReport {
     @Data
     @AllArgsConstructor
     public static class Row {
-        private Integer rowNumber;
-        private Item item;
-        @SerializedName("seller_price_per_instance")
-        private Double sellerPricePerInstance;
-        @SerializedName("delivery_commission")
-        private DeliveryCommission deliveryCommission;
-        @SerializedName("return_commission")
-        private ReturnCommission returnCommission;
         @SerializedName("commission_ratio")
         private Double commissionRatio;
+        @SerializedName("delivery_commission")
+        private DeliveryCommission deliveryCommission;
+        private Item item;
+        @SerializedName("return_commission")
+        private ReturnCommission returnCommission;
+        private Integer rowNumber;
+        @SerializedName("seller_price_per_instance")
+        private Double sellerPricePerInstance;
     }
 
     @Data
@@ -56,9 +56,11 @@ public class OZON_DetailReport {
         private Double bonus;
         private Double commission;
         private Double compensation;
-        private Double price_per_instance;
+        @SerializedName("price_per_instance")
+        private Double pricePerInstance;
         private Integer quantity;
-        private Double standard_fee;
+        @SerializedName("standard_fee")
+        private Double standardFee;
         private Double stars;
         private Double total;
     }
@@ -67,7 +69,8 @@ public class OZON_DetailReport {
     public static class Item {
         private String barcode;
         private String name;
-        private String offer_id;
+        @SerializedName("offer_id")
+        private String offerId;
         private Long sku;
     }
 
@@ -77,12 +80,12 @@ public class OZON_DetailReport {
         private Double bonus;
         private Double commission;
         private Double compensation;
-        private Double price_per_instance;
+        @SerializedName("price_per_instance")
+        private Double pricePerInstance;
         private Integer quantity;
-        private Double standard_fee;
+        @SerializedName("standard_fee")
+        private Double standardFee;
         private Double stars;
         private Double total;
     }
-
-
 }
