@@ -1,5 +1,6 @@
 package com.example.consul.dto.OZON;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -32,6 +33,21 @@ public class OZON_DetailReport {
         private Double doc_amount;
         private Double vat_amount;
         private String currency_sys_name;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class Row {
+        private Integer rowNumber;
+        private Item item;
+        @SerializedName("seller_price_per_instance")
+        private Double sellerPricePerInstance;
+        @SerializedName("delivery_commission")
+        private DeliveryCommission deliveryCommission;
+        @SerializedName("return_commission")
+        private ReturnCommission returnCommission;
+        @SerializedName("commission_ratio")
+        private Double commissionRatio;
     }
 
     @Data
@@ -68,14 +84,5 @@ public class OZON_DetailReport {
         private Double total;
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class Row {
-        private Double commission_ratio;
-        private DeliveryCommission delivery_commission;
-        private Item item;
-        private ReturnCommission return_commission;
-        private Integer rowNumber;
-        private Double seller_price_per_instance;
-    }
+
 }

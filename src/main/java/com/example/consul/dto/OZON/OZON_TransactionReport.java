@@ -1,5 +1,6 @@
 package com.example.consul.dto.OZON;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 import java.util.List;
@@ -17,8 +18,10 @@ public class OZON_TransactionReport {
     @Data
     public static class Result{
         private List<Operation> operations;
-        private Long page_count;
-        private Long row_count;
+        @SerializedName("page_count")
+        private Long pageCount;
+        @SerializedName("row_count")
+        private Long rowCount;
     }
 
     @Data

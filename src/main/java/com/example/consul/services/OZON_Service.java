@@ -244,7 +244,7 @@ public class OZON_Service {
                 page_size
         );
 
-        for (int i = 2; i <= ozonTransactionReport.getResult().getPage_count(); i++) {
+        for (int i = 2; i <= ozonTransactionReport.getResult().getPageCount(); i++) {
             OZON_TransactionReport ozonTransactionReportAdditional = getTransactionReport(
                     from,
                     to,

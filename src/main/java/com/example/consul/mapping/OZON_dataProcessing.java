@@ -38,8 +38,8 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(row -> row.getDelivery_commission() != null)
-                                .mapToDouble(row -> row.getSeller_price_per_instance() * row.getDelivery_commission().getQuantity())
+                                .filter(row -> row.getDeliveryCommission() != null)
+                                .mapToDouble(row -> row.getSellerPricePerInstance() * row.getDeliveryCommission().getQuantity())
                                 .sum()));
     }
 
@@ -55,8 +55,8 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(row -> row.getDelivery_commission() != null)
-                                .mapToInt(row -> row.getDelivery_commission().getQuantity())
+                                .filter(row -> row.getDeliveryCommission() != null)
+                                .mapToInt(row -> row.getDeliveryCommission().getQuantity())
                                 .sum()));
     }
 
@@ -72,8 +72,8 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(row -> row.getReturn_commission() != null)
-                                .mapToInt(row -> row.getReturn_commission().getQuantity())
+                                .filter(row -> row.getReturnCommission() != null)
+                                .mapToInt(row -> row.getReturnCommission().getQuantity())
                                 .sum()));
     }
 
@@ -89,8 +89,8 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(row -> row.getReturn_commission() != null)
-                                .mapToDouble(row -> row.getSeller_price_per_instance() * row.getReturn_commission().getQuantity())
+                                .filter(row -> row.getReturnCommission() != null)
+                                .mapToDouble(row -> row.getSellerPricePerInstance() * row.getReturnCommission().getQuantity())
                                 .sum()));
     }
 
@@ -106,7 +106,7 @@ public class OZON_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .mapToDouble(row -> row.getSeller_price_per_instance() * row.getCommission_ratio() * ((row.getDelivery_commission() == null ? 0 : row.getDelivery_commission().getQuantity()) - (row.getReturn_commission() == null ? 0 : row.getReturn_commission().getQuantity())))
+                                .mapToDouble(row -> row.getSellerPricePerInstance() * row.getCommissionRatio() * ((row.getDeliveryCommission() == null ? 0 : row.getDeliveryCommission().getQuantity()) - (row.getReturnCommission() == null ? 0 : row.getReturnCommission().getQuantity())))
                                 .sum()));
     }
 
