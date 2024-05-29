@@ -5,6 +5,7 @@ import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.models.TableRow;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -117,6 +119,22 @@ public class ExcelBuilder {
         }
     }
 
+    private static List<Field> getFields(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>();
+        for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
+            fields.addAll(0, Arrays.asList(c.getDeclaredFields()));
+        }
+        return fields;
+    }
+
+    private static List<Method> getMethods(Class<?> clazz) {
+        List<Method> methods = new ArrayList<>();
+        for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
+            methods.addAll(0, Arrays.asList(c.getDeclaredMethods()));
+        }
+        return methods;
+    }
+
     private static <R> void createSheet(@NotNull Workbook workbook,
                                         @NotNull List<R> data,
                                         @NotNull HeaderConfig headerConfig,
@@ -124,8 +142,8 @@ public class ExcelBuilder {
         Sheet sheet = workbook.createSheet(name);
 
         Class<?> clazz = data.get(0).getClass();
-        List<Field> fields = Arrays.stream(clazz.getDeclaredFields()).toList();
-        List<Method> methods = Arrays.stream(clazz.getDeclaredMethods())
+        List<Field> fields = getFields(clazz);
+        List<Method> methods = getMethods(clazz).stream()
                 .filter(x -> !x.getAnnotatedReturnType().getType().equals(void.class)).toList();
 
         List<Pair<Field, Method>> fieldMethodList = fields.stream()
