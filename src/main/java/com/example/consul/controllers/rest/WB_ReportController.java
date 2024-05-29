@@ -1,6 +1,7 @@
 package com.example.consul.controllers.rest;
 
 import com.example.consul.controllers.rest.requestBodies.WB_RequestBody;
+import com.example.consul.controllers.rest.requestBodies.WB_RequestBodyWeek;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.services.WB_Service;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,26 @@ public class WB_ReportController {
                 body.getApiKey(),
                 body.getYear(),
                 body.getMonth()
+        );
+    }
+
+    @PostMapping(path = "/getByWeek")
+    public List<WB_TableRow> getWeekReport(@RequestBody WB_RequestBodyWeek body){
+        return wbService.getData(
+                body.getApiKey(),
+                body.getYear(),
+                body.getMonth(),
+                body.getWeekNumber()
+        );
+    }
+
+    @PostMapping(path = "/getExcelByWeek")
+    public @ResponseBody byte[] getWeekReportExcel(@RequestBody WB_RequestBodyWeek body){
+        return wbService.createReport(
+                body.getApiKey(),
+                body.getYear(),
+                body.getMonth(),
+                body.getWeekNumber()
         );
     }
 }

@@ -45,4 +45,35 @@ class WBApiTest {
                         .build()
         );
     }
+
+    @Test
+    void createDataByWeekTest() {
+        List<WB_TableRow> rows = service.getData(
+                "eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjQwMjI2djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTczMDQxNjMyOSwiaWQiOiJkYzEwOTdkMS1jYTQ1LTRjZWMtYTQyOC0zNThiM2FhMDFiZjUiLCJpaWQiOjExOTExMzYzNiwib2lkIjo1OTU3MzQsInMiOjEwMjIsInNpZCI6IjdhZmRlMmI4LWM1ZGQtNGNmOC1iOTBmLTY3MGUxYzcxMmI5YSIsInQiOmZhbHNlLCJ1aWQiOjExOTExMzYzNn0.BIjm0DrZkyXtKu5_NdZ5fGoUQmhD6uzHnexGE1KtdMzznW6agpmUsiPRkh4I9xtxVBBRy6TSu_syn8Fj-jP-7g",
+                2024,
+                2,
+                1
+        );
+        rows.forEach(System.out::println);
+    }
+
+    @Test
+    void createExcelByWeekTest() throws IOException {
+        List<WB_TableRow> rows = service.getData(
+                "eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjQwMjI2djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTczMDQxNjMyOSwiaWQiOiJkYzEwOTdkMS1jYTQ1LTRjZWMtYTQyOC0zNThiM2FhMDFiZjUiLCJpaWQiOjExOTExMzYzNiwib2lkIjo1OTU3MzQsInMiOjEwMjIsInNpZCI6IjdhZmRlMmI4LWM1ZGQtNGNmOC1iOTBmLTY3MGUxYzcxMmI5YSIsInQiOmZhbHNlLCJ1aWQiOjExOTExMzYzNn0.BIjm0DrZkyXtKu5_NdZ5fGoUQmhD6uzHnexGE1KtdMzznW6agpmUsiPRkh4I9xtxVBBRy6TSu_syn8Fj-jP-7g",
+                2024,
+                2,
+                1
+        );
+        ExcelBuilder.createDocument(
+                ExcelConfig.<WB_TableRow>builder()
+                        .fileName("WBY2024M01W1.xls")
+                        .data(List.of(rows))
+                        .header(HeaderConfig.builder()
+                                .title("NEW WB")
+                                .description("2024-01").build())
+                        .sheetsName(List.of("1"))
+                        .build()
+        );
+    }
 }
