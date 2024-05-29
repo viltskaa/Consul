@@ -14,8 +14,8 @@ import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +61,32 @@ public class WB_Service {
         );
     }
 
+    public byte[] createReport(@NotNull String apiKey,
+                               @NotNull Integer year,
+                               @NotNull Integer month,
+                               @NotNull Integer weekNumber) {
+        List<WB_TableRow> data = getData(
+                apiKey,
+                year,
+                month,
+                weekNumber
+        );
+
+        return ExcelBuilder.createDocumentToByteArray(
+                ExcelConfig.<WB_TableRow>builder()
+                        .fileName("report_wb_" + month + "_" + year + ".xls")
+                        .header(
+                                HeaderConfig.builder()
+                                        .title("WB")
+                                        .description("NEW METHOD")
+                                        .build()
+                        )
+                        .data(List.of(data))
+                        .sheetsName(List.of("1"))
+                        .build()
+        );
+    }
+
     private Pair<String, String> getDateFrom(@NotNull Integer year, @NotNull Integer month) {
         LocalDate date = LocalDate.of(year, month, 1);
 
@@ -77,6 +103,18 @@ public class WB_Service {
 
     private boolean isNeedV1(@NotNull Integer month) {
         return month.equals(1);
+    }
+
+    private Pair<String, String> findWeekRange(@NotNull Integer year,
+                                               @NotNull Integer month,
+                                               @NotNull Integer weekNumber) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate firstMonday = yearMonth.atDay(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+
+        LocalDate startOfWeek = firstMonday.plusWeeks(weekNumber - 1);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        return new Pair<>(startOfWeek.toString(), endOfWeek.toString());
     }
 
     public List<WB_TableRow> getData(@NotNull String apiKey,
@@ -110,9 +148,48 @@ public class WB_Service {
         return wbDataCreator.createTableRows(reportCompletableFuture.join());
     }
 
+    public List<WB_TableRow> getData(@NotNull String apiKey,
+                                     @NotNull Integer year,
+                                     @NotNull Integer month,
+                                     @NotNull Integer weekNumber) {
+        wbApi.setApiKey(apiKey);
+        CompletableFuture<List<WB_DetailReport>> reportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    List<WB_DetailReport> report = getDetailReportByWeek(year, month, weekNumber);
+
+                    if (report.size() == 100_000) {
+                        withDelayChecker.start(() -> {
+                            Long lastPageRrId = report.get(report.size() - 1).getRrd_id();
+                            List<WB_DetailReport> nextPageReport = getDetailReportByWeekWithOffset(
+                                    year,
+                                    month,
+                                    weekNumber,
+                                    lastPageRrId
+                            );
+                            if (nextPageReport == null) return true;
+                            report.addAll(nextPageReport);
+                            return false;
+                        }, 65L);
+                    }
+
+                    return report;
+                });
+
+        return wbDataCreator.createTableRows(reportCompletableFuture.join());
+    }
+
     public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year,
                                                                @NotNull Integer month) {
         Pair<String, String> dates = getDateFrom(year, month);
+        return isNeedV1(month)
+                ? getDetailReportV1(dates.a, dates.b)
+                : getDetailReportV5(dates.a, dates.b);
+    }
+
+    public List<WB_DetailReport> getDetailReportByWeek(@NotNull Integer year,
+                                                       @NotNull Integer month,
+                                                       @NotNull Integer weekNumber) {
+        Pair<String, String> dates = findWeekRange(year, month, weekNumber);
         return isNeedV1(month)
                 ? getDetailReportV1(dates.a, dates.b)
                 : getDetailReportV5(dates.a, dates.b);
@@ -122,6 +199,16 @@ public class WB_Service {
                                                                          @NotNull Integer month,
                                                                          @NotNull Long rrdId) {
         Pair<String, String> dates = getDateFrom(year, month);
+        return isNeedV1(month)
+                ? getDetailReportV1(dates.a, dates.b, rrdId)
+                : getDetailReportV5(dates.a, dates.b, rrdId);
+    }
+
+    public List<WB_DetailReport> getDetailReportByWeekWithOffset(@NotNull Integer year,
+                                                                 @NotNull Integer month,
+                                                                 @NotNull Integer weekNumber,
+                                                                 @NotNull Long rrdId) {
+        Pair<String, String> dates = findWeekRange(year, month, weekNumber);
         return isNeedV1(month)
                 ? getDetailReportV1(dates.a, dates.b, rrdId)
                 : getDetailReportV5(dates.a, dates.b, rrdId);
@@ -159,6 +246,7 @@ public class WB_Service {
         }
     }
 
+    @Deprecated
     public List<WB_AdReport> getAdReport(@NotNull String dateFrom, @NotNull String dateTo) {
         try {
             return wbApi.getAdReport(dateFrom, dateTo);
