@@ -47,7 +47,7 @@ public class WB_DataCreator {
         return mergedMap.entrySet().stream().map(x -> {
            List<Object> values = x.getValue();
            return WB_TableRow.builder()
-                   .saName(x.getKey())
+                   .article(x.getKey())
                    .retailAmount((Integer) values.get(0))
                    .retailSum((Double) values.get(1))
                    .returnAmount((Integer) values.get(2))

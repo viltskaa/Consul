@@ -10,6 +10,7 @@ import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
+import com.example.consul.utils.Clustering;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -28,15 +29,17 @@ public class OZON_Service {
     private final OZON_PerformanceApi ozonPerformanceApi;
     private final Map<String, OZON_PerformanceTokenExpires> performanceKey = new HashMap<>();
     private final ConditionalWithDelayChecker reportChecker;
+    private final Clustering clustering;
 
     public OZON_Service(OZON_Api ozonApi,
                         OZON_DataCreator ozonExcelCreator,
                         OZON_PerformanceApi ozonPerformanceApi,
-                        ConditionalWithDelayChecker reportChecker) {
+                        ConditionalWithDelayChecker reportChecker, Clustering clustering) {
         this.ozonApi = ozonApi;
         this.ozonExcelCreator = ozonExcelCreator;
         this.ozonPerformanceApi = ozonPerformanceApi;
         this.reportChecker = reportChecker;
+        this.clustering = clustering;
     }
 
     public boolean isTokenNonExpired(@NotNull OZON_PerformanceTokenExpires token) {
@@ -58,6 +61,8 @@ public class OZON_Service {
                 month
         );
 
+        Map<String, List<OZON_TableRow>> clusteredData = clustering.of(data);
+
         return ExcelBuilder.createDocumentToByteArray(
                 ExcelConfig.<OZON_TableRow>builder()
                         .fileName("report_" + clientId + "_" + month + "_" + year + ".xls")
@@ -67,8 +72,8 @@ public class OZON_Service {
                                         .description("NEW METHOD")
                                         .build()
                         )
-                        .data(List.of(data))
-                        .sheetsName(List.of("1"))
+                        .data(clusteredData.values().stream().toList())
+                        .sheetsName(clusteredData.keySet().stream().toList())
                         .build()
         );
     }

@@ -5,19 +5,15 @@ import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
 import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @TotalCell(
         formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +
                 "-logistic-lastMile-acquiring-installment-returnProcessing-returnDelivery" +
                 "-promotion-compensation-searchPromotion-stencilProduct-ozonPremium" +
                 "-crossDockingDelivery-claimsAccruals-other)/(delivered-returned)-2.47"
 )
-public class OZON_TableRow {
-    @CellUnit(name = "Артикул", total = false)
-    private String offerId;
+public class OZON_TableRow extends TableRow {
     @CellUnit(name = "Доставлено")
     private Integer delivered;
     @CellUnit(name = "Возвращено")
@@ -60,4 +56,49 @@ public class OZON_TableRow {
     private Double other;
     @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
     private final Double total = 0.0;
+
+    @Builder
+    public OZON_TableRow(String article,
+                         Integer delivered,
+                         Integer returned,
+                         Double saleForDelivered,
+                         Double sumReturn,
+                         Double salesCommission,
+                         Double shipmentProcessing,
+                         Double logistic,
+                         Double lastMile,
+                         Double acquiring,
+                         Double installment,
+                         Double returnProcessing,
+                         Double returnDelivery,
+                         Double promotion,
+                         Double compensation,
+                         Double searchPromotion,
+                         Double stencilProduct,
+                         Double ozonPremium,
+                         Double crossDockingDelivery,
+                         Double claimsAccruals,
+                         Double other) {
+        super(article);
+        this.delivered = delivered;
+        this.returned = returned;
+        this.saleForDelivered = saleForDelivered;
+        this.sumReturn = sumReturn;
+        this.salesCommission = salesCommission;
+        this.shipmentProcessing = shipmentProcessing;
+        this.logistic = logistic;
+        this.lastMile = lastMile;
+        this.acquiring = acquiring;
+        this.installment = installment;
+        this.returnProcessing = returnProcessing;
+        this.returnDelivery = returnDelivery;
+        this.promotion = promotion;
+        this.compensation = compensation;
+        this.searchPromotion = searchPromotion;
+        this.stencilProduct = stencilProduct;
+        this.ozonPremium = ozonPremium;
+        this.crossDockingDelivery = crossDockingDelivery;
+        this.claimsAccruals = claimsAccruals;
+        this.other = other;
+    }
 }

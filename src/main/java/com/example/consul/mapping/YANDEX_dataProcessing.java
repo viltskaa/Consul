@@ -259,7 +259,7 @@ public class YANDEX_dataProcessing {
                     .map(x -> x == null ? 0.0 : x).toList();
 
             listRows.add(YANDEX_TableRow.builder()
-                    .offerId(skus[i].toString())
+                    .article(skus[i].toString())
                     .deliveryCount((Double) listDF.get(6))
                     .accrued((Double) listDF.get(7))
                     .returnCount((Double) listDF.get(8))

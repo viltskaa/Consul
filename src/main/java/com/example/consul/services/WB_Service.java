@@ -9,6 +9,7 @@ import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.dto.WB.WB_AdReport;
 import com.example.consul.dto.WB.WB_DetailReport;
+import com.example.consul.utils.Clustering;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -24,11 +26,13 @@ public class WB_Service {
     private final WB_Api wbApi;
     private final WB_DataCreator wbDataCreator;
     private final ConditionalWithDelayChecker withDelayChecker;
+    private final Clustering clustering;
 
-    public WB_Service(WB_Api wbApi, WB_DataCreator wbDataCreator, ConditionalWithDelayChecker withDelayChecker) {
+    public WB_Service(WB_Api wbApi, WB_DataCreator wbDataCreator, ConditionalWithDelayChecker withDelayChecker, Clustering clustering) {
         this.wbApi = wbApi;
         this.wbDataCreator = wbDataCreator;
         this.withDelayChecker = withDelayChecker;
+        this.clustering = clustering;
     }
 
     public byte[] createReport(@NotNull String apiKey,
@@ -40,6 +44,8 @@ public class WB_Service {
                 month
         );
 
+        Map<String, List<WB_TableRow>> clusteredData = clustering.of(data);
+
         return ExcelBuilder.createDocumentToByteArray(
                 ExcelConfig.<WB_TableRow>builder()
                         .fileName("report_wb_" + month + "_" + year + ".xls")
@@ -49,8 +55,8 @@ public class WB_Service {
                                         .description("NEW METHOD")
                                         .build()
                         )
-                        .data(List.of(data))
-                        .sheetsName(List.of("1"))
+                        .data(clusteredData.values().stream().toList())
+                        .sheetsName(clusteredData.keySet().stream().toList())
                         .build()
         );
     }
@@ -118,6 +124,9 @@ public class WB_Service {
         CompletableFuture<List<WB_DetailReport>> reportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
                     List<WB_DetailReport> report = getDetailReportByYearAndMonth(year, month);
+                    if (report == null) {
+                        return null;
+                    }
 
                     if (report.size() == 100_000) {
                         withDelayChecker.start(() -> {
