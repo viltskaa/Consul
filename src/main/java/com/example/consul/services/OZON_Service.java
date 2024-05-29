@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -432,7 +433,7 @@ public class OZON_Service {
                 .map(OZON_PerformanceCampaigns.OZON_PerformanceCampaign::getId).toList();
 
         if (activeCampaignList.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
 
         OZON_PerformanceStatistic statistic = getPerformanceStatisticByCampaignId(
