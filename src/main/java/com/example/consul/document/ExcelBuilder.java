@@ -221,6 +221,8 @@ public class ExcelBuilder {
 
         for (int i = 0 ; i < config.getPageNumber() ; i++) {
             List<T> obj = config.getData().get(i);
+            if (obj.isEmpty()) continue;
+
             createSheet(workbook,
                     obj,
                     config.getHeader(),

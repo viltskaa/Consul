@@ -12,6 +12,7 @@ import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
 import com.example.consul.mapping.YANDEX_dataProcessing;
+import com.example.consul.utils.Clustering;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -23,16 +24,19 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class YANDEX_Service {
     private final YANDEX_Api yandexApi;
     private final ConditionalWithDelayChecker reportChecker;
+    private final Clustering clustering;
 
     public YANDEX_Service(YANDEX_Api api,
-                          ConditionalWithDelayChecker reportChecker) {
+                          ConditionalWithDelayChecker reportChecker, Clustering clustering) {
         this.yandexApi = api;
         this.reportChecker = reportChecker;
+        this.clustering = clustering;
     }
 
     public byte[] createReport(@NotNull String auth,
@@ -50,6 +54,8 @@ public class YANDEX_Service {
                 placementPrograms
         );
 
+        Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data);
+
         return ExcelBuilder.createDocumentToByteArray(
                 ExcelConfig.<YANDEX_TableRow>builder()
                         .fileName("report_yandex_" + month + "_" + year + ".xls")
@@ -59,8 +65,8 @@ public class YANDEX_Service {
                                         .description("NEW METHOD")
                                         .build()
                         )
-                        .data(List.of(data))
-                        .sheetsName(List.of("1"))
+                        .data(clusteredData.values().stream().toList())
+                        .sheetsName(clusteredData.keySet().stream().toList())
                         .build()
         );
     }

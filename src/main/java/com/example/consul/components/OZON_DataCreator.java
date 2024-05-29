@@ -178,7 +178,7 @@ public class OZON_DataCreator {
         return mergedMap.entrySet().stream().map(x -> {
             List<Object> values = x.getValue();
             return OZON_TableRow.builder()
-                    .offerId(x.getKey())
+                    .article(x.getKey())
                     .delivered((Integer) values.get(0))
                     .returned((Integer) values.get(1))
                     .saleForDelivered((Double) values.get(2))

@@ -3,23 +3,16 @@ package com.example.consul.document.models;
 import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @TotalCell(
         formula = "(retailSum - sumReturn + partSumCompensationForLost - compensation " +
                 "- acquiringSale + acquiringReturn + acquiringPvzReturn + additional - penalty " +
                 "- logistic - deduction) / (retailAmount - returnAmount - amountCompensationForLost)"
 )
-public class WB_TableRow {
-    @CellUnit(name="Артикул", total = false)
-    private String saName;
+public class WB_TableRow extends TableRow {
     @CellUnit(name="Кол-во")
     private Integer retailAmount;
     @CellUnit(name="Начислено")
@@ -64,4 +57,51 @@ public class WB_TableRow {
     private Double stornoLogistic;
     @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
     private final Double total = 0.0;
+
+    @Builder
+    public WB_TableRow(String article,
+                       Integer retailAmount,
+                       Double retailSum,
+                       Integer returnAmount,
+                       Double sumReturn,
+                       Double stornoReturn,
+                       Double sumStornoReturn,
+                       Double stornoSale,
+                       Double stornoSumSale,
+                       Double amountCompensationForLost,
+                       Double allSumCompensationForLost,
+                       Double partSumCompensationForLost,
+                       Double compensation,
+                       Double acquiringSale,
+                       Double acquiringReturn,
+                       Double acquiringPvzReturn,
+                       Double additional,
+                       Double penalty,
+                       Double deduction,
+                       Double storage,
+                       Double logistic,
+                       Double stornoLogistic) {
+        super(article);
+        this.retailAmount = retailAmount;
+        this.retailSum = retailSum;
+        this.returnAmount = returnAmount;
+        this.sumReturn = sumReturn;
+        this.stornoReturn = stornoReturn;
+        this.sumStornoReturn = sumStornoReturn;
+        this.stornoSale = stornoSale;
+        this.stornoSumSale = stornoSumSale;
+        this.amountCompensationForLost = amountCompensationForLost;
+        this.allSumCompensationForLost = allSumCompensationForLost;
+        this.partSumCompensationForLost = partSumCompensationForLost;
+        this.compensation = compensation;
+        this.acquiringSale = acquiringSale;
+        this.acquiringReturn = acquiringReturn;
+        this.acquiringPvzReturn = acquiringPvzReturn;
+        this.additional = additional;
+        this.penalty = penalty;
+        this.deduction = deduction;
+        this.storage = storage;
+        this.logistic = logistic;
+        this.stornoLogistic = stornoLogistic;
+    }
 }
