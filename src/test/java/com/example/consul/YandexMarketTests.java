@@ -51,7 +51,7 @@ class YandexMarketTests {
 
     @Test
     public void generateExcel() throws IOException {
-        List<YANDEX_TableRow> data = yandexService.getData("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA", 23761421L, 2024, 2, 5731759L, new ArrayList<>());
+        List<YANDEX_TableRow> data = yandexService.getData("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA", 23761421L, 2024, 4, 5731759L, new ArrayList<>());
 
         ExcelBuilder.createDocument(ExcelConfig.<YANDEX_TableRow>builder().fileName("2024-02.xls").header(HeaderConfig.builder().title("TEST").description("NEW METHOD").build()).data(List.of(data)).sheetsName(List.of("1")).build());
     }

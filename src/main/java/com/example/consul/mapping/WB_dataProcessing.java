@@ -95,6 +95,18 @@ public class WB_dataProcessing {
                                 .sum()));
     }
 
+    public static Map<String, Double> sumRebill(
+            @NotNull Map<String, @NotNull List<WB_DetailReport>> groupMap
+    ) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .mapToDouble(WB_DetailReport::getRebill_logistic_cost)
+                                .sum()));
+    }
+
     public static Map<String, Double> sumAdditional(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
         return groupMap
                 .entrySet().stream()

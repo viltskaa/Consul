@@ -9,7 +9,7 @@ import lombok.*;
 @Data
 @TotalCell(
         formula = "(retailSum - sumReturn + partSumCompensationForLost - compensation " +
-                "- acquiringSale + acquiringReturn + acquiringPvzReturn + additional - penalty " +
+                "- acquiringSale + acquiringReturn + additional - penalty " +
                 "- logistic - deduction) / (retailAmount - returnAmount - amountCompensationForLost)"
 )
 public class WB_TableRow extends TableRow {
@@ -39,10 +39,8 @@ public class WB_TableRow extends TableRow {
     private Double compensation;
     @CellUnit(name="поверенный (ПВЗ+эквайринг)")
     private Double acquiringSale;
-    @CellUnit(name="Возврат комиссии (+нам)", type = ExcelCellType.EXPENSIVE)
+    @CellUnit(name="Возврат комиссии, поверенный", type = ExcelCellType.EXPENSIVE)
     private Double acquiringReturn;
-    @CellUnit(name="Возврат поверенный (+нам)", type = ExcelCellType.EXPENSIVE)
-    private Double acquiringPvzReturn;
     @CellUnit(name="Доплаты", type = ExcelCellType.EXPENSIVE)
     private Double additional;
     @CellUnit(name="штраф")
@@ -74,7 +72,6 @@ public class WB_TableRow extends TableRow {
                        Double compensation,
                        Double acquiringSale,
                        Double acquiringReturn,
-                       Double acquiringPvzReturn,
                        Double additional,
                        Double penalty,
                        Double deduction,
@@ -96,7 +93,6 @@ public class WB_TableRow extends TableRow {
         this.compensation = compensation;
         this.acquiringSale = acquiringSale;
         this.acquiringReturn = acquiringReturn;
-        this.acquiringPvzReturn = acquiringPvzReturn;
         this.additional = additional;
         this.penalty = penalty;
         this.deduction = deduction;

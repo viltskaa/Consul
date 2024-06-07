@@ -29,7 +29,7 @@ public class OZONApiTest {
 
         ExcelBuilder.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("2024-04.xls")
+                        .fileName("OZONY2024M04.xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("TEST")

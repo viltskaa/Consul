@@ -31,7 +31,9 @@ public class WB_DataCreator {
                 groupedDetail,
                 WB_OperationName.RETURN
         );
+        Map<String, Double> sumRebill = WB_dataProcessing.sumRebill(groupedDetail);
         Map<String, Double> logisticSum = WB_dataProcessing.sumLogistic(groupedDetail);
+        Map<String, Double> penaltySum = WB_dataProcessing.sumPenalty(groupedDetail);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(deliveryAmount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
@@ -41,7 +43,9 @@ public class WB_DataCreator {
                         returnSum.getOrDefault(entry.getKey(), 0.0),
                         saleCommission.getOrDefault(entry.getKey(), 0.0),
                         returnCommission.getOrDefault(entry.getKey(), 0.0),
-                        logisticSum.getOrDefault(entry.getKey(), 0.0)
+                        logisticSum.getOrDefault(entry.getKey(), 0.0),
+                        sumRebill.getOrDefault(entry.getKey(), 0.0),
+                        penaltySum.getOrDefault(entry.getKey(), 0.0)
                 ))));
 
         return mergedMap.entrySet().stream().map(x -> {
@@ -61,10 +65,9 @@ public class WB_DataCreator {
                    .partSumCompensationForLost(0.0)
                    .compensation(0.0)
                    .acquiringSale((Double) values.get(4))
-                   .acquiringReturn((Double) values.get(5))
-                   .acquiringPvzReturn(0.0)
+                   .acquiringReturn((Double) values.get(5) + (Double) values.get(6))
                    .additional(0.0)
-                   .penalty(0.0)
+                   .penalty((Double) values.get(7))
                    .deduction(0.0)
                    .storage(0.0)
                    .logistic((Double) values.get(6))
