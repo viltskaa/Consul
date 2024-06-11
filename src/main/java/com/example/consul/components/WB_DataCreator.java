@@ -31,6 +31,11 @@ public class WB_DataCreator {
                 groupedDetail,
                 WB_OperationName.RETURN
         );
+        Map<String, Double> refundCommission = WB_dataProcessing.sumRefundCommission(groupedDetail);
+        Map<String, Double> attorney = WB_dataProcessing.sumAttorney(
+                groupedDetail,
+                WB_OperationName.SALE
+        );
         Map<String, Double> sumRebill = WB_dataProcessing.sumRebill(groupedDetail);
         Map<String, Double> logisticSum = WB_dataProcessing.sumLogistic(groupedDetail);
         Map<String, Double> penaltySum = WB_dataProcessing.sumPenalty(groupedDetail);
@@ -38,14 +43,16 @@ public class WB_DataCreator {
         Map<String, List<Object>> mergedMap = new HashMap<>(deliveryAmount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
                         entry.getValue(),
-                        retailSum.getOrDefault(entry.getKey(), 0.0),
-                        returnAmount.getOrDefault(entry.getKey(), 0),
-                        returnSum.getOrDefault(entry.getKey(), 0.0),
-                        saleCommission.getOrDefault(entry.getKey(), 0.0),
-                        returnCommission.getOrDefault(entry.getKey(), 0.0),
-                        logisticSum.getOrDefault(entry.getKey(), 0.0),
-                        sumRebill.getOrDefault(entry.getKey(), 0.0),
-                        penaltySum.getOrDefault(entry.getKey(), 0.0)
+                        retailSum.getOrDefault(entry.getKey(), 0.0), // 1
+                        returnAmount.getOrDefault(entry.getKey(), 0), // 2
+                        returnSum.getOrDefault(entry.getKey(), 0.0), // 3
+                        saleCommission.getOrDefault(entry.getKey(), 0.0), // 4
+                        returnCommission.getOrDefault(entry.getKey(), 0.0), // 5
+                        logisticSum.getOrDefault(entry.getKey(), 0.0), // 6
+                        sumRebill.getOrDefault(entry.getKey(), 0.0), // 7
+                        penaltySum.getOrDefault(entry.getKey(), 0.0), // 8
+                        attorney.getOrDefault(entry.getKey(), 0.0), // 9
+                        refundCommission.getOrDefault(entry.getKey(), 0.0) // 10
                 ))));
 
         return mergedMap.entrySet().stream().map(x -> {
@@ -63,9 +70,9 @@ public class WB_DataCreator {
                    .amountCompensationForLost(0.0)
                    .allSumCompensationForLost(0.0)
                    .partSumCompensationForLost(0.0)
-                   .compensation(0.0)
-                   .acquiringSale((Double) values.get(4))
-                   .acquiringReturn((Double) values.get(5) + (Double) values.get(6))
+                   .commission((Double) values.get(4))
+                   .acquiringSale((Double) values.get(9))
+                   .acquiringReturn((Double) values.get(10))
                    .additional(0.0)
                    .penalty((Double) values.get(7))
                    .deduction(0.0)

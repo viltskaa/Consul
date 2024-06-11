@@ -76,7 +76,8 @@ public class WB_dataProcessing {
                                 .sum()));
     }
 
-    public static Map<String, Double> sumCommission(
+    //поверенный (ПВЗ+эквайринг)
+    public static Map<String, Double> sumAttorney(
             @NotNull Map<String,
             @NotNull List<WB_DetailReport>> groupMap,
             @NotNull WB_OperationName operationName
@@ -91,6 +92,24 @@ public class WB_dataProcessing {
                                 .mapToDouble(
                                         x -> x.getPpvz_vw() + x.getPpvz_vw_nds()
                                                 + x.getAcquiring_fee() + x.getPpvz_reward()
+                                )
+                                .sum()));
+    }
+
+    public static Map<String, Double> sumCommission(
+            @NotNull Map<String,
+            @NotNull List<WB_DetailReport>> groupMap,
+            @NotNull WB_OperationName operationName
+    ) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(operationName.toString()))
+                                .mapToDouble(
+                                        x -> x.getPpvz_vw_nds() + x.getPpvz_for_pay()
                                 )
                                 .sum()));
     }
@@ -128,6 +147,22 @@ public class WB_dataProcessing {
                                 .filter(report -> report.getSupplier_oper_name()
                                         .equals(WB_OperationName.LOGISTIC.toString()))
                                 .mapToDouble(WB_DetailReport::getDelivery_rub)
+                                .sum()));
+    }
+
+    //Возврат комиссии, поверенный
+    public static Map<String, Double> sumRefundCommission(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.RETURN.toString()))
+                                .mapToDouble(
+                                        x -> x.getPpvz_reward() + x.getAcquiring_fee() +
+                                                x.getPpvz_vw_nds() + x.getPpvz_for_pay()
+                                )
                                 .sum()));
     }
 

@@ -8,7 +8,7 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TotalCell(
-        formula = "(retailSum - sumReturn + partSumCompensationForLost - compensation " +
+        formula = "(retailSum - sumReturn + partSumCompensationForLost - commission " +
                 "- acquiringSale + acquiringReturn + additional - penalty " +
                 "- logistic - deduction) / (retailAmount - returnAmount - amountCompensationForLost)"
 )
@@ -36,7 +36,7 @@ public class WB_TableRow extends TableRow {
     @CellUnit(name="Частичная компенсация за испорченный товар")
     private Double partSumCompensationForLost;
     @CellUnit(name="Комиссия")
-    private Double compensation;
+    private Double commission;
     @CellUnit(name="поверенный (ПВЗ+эквайринг)")
     private Double acquiringSale;
     @CellUnit(name="Возврат комиссии, поверенный", type = ExcelCellType.EXPENSIVE)
@@ -69,7 +69,7 @@ public class WB_TableRow extends TableRow {
                        Double amountCompensationForLost,
                        Double allSumCompensationForLost,
                        Double partSumCompensationForLost,
-                       Double compensation,
+                       Double commission,
                        Double acquiringSale,
                        Double acquiringReturn,
                        Double additional,
@@ -90,7 +90,7 @@ public class WB_TableRow extends TableRow {
         this.amountCompensationForLost = amountCompensationForLost;
         this.allSumCompensationForLost = allSumCompensationForLost;
         this.partSumCompensationForLost = partSumCompensationForLost;
-        this.compensation = compensation;
+        this.commission = commission;
         this.acquiringSale = acquiringSale;
         this.acquiringReturn = acquiringReturn;
         this.additional = additional;
