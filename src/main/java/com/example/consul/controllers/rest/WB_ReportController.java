@@ -19,7 +19,7 @@ public class WB_ReportController {
     }
 
     @PostMapping(path = "/get")
-    public List<WB_TableRow> getReport(@RequestBody WB_RequestBody body){
+    public List<WB_TableRow> getReport(@RequestBody WB_RequestBody body) {
         return wbService.getData(
                 body.getApiKey(),
                 body.getYear(),
@@ -28,7 +28,7 @@ public class WB_ReportController {
     }
 
     @PostMapping(path = "/getExcel")
-    public @ResponseBody byte[] getReportExcel(@RequestBody WB_RequestBody body){
+    public @ResponseBody byte[] getReportExcel(@RequestBody WB_RequestBody body) {
         return wbService.createReport(
                 body.getApiKey(),
                 body.getYear(),
@@ -37,7 +37,7 @@ public class WB_ReportController {
     }
 
     @PostMapping(path = "/getByWeek")
-    public List<WB_TableRow> getWeekReport(@RequestBody WB_RequestBodyWeek body){
+    public List<WB_TableRow> getWeekReport(@RequestBody WB_RequestBodyWeek body) {
         return wbService.getData(
                 body.getApiKey(),
                 body.getYear(),
@@ -47,7 +47,7 @@ public class WB_ReportController {
     }
 
     @PostMapping(path = "/getExcelByWeek")
-    public @ResponseBody byte[] getWeekReportExcel(@RequestBody WB_RequestBodyWeek body){
+    public @ResponseBody byte[] getWeekReportExcel(@RequestBody WB_RequestBodyWeek body) {
         return wbService.createReport(
                 body.getApiKey(),
                 body.getYear(),

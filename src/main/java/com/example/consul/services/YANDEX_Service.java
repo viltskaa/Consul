@@ -1,7 +1,6 @@
 package com.example.consul.services;
 
 import com.example.consul.api.YANDEX_Api;
-import com.example.consul.api.utils.YANDEX.YANDEX_PlacementType;
 import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.ExcelBuilder;
@@ -40,17 +39,15 @@ public class YANDEX_Service {
 
     public byte[] createReport(@NotNull String auth,
                                @NotNull Long campaignId,
-                               int year,
-                               int month,
                                @NotNull Long businessId,
-                               @NotNull List<YANDEX_PlacementType> placementPrograms) {
+                               int year,
+                               int month) {
         List<YANDEX_TableRow> data = getData(
                 auth,
                 campaignId,
-                year,
-                month,
                 businessId,
-                placementPrograms
+                year,
+                month
         );
 
         Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data);
@@ -72,9 +69,8 @@ public class YANDEX_Service {
 
     public YANDEX_CreateReport getServicesReport(@NotNull Long businessId,
                                                  @NotNull String dateFrom,
-                                                 @NotNull String dateTo,
-                                                 @NotNull List<YANDEX_PlacementType> placementPrograms) {
-        return yandexApi.createServicesReport(businessId, dateFrom, dateTo, placementPrograms);
+                                                 @NotNull String dateTo) {
+        return yandexApi.createServicesReport(businessId, dateFrom, dateTo, new ArrayList<>());
     }
 
     public YANDEX_CreateReport getRealizationReport(@NotNull Long campaignId,
@@ -90,10 +86,9 @@ public class YANDEX_Service {
     public String scheduledGetServicesReport(@NotNull String auth,
                                              @NotNull Long businessId,
                                              @NotNull String dateFrom,
-                                             @NotNull String dateTo,
-                                             @NotNull List<YANDEX_PlacementType> placementPrograms) {
+                                             @NotNull String dateTo) {
         yandexApi.setHeaders(auth);
-        YANDEX_CreateReport report = getServicesReport(businessId, dateFrom, dateTo, placementPrograms);
+        YANDEX_CreateReport report = getServicesReport(businessId, dateFrom, dateTo);
         Boolean value = reportChecker.start(() -> {
             YANDEX_ReportInfo info = getReportInfo(report.getReportId());
             return info != null && info.getReportStatus().equals(YANDEX_ReportStatusType.DONE);
@@ -134,16 +129,15 @@ public class YANDEX_Service {
 
     public List<YANDEX_TableRow> getData(@NotNull String auth,
                                          @NotNull Long campaignId,
-                                         int year,
-                                         int month,
                                          @NotNull Long businessId,
-                                         @NotNull List<YANDEX_PlacementType> placementPrograms) {
+                                         int year,
+                                         int month) {
         yandexApi.setHeaders(auth);
         Pair<String, String> date = getStartAndEndDateToDate(month, year);
 
         try {
             URL realizationUrl = new URL(scheduledGetRealizationReport(auth, campaignId, year, month));
-            URL servicesUrl = new URL(scheduledGetServicesReport(auth, businessId, date.a, date.b, placementPrograms));
+            URL servicesUrl = new URL(scheduledGetServicesReport(auth, businessId, date.a, date.b));
 
             try (
                     InputStream realizationInputStream = realizationUrl.openStream();

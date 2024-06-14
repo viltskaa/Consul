@@ -273,9 +273,6 @@ public class YANDEX_dataProcessing {
                     .loyaltyProgram((Double) listDF.get(1))
                     .boostSales((Double) listDF.get(2))
                     .promotionFavor(0.0)
-                    .count((Double) listDF.get(6) - (Double) listDF.get(8) == 0.0
-                            ? -1
-                            : ((Double) listDF.get(6) - (Double) listDF.get(8)))
                     .build());
         }
 

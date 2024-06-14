@@ -37,7 +37,7 @@ public class YANDEX_Api {
      * @param businessId (5731759) Идентификатор бизнеса.
      * @param dateFrom Начало периода, включительно.
      * @param dateTo Конец периода, включительно. Максимальный период — 1 год.
-     * @param placementPrograms Список моделей (которым работает магазин), которые нужны в отчете.
+     * @param placementPrograms Список моделей (которым работает магазин) необходимые в отчете.
      * @return url для загрузки файла
      */
     @Nullable
