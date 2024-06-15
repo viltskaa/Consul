@@ -102,8 +102,8 @@ public class WB_Service {
                         .fileName("report_wb_" + day + ".xls")
                         .header(
                                 HeaderConfig.builder()
-                                        .title("WB")
-                                        .description("NEW METHOD")
+                                        .title(day)
+                                        .description("Продажи")
                                         .build()
                         )
                         .data(List.of(data))
@@ -207,7 +207,7 @@ public class WB_Service {
         return salesCountMap.entrySet().stream()
                 .map(entry -> WB_SaleRow.builder()
                         .article(entry.getKey())
-                        .count(entry.getValue())
+                        .count(Math.toIntExact(entry.getValue()))
                         .build()
                 )
                 .toList();

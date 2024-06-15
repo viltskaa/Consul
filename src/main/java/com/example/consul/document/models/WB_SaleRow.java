@@ -11,11 +11,11 @@ import lombok.EqualsAndHashCode;
 @TotalCell(formula = "count")
 public class WB_SaleRow extends TableRow {
     @CellUnit(name="Кол-во")
-    private Long count;
+    private Integer count;
 
     @Builder
     public WB_SaleRow(String article,
-                      Long count) {
+                      Integer count) {
         super(article);
         this.count = count;
     }
