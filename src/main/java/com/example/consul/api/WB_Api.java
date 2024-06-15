@@ -3,6 +3,7 @@ package com.example.consul.api;
 import com.example.consul.api.utils.Link;
 import com.example.consul.dto.WB.WB_AdReport;
 import com.example.consul.dto.WB.WB_DetailReport;
+import com.example.consul.dto.WB.WB_SaleReport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.*;
@@ -56,6 +57,25 @@ public class WB_Api {
                                                          @NotNull String dateTo,
                                                          @NotNull Long rrdId) {
         return getDetailReport(dateFrom, dateTo, rrdId, "v5");
+    }
+
+    @Nullable
+    public List<WB_SaleReport> getSaleReport(@NotNull String dateFrom) {
+        if (dateFrom.isEmpty())
+            return null;
+
+        final String saleReportUrl = "https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom=%s&flag=%s"
+                .formatted(dateFrom, 1);
+
+        HttpEntity<WB_SaleReport[]> request = new HttpEntity<>(headers);
+        ResponseEntity<WB_SaleReport[]> response = restTemplate
+                .exchange(saleReportUrl, HttpMethod.GET, request, WB_SaleReport[].class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return Arrays.asList(response.getBody());
+        } else {
+            return null;
+        }
     }
 
     @Nullable

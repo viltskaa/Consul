@@ -7,7 +7,8 @@ public enum WB_OperationName {
     REFUND("Возмещение издержек по перевозке/по складским операциям с товаром"),
     STORAGE("Хранение"),
     HOLDING("Удержание"),
-    PENALTY("Штраф");
+    PENALTY("Штраф"),
+    SALE_TYPE("Клиентский");
 
     private final String value;
 

@@ -6,9 +6,12 @@ import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.models.WB_SaleRow;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.dto.WB.WB_AdReport;
 import com.example.consul.dto.WB.WB_DetailReport;
+import com.example.consul.dto.WB.WB_SaleReport;
+import com.example.consul.mapping.WB_dataProcessing;
 import com.example.consul.utils.Clustering;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -75,6 +78,28 @@ public class WB_Service {
         return ExcelBuilder.createDocumentToByteArray(
                 ExcelConfig.<WB_TableRow>builder()
                         .fileName("report_wb_" + month + "_" + year + ".xls")
+                        .header(
+                                HeaderConfig.builder()
+                                        .title("WB")
+                                        .description("NEW METHOD")
+                                        .build()
+                        )
+                        .data(List.of(data))
+                        .sheetsName(List.of("1"))
+                        .build()
+        );
+    }
+
+    public byte[] createReport(@NotNull String apiKey,
+                               @NotNull String day) {
+        List<WB_SaleRow> data = getData(
+                apiKey,
+                day
+        );
+
+        return ExcelBuilder.createDocumentToByteArray(
+                ExcelConfig.<WB_SaleRow>builder()
+                        .fileName("report_wb_" + day + ".xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("WB")
@@ -178,6 +203,22 @@ public class WB_Service {
         return wbDataCreator.createTableRows(reportCompletableFuture.join());
     }
 
+    private List<WB_SaleRow> mapToSaleRows(Map<String, Long> salesCountMap) {
+        return salesCountMap.entrySet().stream()
+                .map(entry -> WB_SaleRow.builder()
+                        .article(entry.getKey())
+                        .count(entry.getValue())
+                        .build()
+                )
+                .toList();
+    }
+
+    public List<WB_SaleRow> getData(@NotNull String apiKey,
+                                    @NotNull String day) {
+        wbApi.setApiKey(apiKey);
+        return mapToSaleRows(WB_dataProcessing.getSalesCount(getSaleReport(day)));
+    }
+
     public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year,
                                                                @NotNull Integer month) {
         Pair<String, String> dates = getDateFrom(year, month);
@@ -241,6 +282,14 @@ public class WB_Service {
     public List<WB_DetailReport> getDetailReportV5(@NotNull String dateFrom, @NotNull String dateTo, @NotNull Long rrdId) {
         try {
             return wbApi.getDetailReportWithOffsetV5(dateFrom, dateTo, rrdId);
+        } catch (NullPointerException exception) {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<WB_SaleReport> getSaleReport(@NotNull String dateFrom) {
+        try {
+            return wbApi.getSaleReport(dateFrom);
         } catch (NullPointerException exception) {
             return new ArrayList<>();
         }

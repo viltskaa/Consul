@@ -1,7 +1,9 @@
 package com.example.consul.controllers.rest;
 
 import com.example.consul.controllers.rest.requestBodies.WB_RequestBody;
+import com.example.consul.controllers.rest.requestBodies.WB_RequestBodyDay;
 import com.example.consul.controllers.rest.requestBodies.WB_RequestBodyWeek;
+import com.example.consul.document.models.WB_SaleRow;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.services.WB_Service;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +55,22 @@ public class WB_ReportController {
                 body.getYear(),
                 body.getMonth(),
                 body.getWeekNumber()
+        );
+    }
+
+    @PostMapping(path = "/getSalesByDay")
+    public List<WB_SaleRow> getSaleReport(@RequestBody WB_RequestBodyDay body) {
+        return wbService.getData(
+                body.getApiKey(),
+                body.getDay()
+        );
+    }
+
+    @PostMapping(path = "/getExcelSalesByDay")
+    public @ResponseBody byte[] getSaleReportExcel(@RequestBody WB_RequestBodyDay body) {
+        return wbService.createReport(
+                body.getApiKey(),
+                body.getDay()
         );
     }
 }
