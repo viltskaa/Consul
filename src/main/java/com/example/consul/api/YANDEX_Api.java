@@ -85,13 +85,17 @@ public class YANDEX_Api {
                 .build();
 
         HttpEntity<String> request = new HttpEntity<>(null, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                reportStatusUrl,
-                HttpMethod.GET,
-                request,
-                String.class
-        );
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.exchange(
+                    reportStatusUrl,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+        } catch (Exception ex) {
+            return null;
+        }
 
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(),

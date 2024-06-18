@@ -25,6 +25,12 @@ class YandexMarketTests {
     }
 
     @Test
+    public void Show() {
+        yandexService.getData("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA",
+                75772674L, 91982666L, 2024, 4);
+    }
+
+    @Test
     public void ServicesReportTest() throws IOException {
 
         String url = yandexService.scheduledGetServicesReport("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA", 5731759L, "2024-02-01", "2024-02-29");
