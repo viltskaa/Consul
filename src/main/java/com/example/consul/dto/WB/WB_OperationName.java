@@ -6,8 +6,10 @@ public enum WB_OperationName {
     LOGISTIC("Логистика"),
     REFUND("Возмещение издержек по перевозке/по складским операциям с товаром"),
     STORAGE("Хранение"),
+    STORAGE_REFUND("Пересчет хранения"),
     HOLDING("Удержание"),
     PENALTY("Штраф"),
+    DEDUCTION("Удержание"),
     SALE_TYPE("Клиентский");
 
     private final String value;

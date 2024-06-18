@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 public class WB_dataProcessing {
@@ -194,5 +195,17 @@ public class WB_dataProcessing {
                                         .equals(WB_OperationName.PENALTY.toString()))
                                 .mapToDouble(WB_DetailReport::getPenalty)
                                 .sum()));
+    }
+
+    public static Double sumDoubleValuesByConditions(@NotNull List<WB_DetailReport> values,
+                                               Predicate<WB_DetailReport> predicate,
+                                               ToDoubleFunction<WB_DetailReport> supplier) {
+        return values.stream().filter(predicate).mapToDouble(supplier).sum();
+    }
+
+    public static Double sumIntegerValuesByConditions(@NotNull List<WB_DetailReport> values,
+                                                     Predicate<WB_DetailReport> predicate,
+                                                     ToIntFunction<WB_DetailReport> supplier) {
+        return values.stream().filter(predicate).mapToInt(supplier).asDoubleStream().sum();
     }
 }

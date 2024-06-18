@@ -37,8 +37,25 @@ public class WB_DataCreator {
                 WB_OperationName.SALE
         );
         Map<String, Double> sumRebill = WB_dataProcessing.sumRebill(groupedDetail);
+
         Map<String, Double> logisticSum = WB_dataProcessing.sumLogistic(groupedDetail);
         Map<String, Double> penaltySum = WB_dataProcessing.sumPenalty(groupedDetail);
+
+        Double retaliatedProduct = deliveryAmount.values().stream().mapToDouble(x -> x).sum()
+                - returnAmount.values().stream().mapToDouble(x -> x).sum();
+
+        Double deduction = WB_dataProcessing.sumDoubleValuesByConditions(
+                detailReport,
+                x -> x.getSupplier_oper_name().equals(WB_OperationName.DEDUCTION.toString()),
+                WB_DetailReport::getDeduction
+        ) / retaliatedProduct;
+
+        Double storage = WB_dataProcessing.sumDoubleValuesByConditions(
+                detailReport,
+                x -> x.getSupplier_oper_name().equals(WB_OperationName.STORAGE.toString())
+                        || x.getSupplier_oper_name().equals(WB_OperationName.STORAGE_REFUND.toString()),
+                WB_DetailReport::getStorage_fee
+        ) / retaliatedProduct;
 
         Map<String, List<Object>> mergedMap = new HashMap<>(deliveryAmount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
@@ -52,7 +69,9 @@ public class WB_DataCreator {
                         sumRebill.getOrDefault(entry.getKey(), 0.0), // 7
                         penaltySum.getOrDefault(entry.getKey(), 0.0), // 8
                         attorney.getOrDefault(entry.getKey(), 0.0), // 9
-                        refundCommission.getOrDefault(entry.getKey(), 0.0) // 10
+                        refundCommission.getOrDefault(entry.getKey(), 0.0), // 10
+                        deduction * entry.getValue(), // 11
+                        storage * entry.getValue() // 12
                 ))));
 
         return mergedMap.entrySet().stream().map(x -> {
@@ -70,15 +89,14 @@ public class WB_DataCreator {
                    .amountCompensationForLost(0.0)
                    .allSumCompensationForLost(0.0)
                    .partSumCompensationForLost(0.0)
-                   .commission((Double) values.get(4))
+                   .commission(0.0)
                    .acquiringSale((Double) values.get(9))
                    .acquiringReturn((Double) values.get(10))
                    .additional(0.0)
                    .penalty((Double) values.get(7))
-                   .deduction(0.0)
-                   .storage(0.0)
+                   .deduction((Double) values.get(11))
+                   .storage((Double) values.get(12))
                    .logistic((Double) values.get(6))
-                   .stornoLogistic(0.0)
                    .build();
         }).collect(Collectors.toList());
     }

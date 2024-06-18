@@ -51,8 +51,6 @@ public class WB_TableRow extends TableRow {
     private Double storage;
     @CellUnit(name="Логистика")
     private Double logistic;
-    @CellUnit(name="Логистика сторно (+ нам)")
-    private Double stornoLogistic;
     @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
     private final Double total = 0.0;
 
@@ -76,8 +74,7 @@ public class WB_TableRow extends TableRow {
                        Double penalty,
                        Double deduction,
                        Double storage,
-                       Double logistic,
-                       Double stornoLogistic) {
+                       Double logistic) {
         super(article);
         this.retailAmount = retailAmount;
         this.retailSum = retailSum;
@@ -98,6 +95,5 @@ public class WB_TableRow extends TableRow {
         this.deduction = deduction;
         this.storage = storage;
         this.logistic = logistic;
-        this.stornoLogistic = stornoLogistic;
     }
 }
