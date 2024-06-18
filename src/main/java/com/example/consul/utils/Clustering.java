@@ -45,9 +45,9 @@ public class Clustering {
             }
 
             return output;
-        } catch (IOException exception) {
+        } catch (IOException | UnsupportedOperationException exception) {
             Map<String, List<T>> defaulted = new HashMap<>();
-            defaulted.put("", data);
+            defaulted.put("base", data);
             return defaulted;
         }
     }

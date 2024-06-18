@@ -88,7 +88,7 @@ public class OZON_SkuProductsReport {
 
         @Data
         private static class Status {
-            private String status;
+            private String state;
             private String state_failed;
             private String moderate_status;
             private List<String> decline_reasons;
@@ -98,8 +98,19 @@ public class OZON_SkuProductsReport {
             private Boolean is_failed;
             private Boolean is_created;
             private String state_tooltip;
-            private List<String> item_errors;
+            private List<Error> item_errors;
             private String state_updated_at;
+
+            @Data
+            private static class Error {
+                private String code;
+                private String state;
+                private String level;
+                private String description;
+                private String field;
+                private Integer attribute_id;
+                private String attribute_name;
+            }
         }
     }
 }
