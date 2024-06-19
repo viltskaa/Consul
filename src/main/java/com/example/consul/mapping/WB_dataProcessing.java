@@ -193,19 +193,49 @@ public class WB_dataProcessing {
                         entry -> entry.getValue().stream()
                                 .filter(report -> report.getSupplier_oper_name()
                                         .equals(WB_OperationName.PENALTY.toString()))
-                                .mapToDouble(WB_DetailReport::getPenalty)
-                                .sum()));
+                                .mapToDouble(WB_DetailReport::getPenalty).sum()
+                ));
+    }
+
+    public static Map<String, Double> sumCompensationReplaced(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.COMPENSATION_REPlACED.toString()))
+                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
+                ));
+    }
+
+    public static Map<String, Double> sumCompensationLosted(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.COMPENSATION_LOSTED.toString()))
+                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
+                ));
+    }
+
+    public static Map<String, Double> sumCompensationDefected(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
+        return groupMap
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(report -> report.getSupplier_oper_name()
+                                        .equals(WB_OperationName.COMPENSATION_DEFECT.toString()))
+                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
+                ));
     }
 
     public static Double sumDoubleValuesByConditions(@NotNull List<WB_DetailReport> values,
                                                Predicate<WB_DetailReport> predicate,
                                                ToDoubleFunction<WB_DetailReport> supplier) {
         return values.stream().filter(predicate).mapToDouble(supplier).sum();
-    }
-
-    public static Double sumIntegerValuesByConditions(@NotNull List<WB_DetailReport> values,
-                                                     Predicate<WB_DetailReport> predicate,
-                                                     ToIntFunction<WB_DetailReport> supplier) {
-        return values.stream().filter(predicate).mapToInt(supplier).asDoubleStream().sum();
     }
 }

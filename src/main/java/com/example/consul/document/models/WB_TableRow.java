@@ -8,50 +8,40 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TotalCell(
-        formula = "(retailSum - sumReturn + partSumCompensationForLost - commission " +
+        formula = "(retailSum - sumReturn + sumCompensationForLost + sumCompensationForReplace + sumCompensationForDefected" +
                 "- acquiringSale + acquiringReturn + additional - penalty " +
-                "- logistic - deduction) / (retailAmount - returnAmount - amountCompensationForLost)"
+                "- logistic - deduction) / (retailAmount - returnAmount)"
 )
 public class WB_TableRow extends TableRow {
-    @CellUnit(name="Кол-во")
+    @CellUnit(name = "Кол-во")
     private Integer retailAmount;
-    @CellUnit(name="Начислено")
+    @CellUnit(name = "Начислено")
     private Double retailSum;
-    @CellUnit(name="Возврат (Кол-во)", type = ExcelCellType.EXPENSIVE)
+    @CellUnit(name = "Возврат (Кол-во)", type = ExcelCellType.EXPENSIVE)
     private Integer returnAmount;
-    @CellUnit(name="Возврат (Сумма)")
+    @CellUnit(name = "Возврат (Сумма)")
     private Double sumReturn;
-    @CellUnit(name="Сторно возвратов (кол-во)")
-    private Double stornoReturn;
-    @CellUnit(name="Сторно возвратов (сумма)")
-    private Double sumStornoReturn;
-    @CellUnit(name="Сторно продаж (кол-во)")
-    private Double stornoSale;
-    @CellUnit(name="Сторно продаж (сумма)")
-    private Double stornoSumSale;
-    @CellUnit(name="Полная компенсация потерянного товара (кол-во)")
-    private Double amountCompensationForLost;
-    @CellUnit(name="Полная компенсация потерянного товара (СУММА)")
-    private Double allSumCompensationForLost;
-    @CellUnit(name="Частичная компенсация за испорченный товар")
-    private Double partSumCompensationForLost;
-    @CellUnit(name="Комиссия")
-    private Double commission;
-    @CellUnit(name="поверенный (ПВЗ+эквайринг)")
+    @CellUnit(name = "Компенсация потерянного товара")
+    private Double sumCompensationForLost;
+    @CellUnit(name = "Компенсация замененного товара")
+    private Double sumCompensationForReplace;
+    @CellUnit(name = "Компенсация испорченного товара")
+    private Double sumCompensationForDefected;
+    @CellUnit(name = "поверенный (ПВЗ+эквайринг)")
     private Double acquiringSale;
-    @CellUnit(name="Возврат комиссии, поверенный", type = ExcelCellType.EXPENSIVE)
+    @CellUnit(name = "Возврат комиссии, поверенный", type = ExcelCellType.EXPENSIVE)
     private Double acquiringReturn;
-    @CellUnit(name="Доплаты", type = ExcelCellType.EXPENSIVE)
+    @CellUnit(name = "Доплаты", type = ExcelCellType.EXPENSIVE)
     private Double additional;
-    @CellUnit(name="штраф")
+    @CellUnit(name = "штраф")
     private Double penalty;
-    @CellUnit(name="Прочие удержания")
+    @CellUnit(name = "Прочие удержания")
     private Double deduction;
-    @CellUnit(name="Хранение(дашб)")
+    @CellUnit(name = "Хранение(дашб)")
     private Double storage;
-    @CellUnit(name="Логистика")
+    @CellUnit(name = "Логистика")
     private Double logistic;
-    @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
+    @CellUnit(name = "Итого", type = ExcelCellType.TOTAL)
     private final Double total = 0.0;
 
     @Builder
@@ -60,14 +50,9 @@ public class WB_TableRow extends TableRow {
                        Double retailSum,
                        Integer returnAmount,
                        Double sumReturn,
-                       Double stornoReturn,
-                       Double sumStornoReturn,
-                       Double stornoSale,
-                       Double stornoSumSale,
-                       Double amountCompensationForLost,
-                       Double allSumCompensationForLost,
-                       Double partSumCompensationForLost,
-                       Double commission,
+                       Double sumCompensationForLost,
+                       Double sumCompensationForReplace,
+                       Double sumCompensationForDefected,
                        Double acquiringSale,
                        Double acquiringReturn,
                        Double additional,
@@ -80,14 +65,9 @@ public class WB_TableRow extends TableRow {
         this.retailSum = retailSum;
         this.returnAmount = returnAmount;
         this.sumReturn = sumReturn;
-        this.stornoReturn = stornoReturn;
-        this.sumStornoReturn = sumStornoReturn;
-        this.stornoSale = stornoSale;
-        this.stornoSumSale = stornoSumSale;
-        this.amountCompensationForLost = amountCompensationForLost;
-        this.allSumCompensationForLost = allSumCompensationForLost;
-        this.partSumCompensationForLost = partSumCompensationForLost;
-        this.commission = commission;
+        this.sumCompensationForLost = sumCompensationForLost;
+        this.sumCompensationForReplace = sumCompensationForReplace;
+        this.sumCompensationForDefected = sumCompensationForDefected;
         this.acquiringSale = acquiringSale;
         this.acquiringReturn = acquiringReturn;
         this.additional = additional;
