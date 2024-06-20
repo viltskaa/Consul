@@ -10,6 +10,9 @@ public enum WB_OperationName {
     HOLDING("Удержание"),
     PENALTY("Штраф"),
     DEDUCTION("Удержание"),
+    COMPENSATION_REPlACED("Компенсация подмененного товара"),
+    COMPENSATION_LOSTED("Компенсация потерянного товара"),
+    COMPENSATION_DEFECT("Компенсация брака"),
     SALE_TYPE("Клиентский");
 
     private final String value;

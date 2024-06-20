@@ -41,6 +41,10 @@ public class WB_DataCreator {
         Map<String, Double> logisticSum = WB_dataProcessing.sumLogistic(groupedDetail);
         Map<String, Double> penaltySum = WB_dataProcessing.sumPenalty(groupedDetail);
 
+        Map<String, Double> compensationLost = WB_dataProcessing.sumCompensationLosted(groupedDetail);
+        Map<String, Double> compensationReplace = WB_dataProcessing.sumCompensationReplaced(groupedDetail);
+        Map<String, Double> compensationDefect = WB_dataProcessing.sumCompensationDefected(groupedDetail);
+
         Double retaliatedProduct = deliveryAmount.values().stream().mapToDouble(x -> x).sum()
                 - returnAmount.values().stream().mapToDouble(x -> x).sum();
 
@@ -71,7 +75,10 @@ public class WB_DataCreator {
                         attorney.getOrDefault(entry.getKey(), 0.0), // 9
                         refundCommission.getOrDefault(entry.getKey(), 0.0), // 10
                         deduction * entry.getValue(), // 11
-                        storage * entry.getValue() // 12
+                        storage * entry.getValue(), // 12
+                        compensationLost.getOrDefault(entry.getKey(), 0.0), // 13
+                        compensationReplace.getOrDefault(entry.getKey(), 0.0), // 14
+                        compensationDefect.getOrDefault(entry.getKey(), 0.0) // 15
                 ))));
 
         return mergedMap.entrySet().stream().map(x -> {
@@ -82,14 +89,9 @@ public class WB_DataCreator {
                    .retailSum((Double) values.get(1))
                    .returnAmount((Integer) values.get(2))
                    .sumReturn((Double) values.get(3))
-                   .stornoReturn(0.0)
-                   .sumStornoReturn(0.0)
-                   .stornoSale(0.0)
-                   .stornoSumSale(0.0)
-                   .amountCompensationForLost(0.0)
-                   .allSumCompensationForLost(0.0)
-                   .partSumCompensationForLost(0.0)
-                   .commission(0.0)
+                   .sumCompensationForLost((Double) values.get(13))
+                   .sumCompensationForReplace((Double) values.get(14))
+                   .sumCompensationForDefected((Double) values.get(15))
                    .acquiringSale((Double) values.get(9))
                    .acquiringReturn((Double) values.get(10))
                    .additional(0.0)

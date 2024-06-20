@@ -80,8 +80,8 @@ public class WB_Service {
                         .fileName("report_wb_" + month + "_" + year + ".xls")
                         .header(
                                 HeaderConfig.builder()
-                                        .title("WB")
-                                        .description("NEW METHOD")
+                                        .title(apiKey)
+                                        .description("%d-%d Неделя: %d".formatted(year, month, weekNumber))
                                         .build()
                         )
                         .data(List.of(data))
