@@ -168,6 +168,71 @@ public class YANDEX_dataProcessing {
         return list;
     }
 
+    private static List<YANDEX_GoodsInDelivery> getGoodsInDelivery(Sheet sheet) {
+        List<YANDEX_GoodsInDelivery> list = new ArrayList<>();
+        int headerRow = findAutofilterRow(sheet);
+        boolean hasWarehouseSku = sheet.getRow(headerRow).getLastCellNum() == 20; // Проверяем, есть ли столбец warehouseSku
+
+        if (hasWarehouseSku) {
+            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
+                Row row = sheet.getRow(j);
+                YANDEX_GoodsInDelivery data = YANDEX_GoodsInDelivery.builder()
+                        .orderNumber((long) row.getCell(0).getNumericCellValue())
+                        .orderType(row.getCell(1).getStringCellValue())
+                        .productName(row.getCell(2).getStringCellValue())
+                        .productSku(row.getCell(3).getStringCellValue())
+                        .warehouseSku(row.getCell(4).getStringCellValue())
+                        .quantityShipped((int) row.getCell(5).getNumericCellValue())
+                        .orderStatus(row.getCell(6).getStringCellValue())
+                        .orderDate(LocalDate.parse(row.getCell(7).getStringCellValue(), formatter))
+                        .shipmentDate(LocalDate.parse(row.getCell(8).getStringCellValue(), formatter))
+                        .deliveryDate(LocalDate.parse(row.getCell(9).getStringCellValue(), formatter))
+                        .paymentMethod(row.getCell(10).getStringCellValue())
+                        .vatRate(row.getCell(11).getStringCellValue())
+                        .priceWithoutDiscount(row.getCell(12).getNumericCellValue())
+                        .marketplaceDiscount(row.getCell(13).getNumericCellValue())
+                        .sberThankYouBonusDiscount(row.getCell(14).getNumericCellValue())
+                        .yandexPlusPointsDiscount(row.getCell(15).getNumericCellValue())
+                        .priceWithDiscount(row.getCell(16).getNumericCellValue())
+                        .totalPriceWithoutDiscount(row.getCell(17).getNumericCellValue())
+                        .totalDiscount(row.getCell(18).getNumericCellValue())
+                        .totalPriceWithDiscount(row.getCell(19).getNumericCellValue())
+                        .build();
+
+                list.add(data);
+            }
+        } else {
+            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
+                Row row = sheet.getRow(j);
+                YANDEX_GoodsInDelivery.YANDEX_GoodsInDeliveryBuilder dataBuilder = YANDEX_GoodsInDelivery.builder()
+                        .orderNumber((long) row.getCell(0).getNumericCellValue())
+                        .orderType(row.getCell(1).getStringCellValue())
+                        .productName(row.getCell(2).getStringCellValue())
+                        .productSku(row.getCell(3).getStringCellValue())
+                        .quantityShipped((int) row.getCell(4).getNumericCellValue())
+                        .orderStatus(row.getCell(5).getStringCellValue())
+                        .orderDate(LocalDate.parse(row.getCell(6).getStringCellValue(), formatter))
+                        .shipmentDate(LocalDate.parse(row.getCell(7).getStringCellValue(), formatter))
+                        .deliveryDate(Objects.equals(row.getCell(8).getStringCellValue(), "") ? null : LocalDate.parse(row.getCell(8).getStringCellValue(), formatter))
+                        .paymentMethod(row.getCell(9).getStringCellValue())
+                        .vatRate(row.getCell(10).getStringCellValue())
+                        .priceWithoutDiscount(row.getCell(11).getNumericCellValue())
+                        .marketplaceDiscount(row.getCell(12).getNumericCellValue())
+                        .sberThankYouBonusDiscount(row.getCell(13).getNumericCellValue())
+                        .yandexPlusPointsDiscount(row.getCell(14).getNumericCellValue())
+                        .priceWithDiscount(row.getCell(15).getNumericCellValue())
+                        .totalPriceWithoutDiscount(row.getCell(16).getNumericCellValue())
+                        .totalDiscount(row.getCell(17).getNumericCellValue())
+                        .totalPriceWithDiscount(row.getCell(18).getNumericCellValue());
+
+                YANDEX_GoodsInDelivery data = dataBuilder.build();
+                list.add(data);
+            }
+        }
+
+        return list;
+    }
+
     private static List<YANDEX_ReturnedGoods> getReturnedGoods(Sheet sheet) {
         List<YANDEX_ReturnedGoods> list = new ArrayList<>();
         int headerRow = findAutofilterRow(sheet);
@@ -529,7 +594,8 @@ public class YANDEX_dataProcessing {
 
         final Sheet[] sheetRealization = {
                 wbRealization.getSheetAt(2),
-                wbRealization.getSheetAt(4)
+                wbRealization.getSheetAt(4),
+                wbRealization.getSheetAt(1)
         };
 
         CompletableFuture<Map<String, Double>> placingOnShowcaseCompletableFuture = CompletableFuture
@@ -556,6 +622,7 @@ public class YANDEX_dataProcessing {
         CompletableFuture<Map<String, Double>> favorSortingCenterPaymentCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapSortingCenter(
                         sheetService[3],
+                        sheetRealization[2],
                         sheetService[5],
                         sheetService[4]
                 ));
@@ -628,18 +695,37 @@ public class YANDEX_dataProcessing {
         }).toList();
     }
 
-    public static Map<String, Double> getMapSortingCenter(Sheet sheetDelivery, Sheet sheetSortingCenter, Sheet sheetAcceptPay) {
+    public static Map<String, Double> getMapSortingCenter(Sheet sheetDelivery, Sheet sheetShip, Sheet sheetSortingCenter, Sheet sheetAcceptPay) {
         List<YANDEX_AcceptingPayment> listAccept = getAcceptingPayment(sheetAcceptPay);
         List<YANDEX_DeliveryCustomer> listDel = getDeliveryCustomer(sheetDelivery);
         List<YANDEX_ProcessingOrders> listSorting = getProcessingOrders(sheetSortingCenter);
+        List<YANDEX_GoodsInDelivery> listDelivery = getGoodsInDelivery(sheetShip);
 
         Map<Long, List<String>> orderNumberToSkuListMap = listDel.stream()
                 .collect(Collectors.groupingBy(YANDEX_DeliveryCustomer::getOrderNumber,
                         Collectors.mapping(YANDEX_DeliveryCustomer::getSku, Collectors.toList())));
 
-        listAccept.forEach(payment ->
-                orderNumberToSkuListMap.computeIfAbsent(payment.getOrderNumber(), k -> new ArrayList<>())
-                        .add(payment.getSku()));
+        Map<Long, List<String>> orderNumberToSkuListMapAccept = listAccept.stream()
+                .collect(Collectors.groupingBy(YANDEX_AcceptingPayment::getOrderNumber,
+                        Collectors.mapping(YANDEX_AcceptingPayment::getSku, Collectors.toList())));
+
+        Map<Long, List<String>> orderNumberToSkuListMapDelivery = listDelivery.stream()
+                .collect(Collectors.groupingBy(YANDEX_GoodsInDelivery::getOrderNumber,
+                        Collectors.mapping(YANDEX_GoodsInDelivery::getProductSku, Collectors.toList())));
+
+        orderNumberToSkuListMapAccept.forEach((orderNumber, skuList) ->
+                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
+                    existingList.addAll(newList);
+                    return existingList;
+                })
+        );
+
+        orderNumberToSkuListMapDelivery.forEach((orderNumber, skuList) ->
+                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
+                    existingList.addAll(newList);
+                    return existingList;
+                })
+        );
 
         System.out.println(orderNumberToSkuListMap);
 
