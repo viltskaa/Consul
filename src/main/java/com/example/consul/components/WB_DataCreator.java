@@ -74,8 +74,8 @@ public class WB_DataCreator {
                         penaltySum.getOrDefault(entry.getKey(), 0.0), // 8
                         attorney.getOrDefault(entry.getKey(), 0.0), // 9
                         refundCommission.getOrDefault(entry.getKey(), 0.0), // 10
-                        deduction * entry.getValue(), // 11
-                        storage * entry.getValue(), // 12
+                        deduction * (entry.getValue() - returnAmount.getOrDefault(entry.getKey(), 0)), // 11
+                        storage * (entry.getValue() - returnAmount.getOrDefault(entry.getKey(), 0)), // 12
                         compensationLost.getOrDefault(entry.getKey(), 0.0), // 13
                         compensationReplace.getOrDefault(entry.getKey(), 0.0), // 14
                         compensationDefect.getOrDefault(entry.getKey(), 0.0) // 15
