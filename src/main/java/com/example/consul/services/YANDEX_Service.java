@@ -146,7 +146,7 @@ public class YANDEX_Service {
                 InputStream inputStreamRealization = new ByteArrayInputStream(realizationInputStream.readAllBytes());
                 InputStream inputStreamServices = new ByteArrayInputStream(servicesInputStream.readAllBytes());
 
-                return YANDEX_dataProcessing.getTableRowList(inputStreamRealization, inputStreamServices);
+                return YANDEX_dataProcessing.getDataFromInputStream(inputStreamServices, inputStreamRealization);
             } catch (IOException exception) {
                 return new ArrayList<>();
             }
