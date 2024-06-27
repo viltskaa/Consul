@@ -180,7 +180,7 @@ public class WB_dataProcessing {
                                         .equals(WB_OperationName.RETURN.toString()))
                                 .mapToDouble(
                                         x -> x.getPpvz_reward() + x.getAcquiring_fee() +
-                                                x.getPpvz_vw_nds() + x.getPpvz_for_pay()
+                                                x.getPpvz_vw_nds() + x.getPpvz_vw()
                                 )
                                 .sum()));
     }
