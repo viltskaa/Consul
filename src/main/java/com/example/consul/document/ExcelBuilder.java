@@ -5,7 +5,6 @@ import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
-import com.example.consul.document.models.TableRow;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -97,7 +96,18 @@ public class ExcelBuilder {
                                       int columnInd, String titleName, int width) {
         Cell cell = row.createCell(columnInd);
         cell.setCellValue(titleName);
-        cell.setCellStyle(style);
+
+        CellStyle boldStyle = sheet.getWorkbook().createCellStyle();
+        boldStyle.cloneStyleFrom(style);
+
+        Font boldFont = sheet.getWorkbook().createFont();
+        boldFont.setBold(true);
+        boldStyle.setFont(boldFont);
+
+        boldStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        boldStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        cell.setCellStyle(boldStyle);
         sheet.setColumnWidth(columnInd, width * 256);
     }
 

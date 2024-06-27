@@ -104,12 +104,14 @@ public class YANDEX_dataProcessing {
     private static List<YANDEX_DeliveredGoods> getDeliveredGoods(Sheet sheet) {
         List<YANDEX_DeliveredGoods> list = new ArrayList<>();
         int headerRow = findAutofilterRow(sheet);
-        boolean hasWarehouseSku = sheet.getRow(headerRow).getLastCellNum() == 21; // Проверяем, есть ли столбец warehouseSku
 
-        if (hasWarehouseSku) {
-            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-                Row row = sheet.getRow(j);
-                YANDEX_DeliveredGoods data = YANDEX_DeliveredGoods.builder()
+        for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
+            Row row = sheet.getRow(j);
+            boolean hasWarehouseSku = row.getCell(4).getCellType() == CellType.STRING;
+            YANDEX_DeliveredGoods data;
+
+            if (hasWarehouseSku) {
+                data = YANDEX_DeliveredGoods.builder()
                         .orderNumber((long) row.getCell(0).getNumericCellValue())
                         .orderType(row.getCell(1).getStringCellValue())
                         .productName(row.getCell(2).getStringCellValue())
@@ -132,12 +134,7 @@ public class YANDEX_dataProcessing {
                         .totalDiscount(row.getCell(19).getNumericCellValue())
                         .totalPriceWithDiscount(row.getCell(20).getNumericCellValue())
                         .build();
-
-                list.add(data);
-            }
-        } else {
-            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-                Row row = sheet.getRow(j);
+            } else {
                 YANDEX_DeliveredGoods.YANDEX_DeliveredGoodsBuilder dataBuilder = YANDEX_DeliveredGoods.builder()
                         .orderNumber((long) row.getCell(0).getNumericCellValue())
                         .orderType(row.getCell(1).getStringCellValue())
@@ -159,10 +156,10 @@ public class YANDEX_dataProcessing {
                         .totalPriceWithoutDiscount(row.getCell(17).getNumericCellValue())
                         .totalDiscount(row.getCell(18).getNumericCellValue())
                         .totalPriceWithDiscount(row.getCell(19).getNumericCellValue());
-
-                YANDEX_DeliveredGoods data = dataBuilder.build();
-                list.add(data);
+                data = dataBuilder.build();
             }
+
+            list.add(data);
         }
 
         return list;
@@ -171,12 +168,15 @@ public class YANDEX_dataProcessing {
     private static List<YANDEX_GoodsInDelivery> getGoodsInDelivery(Sheet sheet) {
         List<YANDEX_GoodsInDelivery> list = new ArrayList<>();
         int headerRow = findAutofilterRow(sheet);
-        boolean hasWarehouseSku = sheet.getRow(headerRow).getLastCellNum() == 20; // Проверяем, есть ли столбец warehouseSku
 
-        if (hasWarehouseSku) {
-            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-                Row row = sheet.getRow(j);
-                YANDEX_GoodsInDelivery data = YANDEX_GoodsInDelivery.builder()
+
+        for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
+            Row row = sheet.getRow(j);
+            boolean hasWarehouseSku = row.getCell(4).getCellType() == CellType.STRING;
+            YANDEX_GoodsInDelivery data;
+
+            if (hasWarehouseSku) {
+                data = YANDEX_GoodsInDelivery.builder()
                         .orderNumber((long) row.getCell(0).getNumericCellValue())
                         .orderType(row.getCell(1).getStringCellValue())
                         .productName(row.getCell(2).getStringCellValue())
@@ -186,7 +186,7 @@ public class YANDEX_dataProcessing {
                         .orderStatus(row.getCell(6).getStringCellValue())
                         .orderDate(LocalDate.parse(row.getCell(7).getStringCellValue(), formatter))
                         .shipmentDate(LocalDate.parse(row.getCell(8).getStringCellValue(), formatter))
-                        .deliveryDate(LocalDate.parse(row.getCell(9).getStringCellValue(), formatter))
+                        .deliveryDate(Objects.equals(row.getCell(9).getStringCellValue(), "") ? null : LocalDate.parse(row.getCell(9).getStringCellValue(), formatter))
                         .paymentMethod(row.getCell(10).getStringCellValue())
                         .vatRate(row.getCell(11).getStringCellValue())
                         .priceWithoutDiscount(row.getCell(12).getNumericCellValue())
@@ -198,12 +198,7 @@ public class YANDEX_dataProcessing {
                         .totalDiscount(row.getCell(18).getNumericCellValue())
                         .totalPriceWithDiscount(row.getCell(19).getNumericCellValue())
                         .build();
-
-                list.add(data);
-            }
-        } else {
-            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-                Row row = sheet.getRow(j);
+            } else {
                 YANDEX_GoodsInDelivery.YANDEX_GoodsInDeliveryBuilder dataBuilder = YANDEX_GoodsInDelivery.builder()
                         .orderNumber((long) row.getCell(0).getNumericCellValue())
                         .orderType(row.getCell(1).getStringCellValue())
@@ -224,10 +219,10 @@ public class YANDEX_dataProcessing {
                         .totalPriceWithoutDiscount(row.getCell(16).getNumericCellValue())
                         .totalDiscount(row.getCell(17).getNumericCellValue())
                         .totalPriceWithDiscount(row.getCell(18).getNumericCellValue());
-
-                YANDEX_GoodsInDelivery data = dataBuilder.build();
-                list.add(data);
+                data = dataBuilder.build();
             }
+
+            list.add(data);
         }
 
         return list;
@@ -236,12 +231,14 @@ public class YANDEX_dataProcessing {
     private static List<YANDEX_ReturnedGoods> getReturnedGoods(Sheet sheet) {
         List<YANDEX_ReturnedGoods> list = new ArrayList<>();
         int headerRow = findAutofilterRow(sheet);
-        boolean hasWarehouseSku = sheet.getRow(headerRow).getLastCellNum() == 22;
 
-        if (hasWarehouseSku) {
-            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-                Row row = sheet.getRow(j);
-                YANDEX_ReturnedGoods data = YANDEX_ReturnedGoods.builder()
+        for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
+            Row row = sheet.getRow(j);
+            boolean hasWarehouseSku = row.getCell(4).getCellType() == CellType.STRING;
+            YANDEX_ReturnedGoods data;
+
+            if (hasWarehouseSku) {
+                data = YANDEX_ReturnedGoods.builder()
                         .orderNumber((long) row.getCell(0).getNumericCellValue())
                         .orderType(row.getCell(1).getStringCellValue())
                         .productName(row.getCell(2).getStringCellValue())
@@ -265,13 +262,8 @@ public class YANDEX_dataProcessing {
                         .totalDiscountForReturnedItems(row.getCell(20).getNumericCellValue())
                         .totalReturnedPriceWithDiscount(row.getCell(21).getNumericCellValue())
                         .build();
-
-                list.add(data);
-            }
-        } else {
-            for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-                Row row = sheet.getRow(j);
-                YANDEX_ReturnedGoods data = YANDEX_ReturnedGoods.builder()
+            } else {
+                data = YANDEX_ReturnedGoods.builder()
                         .orderNumber((long) row.getCell(0).getNumericCellValue())
                         .orderType(row.getCell(1).getStringCellValue())
                         .productName(row.getCell(2).getStringCellValue())
@@ -294,11 +286,9 @@ public class YANDEX_dataProcessing {
                         .totalDiscountForReturnedItems(row.getCell(19).getNumericCellValue())
                         .totalReturnedPriceWithDiscount(row.getCell(20).getNumericCellValue())
                         .build();
-
-                list.add(data);
             }
+            list.add(data);
         }
-
         return list;
     }
 
