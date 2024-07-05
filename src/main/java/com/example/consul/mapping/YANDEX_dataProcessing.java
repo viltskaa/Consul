@@ -523,10 +523,10 @@ public class YANDEX_dataProcessing {
                     .productName(row.getCell(9).getStringCellValue())
                     .userPaid(row.getCell(10).getNumericCellValue())
                     .tariff(row.getCell(11).getNumericCellValue())
-                    .serviceDateTime(LocalDateTime.parse(row.getCell(12).getStringCellValue(), formatterTime))
-                    .actFormationDate(LocalDate.parse(row.getCell(13).getStringCellValue(), formatterDate))
-                    .serviceCost(row.getCell(14).getNumericCellValue())
-                    .type(row.getCell(15).getStringCellValue())
+                    .serviceDateTime(LocalDateTime.parse(row.getCell(13).getStringCellValue(), formatterTime))
+                    .actFormationDate(LocalDate.parse(row.getCell(14).getStringCellValue(), formatterDate))
+                    .serviceCost(row.getCell(15).getNumericCellValue())
+                    .type(row.getCell(16).getStringCellValue())
                     .build();
 
             list.add(data);
