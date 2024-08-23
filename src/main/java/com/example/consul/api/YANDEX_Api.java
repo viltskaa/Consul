@@ -53,6 +53,18 @@ public class YANDEX_Api {
         return getResponse(createServicesReportUrl, request);
     }
 
+    @Nullable
+    public YANDEX_CreateReport createOrdersReport(@NotNull Long businessId,
+                                                  @NotNull String dateFrom,
+                                                  @NotNull String dateTo) {
+        final String createServicesReportUrl = "https://api.partner.market.yandex.ru/reports/united-orders/generate?format=FILE&language=RU";
+
+        HttpEntity<String> request = new HttpEntity<>(new Gson()
+                .toJson(new YANDEX_CreateOrderReportBody(businessId, dateFrom, dateTo)), headers);
+
+        return getResponse(createServicesReportUrl, request);
+    }
+
     /**
      * Отчет по реализации
      * @param campaignId (23761421) Идентификатор кампании.

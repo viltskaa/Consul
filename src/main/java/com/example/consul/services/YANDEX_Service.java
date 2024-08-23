@@ -73,6 +73,12 @@ public class YANDEX_Service {
         return yandexApi.createServicesReport(businessId, dateFrom, dateTo, new ArrayList<>());
     }
 
+    public YANDEX_CreateReport getOrdersReport(@NotNull Long businessId,
+                                               @NotNull String dateFrom,
+                                               @NotNull String dateTo) {
+        return yandexApi.createOrdersReport(businessId, dateFrom, dateTo);
+    }
+
     public YANDEX_CreateReport getRealizationReport(@NotNull Long campaignId,
                                                     int year,
                                                     int month) {
@@ -89,6 +95,23 @@ public class YANDEX_Service {
                                              @NotNull String dateTo) {
         yandexApi.setHeaders(auth);
         YANDEX_CreateReport report = getServicesReport(businessId, dateFrom, dateTo);
+        Boolean value = reportChecker.start(() -> {
+            YANDEX_ReportInfo info = getReportInfo(report.getReportId());
+            return info != null && info.getReportStatus().equals(YANDEX_ReportStatusType.DONE);
+        }, 2L);
+
+        if (value)
+            return getReportInfo(report.getReportId()).getFileUrl();
+
+        return null;
+    }
+
+    public String scheduledGetOrdersReport(@NotNull String auth,
+                                           @NotNull Long businessId,
+                                           @NotNull String dateFrom,
+                                           @NotNull String dateTo) {
+        yandexApi.setHeaders(auth);
+        YANDEX_CreateReport report = getOrdersReport(businessId, dateFrom, dateTo);
         Boolean value = reportChecker.start(() -> {
             YANDEX_ReportInfo info = getReportInfo(report.getReportId());
             return info != null && info.getReportStatus().equals(YANDEX_ReportStatusType.DONE);
@@ -138,15 +161,18 @@ public class YANDEX_Service {
         try {
             URL realizationUrl = new URL(scheduledGetRealizationReport(auth, campaignId, year, month));
             URL servicesUrl = new URL(scheduledGetServicesReport(auth, businessId, date.a, date.b));
+            URL orderUrl = new URL(scheduledGetOrdersReport(auth, businessId, date.a, date.b));
 
             try (
                     InputStream realizationInputStream = realizationUrl.openStream();
-                    InputStream servicesInputStream = servicesUrl.openStream()
+                    InputStream servicesInputStream = servicesUrl.openStream();
+                    InputStream ordersInputStream = orderUrl.openStream()
             ) {
                 InputStream inputStreamRealization = new ByteArrayInputStream(realizationInputStream.readAllBytes());
                 InputStream inputStreamServices = new ByteArrayInputStream(servicesInputStream.readAllBytes());
+                InputStream inputStreamOrders = new ByteArrayInputStream(ordersInputStream.readAllBytes());
 
-                return YANDEX_dataProcessing.getDataFromInputStream(inputStreamServices, inputStreamRealization);
+                return YANDEX_dataProcessing.getDataFromInputStream(inputStreamServices, inputStreamRealization, inputStreamOrders);
             } catch (IOException exception) {
                 return new ArrayList<>();
             }
