@@ -88,7 +88,7 @@ class YandexMarketTests {
             Sheet sheet3 = workbook.getSheetAt(11);
             Sheet sheet2 = workbook.getSheetAt(18);
 
-            System.out.println(YANDEX_dataProcessing.getMapSortingCenter(sheet1, sheet2, sheet3));
+//            System.out.println(YANDEX_dataProcessing.getMapSortingCenter(sheet1, sheet2, sheet3));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
