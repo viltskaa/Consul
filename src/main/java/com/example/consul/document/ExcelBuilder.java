@@ -5,6 +5,7 @@ import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.models.ReportFile;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -12,6 +13,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -192,18 +194,16 @@ public class ExcelBuilder {
                     Method method = fieldMethodPair.getValue();
                     if (method == null) {
                         cell.setCellValue(cellUnit.defaultValue());
-                    }
-                    else {
+                    } else {
                         try {
                             Object returnFromMethod = method.invoke(obj);
                             if (returnFromMethod == null) {
                                 cell.setCellValue(cellUnit.defaultValue());
-                            }
-                            else {
+                            } else {
                                 switch (returnFromMethod.getClass().getSimpleName()) {
                                     case "String" -> cell.setCellValue(returnFromMethod.toString());
-                                    case "Integer" -> cell.setCellValue((Integer)returnFromMethod);
-                                    case "Double" -> cell.setCellValue((Double)returnFromMethod);
+                                    case "Integer" -> cell.setCellValue((Integer) returnFromMethod);
+                                    case "Double" -> cell.setCellValue((Double) returnFromMethod);
                                 }
                             }
                         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -232,8 +232,7 @@ public class ExcelBuilder {
                 Cell cell = row.createCell(columnInd++);
                 cell.setCellStyle(cellStyles.get(index != null ? index : 0));
                 cell.setCellFormula(formula.toString());
-            }
-            else {
+            } else {
                 columnInd++;
             }
         }
@@ -247,7 +246,7 @@ public class ExcelBuilder {
                 createTotalStyle(workbook)
         );
 
-        for (int i = 0 ; i < config.getPageNumber() ; i++) {
+        for (int i = 0; i < config.getPageNumber(); i++) {
             List<T> obj = config.getData().get(i);
             if (obj.isEmpty()) continue;
 
@@ -274,10 +273,24 @@ public class ExcelBuilder {
         try {
             workbook.write(bos);
             bos.close();
-        }
-        catch (IOException ioException) {
+            workbook.close();
+        } catch (IOException ioException) {
             return null;
         }
         return bos.toByteArray();
+    }
+
+    public static <T> ByteArrayResource createDocumentToByteArrayResource(@NotNull ExcelConfig<T> config) {
+        byte[] report = createDocumentToByteArray(config);
+        if (report == null) return null;
+
+        return new ByteArrayResource(report);
+    }
+
+    public static <T> ReportFile createDocumentToReportFile(@NotNull ExcelConfig<T> config) {
+        ByteArrayResource report = createDocumentToByteArrayResource(config);
+        if (report == null) return null;
+
+        return new ReportFile(config.getFileName(), report);
     }
 }

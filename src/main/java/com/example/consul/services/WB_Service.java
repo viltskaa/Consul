@@ -6,6 +6,7 @@ import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.WB_SaleRow;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.dto.WB.WB_AdReport;
@@ -15,6 +16,7 @@ import com.example.consul.mapping.WB_dataProcessing;
 import com.example.consul.utils.Clustering;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -38,9 +40,9 @@ public class WB_Service {
         this.clustering = clustering;
     }
 
-    public byte[] createReport(@NotNull String apiKey,
-                               @NotNull Integer year,
-                               @NotNull Integer month) {
+    public ReportFile createReport(@NotNull String apiKey,
+                                   @NotNull Integer year,
+                                   @NotNull Integer month) {
         List<WB_TableRow> data = getData(
                 apiKey,
                 year,
@@ -49,7 +51,7 @@ public class WB_Service {
 
         Map<String, List<WB_TableRow>> clusteredData = clustering.of(data);
 
-        return ExcelBuilder.createDocumentToByteArray(
+        return ExcelBuilder.createDocumentToReportFile(
                 ExcelConfig.<WB_TableRow>builder()
                         .fileName("report_wb_" + month + "_" + year + ".xls")
                         .header(
@@ -64,10 +66,10 @@ public class WB_Service {
         );
     }
 
-    public byte[] createReport(@NotNull String apiKey,
-                               @NotNull Integer year,
-                               @NotNull Integer month,
-                               @NotNull Integer weekNumber) {
+    public ReportFile createReport(@NotNull String apiKey,
+                                          @NotNull Integer year,
+                                          @NotNull Integer month,
+                                          @NotNull Integer weekNumber) {
         List<WB_TableRow> data = getData(
                 apiKey,
                 year,
@@ -75,7 +77,7 @@ public class WB_Service {
                 weekNumber
         );
 
-        return ExcelBuilder.createDocumentToByteArray(
+        return ExcelBuilder.createDocumentToReportFile(
                 ExcelConfig.<WB_TableRow>builder()
                         .fileName("report_wb_" + month + "_" + year + ".xls")
                         .header(
@@ -90,14 +92,14 @@ public class WB_Service {
         );
     }
 
-    public byte[] createReport(@NotNull String apiKey,
-                               @NotNull String day) {
+    public ReportFile createReport(@NotNull String apiKey,
+                                          @NotNull String day) {
         List<WB_SaleRow> data = getData(
                 apiKey,
                 day
         );
 
-        return ExcelBuilder.createDocumentToByteArray(
+        return ExcelBuilder.createDocumentToReportFile(
                 ExcelConfig.<WB_SaleRow>builder()
                         .fileName("report_wb_" + day + ".xls")
                         .header(

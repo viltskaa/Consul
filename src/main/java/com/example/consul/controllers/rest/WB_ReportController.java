@@ -3,9 +3,12 @@ package com.example.consul.controllers.rest;
 import com.example.consul.controllers.rest.requestBodies.WB_RequestBody;
 import com.example.consul.controllers.rest.requestBodies.WB_RequestBodyDay;
 import com.example.consul.controllers.rest.requestBodies.WB_RequestBodyWeek;
+import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.WB_SaleRow;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.services.WB_Service;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,12 +33,13 @@ public class WB_ReportController {
     }
 
     @PostMapping(path = "/getExcel")
-    public @ResponseBody byte[] getReportExcel(@RequestBody WB_RequestBody body) {
-        return wbService.createReport(
+    public @ResponseBody ResponseEntity<Resource> getReportExcel(@RequestBody WB_RequestBody body) {
+        ReportFile report = wbService.createReport(
                 body.getApiKey(),
                 body.getYear(),
                 body.getMonth()
         );
+        return report.toOkResource();
     }
 
     @PostMapping(path = "/getByWeek")
@@ -49,13 +53,14 @@ public class WB_ReportController {
     }
 
     @PostMapping(path = "/getExcelByWeek")
-    public @ResponseBody byte[] getWeekReportExcel(@RequestBody WB_RequestBodyWeek body) {
-        return wbService.createReport(
+    public @ResponseBody ResponseEntity<Resource> getWeekReportExcel(@RequestBody WB_RequestBodyWeek body) {
+        ReportFile report = wbService.createReport(
                 body.getApiKey(),
                 body.getYear(),
                 body.getMonth(),
                 body.getWeekNumber()
         );
+        return report.toOkResource();
     }
 
     @PostMapping(path = "/getSalesByDay")
@@ -67,10 +72,11 @@ public class WB_ReportController {
     }
 
     @PostMapping(path = "/getExcelSalesByDay")
-    public @ResponseBody byte[] getSaleReportExcel(@RequestBody WB_RequestBodyDay body) {
-        return wbService.createReport(
+    public @ResponseBody ResponseEntity<Resource> getSaleReportExcel(@RequestBody WB_RequestBodyDay body) {
+        ReportFile report = wbService.createReport(
                 body.getApiKey(),
                 body.getDay()
         );
+        return report.toOkResource();
     }
 }
