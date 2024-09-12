@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class YANDEX_dataProcessing {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -335,41 +336,42 @@ public class YANDEX_dataProcessing {
                     .orderCreationDate(LocalDateTime.parse(row.getCell(8).getStringCellValue(), formatterTime))
                     .sku(row.getCell(9).getStringCellValue())
                     .productName(row.getCell(10).getStringCellValue())
-                    .pricePerUnit(row.getCell(11).getNumericCellValue())
-                    .priceDifference(row.getCell(12).getNumericCellValue())
-                    .quantity((int) row.getCell(13).getNumericCellValue())
-                    .salesQuantum((int) row.getCell(14).getNumericCellValue())
-                    .quantumsInOrder((int) row.getCell(15).getNumericCellValue())
-                    .pricePerQuantum(row.getCell(16).getNumericCellValue())
-                    .weightKg(row.getCell(17).getNumericCellValue())
-                    .lengthCm(row.getCell(18).getNumericCellValue())
-                    .widthCm(row.getCell(19).getNumericCellValue())
-                    .heightCm(row.getCell(20).getNumericCellValue())
-                    .sumOfDimensions(row.getCell(21).getNumericCellValue())
-                    .paymentMethod(row.getCell(22).getStringCellValue())
-                    .qualityIndex(row.getCell(23).getStringCellValue())
-                    .service(row.getCell(24).getStringCellValue())
-                    .tariffCondition(row.getCell(25).getStringCellValue())
-                    .tariffPerUnit(row.getCell(26).getNumericCellValue())
-                    .measurementUnit(row.getCell(27).getStringCellValue())
-                    .minTariffPerUnit(row.getCell(28).getNumericCellValue())
-                    .maxTariffPerUnit(row.getCell(29).getNumericCellValue())
-                    .serviceCostBeforeMinTariff(row.getCell(30).getNumericCellValue())
-                    .serviceDateTime(LocalDateTime.parse(row.getCell(31).getStringCellValue(), formatterTime))
-                    .actFormationDate(LocalDate.parse(row.getCell(32).getStringCellValue(), formatterDate))
-                    .serviceCostWithoutDiscounts(row.getCell(33).getNumericCellValue())
-                    .tariffPercent(row.getCell(34).getNumericCellValue())
-                    .discount(row.getCell(35).getNumericCellValue())
-                    .lateDeliveryPenaltyPercent(row.getCell(36).getNumericCellValue())
-                    .sellerFaultPenaltyPercent(row.getCell(37).getNumericCellValue())
-                    .minCostPerUnit(row.getCell(38).getNumericCellValue())
-                    .maxCostPerUnit(row.getCell(39).getNumericCellValue())
-                    .serviceCostChange1(row.getCell(40).getNumericCellValue())
-                    .tariff(row.getCell(41).getNumericCellValue())
-                    .serviceCostChange2(row.getCell(42).getNumericCellValue())
-                    .individualServiceDiscount(row.getCell(43).getNumericCellValue())
-                    .loyaltyDiscount(row.getCell(44).getNumericCellValue())
-                    .serviceCost(row.getCell(45).getNumericCellValue())
+                    .productType(row.getCell(11).getStringCellValue())
+                    .pricePerUnit(row.getCell(12).getNumericCellValue())
+                    .priceDifference(row.getCell(13).getNumericCellValue())
+                    .quantity((int) row.getCell(14).getNumericCellValue())
+                    .salesQuantum((int) row.getCell(15).getNumericCellValue())
+                    .quantumsInOrder((int) row.getCell(16).getNumericCellValue())
+                    .pricePerQuantum(row.getCell(17).getNumericCellValue())
+                    .weightKg(row.getCell(18).getNumericCellValue())
+                    .lengthCm(row.getCell(19).getNumericCellValue())
+                    .widthCm(row.getCell(20).getNumericCellValue())
+                    .heightCm(row.getCell(21).getNumericCellValue())
+                    .sumOfDimensions(row.getCell(22).getNumericCellValue())
+                    .paymentMethod(row.getCell(23).getStringCellValue())
+                    .qualityIndex(row.getCell(24).getStringCellValue())
+                    .service(row.getCell(25).getStringCellValue())
+                    .tariffCondition(row.getCell(26).getStringCellValue())
+                    .tariffPerUnit(row.getCell(27).getNumericCellValue())
+                    .measurementUnit(row.getCell(28).getStringCellValue())
+                    .minTariffPerUnit(row.getCell(29).getNumericCellValue())
+                    .maxTariffPerUnit(row.getCell(30).getNumericCellValue())
+                    .serviceCostBeforeMinTariff(row.getCell(31).getNumericCellValue())
+                    .serviceDateTime(LocalDateTime.parse(row.getCell(32).getStringCellValue(), formatterTime))
+                    .actFormationDate(LocalDate.parse(row.getCell(33).getStringCellValue(), formatterDate))
+                    .serviceCostWithoutDiscounts(row.getCell(34).getNumericCellValue())
+                    .tariffPercent(row.getCell(35).getNumericCellValue())
+                    .discount(row.getCell(36).getNumericCellValue())
+                    .lateDeliveryPenaltyPercent(row.getCell(37).getNumericCellValue())
+                    .sellerFaultPenaltyPercent(row.getCell(38).getNumericCellValue())
+                    .minCostPerUnit(row.getCell(39).getNumericCellValue())
+                    .maxCostPerUnit(row.getCell(40).getNumericCellValue())
+                    .serviceCostChange1(row.getCell(41).getNumericCellValue())
+                    .tariff(row.getCell(42).getNumericCellValue())
+                    .serviceCostChange2(row.getCell(43).getNumericCellValue())
+                    .individualServiceDiscount(row.getCell(44).getNumericCellValue())
+                    .loyaltyDiscount(row.getCell(45).getNumericCellValue())
+                    .serviceCost(row.getCell(46).getNumericCellValue())
                     .build();
 
             list.add(data);
@@ -676,9 +678,23 @@ public class YANDEX_dataProcessing {
         Map<String, Double> marketplaceDiscount = marketplaceDiscountCompletableFuture.join();
         Map<String, Double> storageReturn = storageReturnCompletableFuture.join();
 
+        Set<String> allKeys = new HashSet<>();
+        allKeys.addAll(acceptAndTransferPayment.keySet());
+        allKeys.addAll(deliveredCount.keySet());
+        allKeys.addAll(deliveredCost.keySet());
+        allKeys.addAll(returnCount.keySet());
+        allKeys.addAll(returnCost.keySet());
+        allKeys.addAll(placingOnShowcase.keySet());
+        allKeys.addAll(deliveryToConsumer.keySet());
+        allKeys.addAll(favorSortingCenterPayment.keySet());
+        allKeys.addAll(storageReturn.keySet());
+        allKeys.addAll(loyaltyProgram.keySet());
+        allKeys.addAll(boostSales.keySet());
+        allKeys.addAll(marketplaceDiscount.keySet());
+
         Map<String, List<Object>> mergedMap = new HashMap<>();
 
-        for (String key : acceptAndTransferPayment.keySet()) {
+        for (String key : allKeys) {
             mergedMap.put(key, Arrays.asList(
                     deliveredCount.getOrDefault(key, 0).doubleValue(),
                     deliveredCost.getOrDefault(key, 0.0),
@@ -724,64 +740,64 @@ public class YANDEX_dataProcessing {
         List<YANDEX_GoodsInDelivery> listDelivery = getGoodsInDelivery(sheetShip);
         List<YANDEX_TransactionsOrdersAndProducts> listTransact = getTransactionsOnOrdersAndProducts(sheetTransact);
 
-        Map<Long, List<String>> orderNumberToSkuListMap = listDel.stream()
-                .collect(Collectors.groupingBy(YANDEX_DeliveryCustomer::getOrderNumber,
-                        Collectors.mapping(YANDEX_DeliveryCustomer::getSku, Collectors.toList())));
+        Map<Long, Set<String>> orderNumberToSkuSetMap = new HashMap<>();
 
-        Map<Long, List<String>> orderNumberToSkuListMapAccept = listAccept.stream()
-                .collect(Collectors.groupingBy(YANDEX_AcceptingPayment::getOrderNumber,
-                        Collectors.mapping(YANDEX_AcceptingPayment::getSku, Collectors.toList())));
+        Stream.of(listDel, listAccept, listDelivery, listTransact)
+                .flatMap(List::stream)
+                .forEach(record -> {
+                    Long orderNumber = getOrderNumberFromRecord(record);
+                    String sku = getSkuFromRecord(record);
 
-        Map<Long, List<String>> orderNumberToSkuListMapDelivery = listDelivery.stream()
-                .collect(Collectors.groupingBy(YANDEX_GoodsInDelivery::getOrderNumber,
-                        Collectors.mapping(YANDEX_GoodsInDelivery::getProductSku, Collectors.toList())));
-
-        Map<Long, List<String>> orderNumberToSkuListMapTransact = listTransact.stream()
-                .collect(Collectors.groupingBy(YANDEX_TransactionsOrdersAndProducts::getOrderNumber,
-                        Collectors.mapping(YANDEX_TransactionsOrdersAndProducts::getSku, Collectors.toList())));
-
-        orderNumberToSkuListMapAccept.forEach((orderNumber, skuList) ->
-                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
-                    existingList.addAll(newList);
-                    return existingList;
-                })
-        );
-
-        orderNumberToSkuListMapDelivery.forEach((orderNumber, skuList) ->
-                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
-                    existingList.addAll(newList);
-                    return existingList;
-                })
-        );
-
-        orderNumberToSkuListMapTransact.forEach((orderNumber, skuList) ->
-                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
-                    existingList.addAll(newList);
-                    return existingList;
-                })
-        );
-
-        System.out.println(orderNumberToSkuListMap);
+                    orderNumberToSkuSetMap
+                            .computeIfAbsent(orderNumber, k -> new HashSet<>())
+                            .add(sku);
+                });
 
         Map<Long, Double> orderNumberToTotalTariffMap = listSorting.stream()
                 .collect(Collectors.groupingBy(YANDEX_ProcessingOrders::getOrderNumber,
                         Collectors.summingDouble(YANDEX_ProcessingOrders::getTariff)));
 
-        System.out.println(orderNumberToTotalTariffMap);
-
         Map<String, Double> skuToFinalTariffMap = new HashMap<>();
 
-        orderNumberToSkuListMap.forEach((orderNumber, skuList) -> {
+        orderNumberToSkuSetMap.forEach((orderNumber, skuSet) -> {
             Double totalTariff = orderNumberToTotalTariffMap.getOrDefault(orderNumber, 0.0);
-            if (totalTariff > 0 && !skuList.isEmpty()) {
-                double dividedTariff = totalTariff / skuList.size();
-                skuList.forEach(sku -> skuToFinalTariffMap.merge(sku, dividedTariff, Double::sum));
+            if (totalTariff > 0 && !skuSet.isEmpty()) {
+                double dividedTariff = totalTariff / skuSet.size();
+                skuSet.forEach(sku -> skuToFinalTariffMap.merge(sku, dividedTariff, Double::sum));
             }
         });
 
-        skuToFinalTariffMap.replaceAll((sku, value) -> (double) Math.round(value));
+        System.out.println(skuToFinalTariffMap);
+
+        skuToFinalTariffMap.replaceAll((sku, value) -> Math.round(value * 100.0) / 100.0);
 
         return skuToFinalTariffMap;
+    }
+
+    private static Long getOrderNumberFromRecord(Object record) {
+        if (record instanceof YANDEX_DeliveryCustomer) {
+            return ((YANDEX_DeliveryCustomer) record).getOrderNumber();
+        } else if (record instanceof YANDEX_AcceptingPayment) {
+            return ((YANDEX_AcceptingPayment) record).getOrderNumber();
+        } else if (record instanceof YANDEX_GoodsInDelivery) {
+            return ((YANDEX_GoodsInDelivery) record).getOrderNumber();
+        } else if (record instanceof YANDEX_TransactionsOrdersAndProducts) {
+            return ((YANDEX_TransactionsOrdersAndProducts) record).getOrderNumber();
+        }
+        throw new IllegalArgumentException("Unknown record type");
+    }
+
+    private static String getSkuFromRecord(Object record) {
+        if (record instanceof YANDEX_DeliveryCustomer) {
+            return ((YANDEX_DeliveryCustomer) record).getSku();
+        } else if (record instanceof YANDEX_AcceptingPayment) {
+            return ((YANDEX_AcceptingPayment) record).getSku();
+        } else if (record instanceof YANDEX_GoodsInDelivery) {
+            return ((YANDEX_GoodsInDelivery) record).getProductSku();
+        } else if (record instanceof YANDEX_TransactionsOrdersAndProducts) {
+            return ((YANDEX_TransactionsOrdersAndProducts) record).getSku();
+        }
+        throw new IllegalArgumentException("Unknown record type");
     }
 
     public static Map<String, Double> getMapStorageReturn(Sheet sheetDelivery, Sheet sheetShip, Sheet sheetStorageReturn, Sheet sheetAcceptPay, Sheet sheetTransact) {
@@ -828,13 +844,9 @@ public class YANDEX_dataProcessing {
                 })
         );
 
-        System.out.println(orderNumberToSkuListMap);
-
         Map<Long, Double> orderNumberToTotalTariffMap = listSorting.stream()
                 .collect(Collectors.groupingBy(YANDEX_StorageReturns::getOrderNumber,
                         Collectors.summingDouble(YANDEX_StorageReturns::getServiceCost)));
-
-        System.out.println(orderNumberToTotalTariffMap);
 
         Map<String, Double> skuToFinalTariffMap = new HashMap<>();
 
@@ -896,7 +908,7 @@ public class YANDEX_dataProcessing {
 
         return list.stream()
                 .collect(Collectors.groupingBy(YANDEX_ShowPlacement::getSku,
-                        Collectors.summingDouble(YANDEX_ShowPlacement::getServiceCostWithoutDiscounts)));
+                        Collectors.summingDouble(YANDEX_ShowPlacement::getServiceCost)));
     }
 
     public static Map<String, Double> getMapDeliveryToConsumer(Sheet sheet) {
