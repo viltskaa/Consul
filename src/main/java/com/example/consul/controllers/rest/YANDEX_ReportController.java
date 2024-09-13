@@ -1,8 +1,11 @@
 package com.example.consul.controllers.rest;
 
 import com.example.consul.controllers.rest.requestBodies.YANDEX_RequestBody;
+import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.services.YANDEX_Service;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,12 +30,14 @@ public class YANDEX_ReportController {
     }
 
     @PostMapping(path = "/getExcel")
-    public @ResponseBody byte[] getReportExcel(@RequestBody YANDEX_RequestBody body){
-        return yandexService.createReport(
+    public @ResponseBody ResponseEntity<Resource> getReportExcel(@RequestBody YANDEX_RequestBody body){
+        ReportFile report = yandexService.createReport(
                 body.getAuth(),
                 body.getCampaignId(),
                 body.getBusinessId(),
                 body.getYear(),
-                body.getMonth());
+                body.getMonth()
+        );
+        return report.toOkResource();
     }
 }

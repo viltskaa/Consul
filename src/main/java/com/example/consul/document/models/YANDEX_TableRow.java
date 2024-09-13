@@ -3,13 +3,15 @@ package com.example.consul.document.models;
 import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.configurations.ExcelCellType;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TotalCell(
         formula = "(accrued-returnCost-showcasePlacing-deliveryToConsumer" +
-                "-acceptAndTransferPayment-favorSorting-unredeemedStorage-adCampaignCost-loyaltyProgram-boostSales+promotionFavor)" +
+                "-acceptAndTransferPayment-favorSorting-unredeemedStorage-adCampaignCost-loyaltyProgram-boostSales-shelves)" +
                 "/deliveryCount-returnCount"
 )
 public class YANDEX_TableRow extends TableRow {
@@ -37,8 +39,10 @@ public class YANDEX_TableRow extends TableRow {
     private Double loyaltyProgram;
     @CellUnit(name = "Буст продаж")
     private Double boostSales;
-    @CellUnit(name = "Услуга продвижения (плюс нам)")
-    private Double promotionFavor;
+    @CellUnit(name = "Полки")
+    private Double shelves;
+//    @CellUnit(name = "Услуга продвижения (плюс нам)")
+//    private Double promotionFavor;
     @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
     private final Double total = 0.0;
 
@@ -56,7 +60,7 @@ public class YANDEX_TableRow extends TableRow {
                            Double adCampaignCost,
                            Double loyaltyProgram,
                            Double boostSales,
-                           Double promotionFavor) {
+                           Double shelves) {
         super(article);
         this.deliveryCount = deliveryCount;
         this.accrued = accrued;
@@ -70,6 +74,7 @@ public class YANDEX_TableRow extends TableRow {
         this.adCampaignCost = adCampaignCost;
         this.loyaltyProgram = loyaltyProgram;
         this.boostSales = boostSales;
-        this.promotionFavor = promotionFavor;
+        this.shelves = shelves;
+//        this.promotionFavor = promotionFavor;
     }
 }

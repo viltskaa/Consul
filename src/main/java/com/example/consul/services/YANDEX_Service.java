@@ -6,6 +6,7 @@ import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
@@ -37,11 +38,11 @@ public class YANDEX_Service {
         this.clustering = clustering;
     }
 
-    public byte[] createReport(@NotNull String auth,
-                               @NotNull Long campaignId,
-                               @NotNull Long businessId,
-                               int year,
-                               int month) {
+    public ReportFile createReport(@NotNull String auth,
+                                   @NotNull Long campaignId,
+                                   @NotNull Long businessId,
+                                   int year,
+                                   int month) {
         List<YANDEX_TableRow> data = getData(
                 auth,
                 campaignId,
@@ -52,7 +53,7 @@ public class YANDEX_Service {
 
         Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data);
 
-        return ExcelBuilder.createDocumentToByteArray(
+        return ExcelBuilder.createDocumentToReportFile(
                 ExcelConfig.<YANDEX_TableRow>builder()
                         .fileName("report_yandex_" + month + "_" + year + ".xls")
                         .header(

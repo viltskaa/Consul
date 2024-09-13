@@ -248,6 +248,39 @@ public class YANDEX_dataProcessing {
         return list;
     }
 
+    private static List<YANDEX_Shelves> getShelves(Sheet sheet) {
+        List<YANDEX_Shelves> list = new ArrayList<>();
+        int headerRow = findAutofilterRow(sheet);
+
+        for (int j = headerRow + 1; j <= sheet.getLastRowNum(); j++) {
+            Row row = sheet.getRow(j);
+            YANDEX_Shelves data = YANDEX_Shelves.builder()
+                    .businessAccountId((long) row.getCell(0).getNumericCellValue())
+                    .workModel(row.getCell(1).getStringCellValue())
+                    .storeId((long) row.getCell(2).getNumericCellValue())
+                    .storeName(row.getCell(3).getStringCellValue())
+                    .inn(row.getCell(4).getStringCellValue())
+                    .placementContractNumber(row.getCell(5).getStringCellValue())
+                    .promotionContractNumber(row.getCell(6).getStringCellValue())
+                    .advertiserId((long) row.getCell(7).getNumericCellValue())
+                    .companyNumber((long) row.getCell(8).getNumericCellValue())
+                    .companyName(row.getCell(9).getStringCellValue())
+                    .serviceType(row.getCell(10).getStringCellValue())
+                    .quantityShows((int) row.getCell(11).getNumericCellValue())
+                    .budgetType(row.getCell(12).getStringCellValue())
+                    .budgetVolume(row.getCell(13).getNumericCellValue())
+                    .serviceDateTime(LocalDateTime.parse(row.getCell(14).getStringCellValue(), formatterTime))
+                    .actFormationDate(LocalDate.parse(row.getCell(15).getStringCellValue(), formatterDate))
+                    .bonus(row.getCell(16).getNumericCellValue())
+                    .serviceCost(row.getCell(17).getNumericCellValue())
+                    .build();
+
+            list.add(data);
+        }
+
+        return list;
+    }
+
     private static List<YANDEX_BoostSales> getBoostSales(Sheet sheet) {
         List<YANDEX_BoostSales> list = new ArrayList<>();
         int headerRow = findAutofilterRow(sheet);
@@ -594,7 +627,8 @@ public class YANDEX_dataProcessing {
                 wbService.getSheetAt(12),
                 wbService.getSheetAt(19),
                 wbService.getSheetAt(13),
-                wbService.getSheetAt(22)
+                wbService.getSheetAt(22),
+                wbService.getSheetAt(7)
         };
 
         Workbook wbRealization = WorkbookFactory.create(inputStreamRealization);
@@ -632,6 +666,13 @@ public class YANDEX_dataProcessing {
                         sheetService[6]
                 ));
 
+        CompletableFuture<Map<String, Double>> shelvesCompletableFuture = CompletableFuture
+                .supplyAsync(() -> calculateServiceCostRatio(
+                        sheetRealization[0],
+                        sheetRealization[1],
+                        sheetService[8]
+                ));
+
         CompletableFuture<Map<String, Double>> favorSortingCenterPaymentCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapSortingCenter(
                         sheetService[3],
@@ -656,8 +697,8 @@ public class YANDEX_dataProcessing {
         CompletableFuture<Map<String, Integer>> deliveredCountCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapDeliveryCount(sheetRealization[0]));
 
-        CompletableFuture<Map<String, Double>> marketplaceDiscountCompletableFuture = CompletableFuture
-                .supplyAsync(() -> getMapMarketplaceDiscount(sheetRealization[0]));
+//        CompletableFuture<Map<String, Double>> marketplaceDiscountCompletableFuture = CompletableFuture
+//                .supplyAsync(() -> getMapMarketplaceDiscount(sheetRealization[0]));
 
         CompletableFuture<Map<String, Integer>> returnCountCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapReturnCount(sheetRealization[1]));
@@ -675,8 +716,9 @@ public class YANDEX_dataProcessing {
         Map<String, Integer> deliveredCount = deliveredCountCompletableFuture.join();
         Map<String, Integer> returnCount = returnCountCompletableFuture.join();
         Map<String, Double> returnCost = returnCostCompletableFuture.join();
-        Map<String, Double> marketplaceDiscount = marketplaceDiscountCompletableFuture.join();
+//        Map<String, Double> marketplaceDiscount = marketplaceDiscountCompletableFuture.join();
         Map<String, Double> storageReturn = storageReturnCompletableFuture.join();
+        Map<String, Double> shelves = shelvesCompletableFuture.join();
 
         Set<String> allKeys = new HashSet<>();
         allKeys.addAll(acceptAndTransferPayment.keySet());
@@ -690,7 +732,8 @@ public class YANDEX_dataProcessing {
         allKeys.addAll(storageReturn.keySet());
         allKeys.addAll(loyaltyProgram.keySet());
         allKeys.addAll(boostSales.keySet());
-        allKeys.addAll(marketplaceDiscount.keySet());
+        allKeys.addAll(shelves.keySet());
+//        allKeys.addAll(marketplaceDiscount.keySet());
 
         Map<String, List<Object>> mergedMap = new HashMap<>();
 
@@ -708,7 +751,8 @@ public class YANDEX_dataProcessing {
                     0.0, // Placeholder for "Расходы на рекламные кампании"
                     loyaltyProgram.getOrDefault(key, 0.0),
                     boostSales.getOrDefault(key, 0.0),
-                    marketplaceDiscount.getOrDefault(key, 0.0)
+                    shelves.getOrDefault(key, 0.0)
+//                    marketplaceDiscount.getOrDefault(key, 0.0)
             ));
         }
 
@@ -728,7 +772,8 @@ public class YANDEX_dataProcessing {
                     (Double) values.get(9), // adCampaignCost
                     (Double) values.get(10), // loyaltyProgram
                     (Double) values.get(11), // boostSales
-                    (Double) values.get(12)  // promotionFavor
+                    (Double) values.get(12) //shelves
+//                    (Double) values.get(12)  // promotionFavor
             );
         }).toList();
     }
@@ -871,6 +916,7 @@ public class YANDEX_dataProcessing {
                         Collectors.summingDouble(YANDEX_DeliveredGoods::getTotalPriceWithDiscount)));
     }
 
+    @Deprecated
     public static Map<String, Double> getMapMarketplaceDiscount(Sheet sheet) {
         List<YANDEX_DeliveredGoods> list = getDeliveredGoods(sheet);
 
@@ -950,5 +996,65 @@ public class YANDEX_dataProcessing {
         return list.stream()
                 .collect(Collectors.groupingBy(YANDEX_BoostSales::getSku,
                         Collectors.summingDouble(YANDEX_BoostSales::getPostpayment)));
+    }
+
+    public static Double getSumShelves(Sheet sheet) {
+        List<YANDEX_Shelves> list = getShelves(sheet);
+
+        return list.stream()
+                .mapToDouble(YANDEX_Shelves::getServiceCost)
+                .sum();
+    }
+
+    public static Map<String, Double> calculateServiceCostRatio(Sheet deliverySheet, Sheet returnSheet, Sheet serviceSheet) {
+        Double totalServiceCost = getSumShelves(serviceSheet);
+
+        Map<String, Integer> deliveryReturnDifference = getDeliveryReturnDifference(deliverySheet, returnSheet);
+
+        Integer totalDeliveryReturnDifference = deliveryReturnDifference.values().stream()
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        Map<String, Double> resultMap = new HashMap<>();
+
+        if (totalDeliveryReturnDifference == 0) {
+            for (String sku : deliveryReturnDifference.keySet()) {
+                resultMap.put(sku, 0.0);
+            }
+            return resultMap;
+        }
+
+        for (Map.Entry<String, Integer> entry : deliveryReturnDifference.entrySet()) {
+            String sku = entry.getKey();
+            Integer difference = entry.getValue();
+
+            Double ratio = (totalServiceCost / totalDeliveryReturnDifference) * difference;
+            resultMap.put(sku, ratio);
+        }
+
+        return resultMap;
+    }
+
+    public static Map<String, Integer> getDeliveryReturnDifference(Sheet deliverySheet, Sheet returnSheet) {
+        Map<String, Integer> deliveryCount = getMapDeliveryCount(deliverySheet);
+        Map<String, Integer> returnCount = getMapReturnCount(returnSheet);
+
+        Map<String, Integer> differenceMap = new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry : deliveryCount.entrySet()) {
+            String sku = entry.getKey();
+            Integer delivery = entry.getValue();
+            Integer returns = returnCount.getOrDefault(sku, 0);
+            differenceMap.put(sku, delivery - returns);
+        }
+
+        for (Map.Entry<String, Integer> entry : returnCount.entrySet()) {
+            String sku = entry.getKey();
+            if (!differenceMap.containsKey(sku)) {
+                differenceMap.put(sku, -entry.getValue());
+            }
+        }
+
+        return differenceMap;
     }
 }
