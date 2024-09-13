@@ -116,6 +116,11 @@ public class OZON_DataCreator {
         return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumLogistic);
     }
 
+    public Map<String, Double> getMapCashbackIndividualPoints(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+                                                              @NotNull OZON_TransactionReport ozonTransactionReport) {
+        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumCashbackIndividualPoints);
+    }
+
     public Map<String, Double> getMapStencils(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
                                               @NotNull List<OZON_PerformanceReport> ozonPerformanceReports) {
         return OZON_dataProcessing.sumStencilByOfferId(
@@ -124,7 +129,7 @@ public class OZON_DataCreator {
         );
     }
 
-    public Double getAccrualInternalClaim (@NotNull OZON_FinanceReport ozonFinanceReport) {
+    public Double getAccrualInternalClaim(@NotNull OZON_FinanceReport ozonFinanceReport) {
         return OZON_dataProcessing.getAccrualInternalClaim(ozonFinanceReport);
     }
 
@@ -154,6 +159,7 @@ public class OZON_DataCreator {
         Map<String, Double> returnProcessing = getMapReturnProcessing(ozonSkuProductsReport, ozonTransactionReport);
         Map<String, Double> returnDelivery = getMapReturnDelivery(ozonSkuProductsReport, ozonTransactionReport);
         Map<String, Double> stencilProduct = getMapStencils(ozonSkuProductsReport, ozonPerformanceReports);
+        Map<String, Double> cashbackIndividualPoints = getMapCashbackIndividualPoints(ozonSkuProductsReport, ozonTransactionReport);
         Double accrualInternalClaim = getAccrualInternalClaim(ozonFinanceReport);
         Double ozonPremium = getOzonPremium(ozonTransactionReport);
         Double actionCost = getActionCost(ozonTransactionReport);
@@ -167,6 +173,7 @@ public class OZON_DataCreator {
                         salesCommission.getOrDefault(entry.getKey(), 0.0),
                         shipmentProcessing.getOrDefault(entry.getKey(), 0.0),
                         logistic.getOrDefault(entry.getKey(), 0.0),
+                        cashbackIndividualPoints.getOrDefault(entry.getKey(), 0.0),
                         lastMile.getOrDefault(entry.getKey(), 0.0),
                         acquiring.getOrDefault(entry.getKey(), 0.0),
                         returnProcessing.getOrDefault(entry.getKey(), 0.0),
@@ -188,14 +195,15 @@ public class OZON_DataCreator {
                     .logistic((Double) values.get(6) * -1)
                     .lastMile((Double) values.get(7) * -1)
                     .acquiring((Double) values.get(8) * -1)
-                    .installment((Double) values.get(12) * -1)
+                    .installment((Double) values.get(13) * -1)
                     .returnProcessing((Double) values.get(9) * -1)
                     .returnDelivery((Double) values.get(10) * -1)
-                    .promotion(actionCost/mergedMap.size() * -1)
-                    .compensation(accrualInternalClaim/mergedMap.size())
+                    .promotion(actionCost / mergedMap.size() * -1)
+                    .compensation(accrualInternalClaim / mergedMap.size())
                     .searchPromotion(0.0)
-                    .stencilProduct((Double) values.get(11))
-                    .ozonPremium(ozonPremium/mergedMap.size() * -1)
+                    .cashbackIndividualPoints((Double) values.get(11) * -1)
+                    .stencilProduct((Double) values.get(12))
+                    .ozonPremium(ozonPremium / mergedMap.size() * -1)
                     .crossDockingDelivery(0.0)
                     .claimsAccruals(0.0)
                     .build();

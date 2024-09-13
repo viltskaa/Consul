@@ -2,9 +2,12 @@ package com.example.consul.controllers.rest;
 
 import com.example.consul.controllers.rest.requestBodies.OZON_RequestBody;
 import com.example.consul.document.models.OZON_TableRow;
+import com.example.consul.document.models.ReportFile;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -33,8 +36,8 @@ public class OZON_ReportController {
     }
 
     @PostMapping(path = "/getExcel")
-    public @ResponseBody byte[] getReportExcel(@RequestBody OZON_RequestBody body) {
-        return ozonService.createReport(
+    public @ResponseBody ResponseEntity<Resource> getReportExcel(@RequestBody OZON_RequestBody body) {
+        ReportFile report = ozonService.createReport(
                 body.getApiKey(),
                 body.getClientId(),
                 body.getPerformanceClientId(),
@@ -42,5 +45,6 @@ public class OZON_ReportController {
                 body.getYear(),
                 body.getMonth()
         );
+        return report.toOkResource();
     }
 }

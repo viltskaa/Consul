@@ -8,6 +8,7 @@ import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
+import com.example.consul.document.models.ReportFile;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.utils.Clustering;
@@ -47,12 +48,12 @@ public class OZON_Service {
         return Instant.now().getEpochSecond() <= token.getExpires_in();
     }
 
-    public byte[] createReport(@NotNull String apiKey,
-                               @NotNull String clientId,
-                               @NotNull String performanceClientId,
-                               @NotNull String performanceClientSecret,
-                               @NotNull Integer year,
-                               @NotNull Integer month) {
+    public ReportFile createReport(@NotNull String apiKey,
+                                   @NotNull String clientId,
+                                   @NotNull String performanceClientId,
+                                   @NotNull String performanceClientSecret,
+                                   @NotNull Integer year,
+                                   @NotNull Integer month) {
         List<OZON_TableRow> data = getData(
                 apiKey,
                 clientId,
@@ -64,9 +65,9 @@ public class OZON_Service {
 
         Map<String, List<OZON_TableRow>> clusteredData = clustering.of(data);
 
-        return ExcelBuilder.createDocumentToByteArray(
+        return ExcelBuilder.createDocumentToReportFile(
                 ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("report_" + clientId + "_" + month + "_" + year + ".xls")
+                        .fileName("report_ozon" + clientId + "_" + month + "_" + year + ".xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("OZON")
@@ -121,6 +122,16 @@ public class OZON_Service {
                 scheduledGetPerformanceReport(performanceClientId, performanceClientSecret, year, month),
                 ozonFinanceReport
         );
+    }
+
+    public Pair<String, String> getDate(@NotNull Integer year,
+                                        @NotNull Integer month){
+        return ozonExcelCreator.getStartAndEndDateToUtc(month, year);
+    }
+
+    public void setHeaders(@NotNull String apiKey,
+                           @NotNull String clientId){
+        ozonApi.setHeaders(apiKey, clientId);
     }
 
     public List<OZON_TableRow> getData(@NotNull String apiKey,
@@ -357,6 +368,8 @@ public class OZON_Service {
                     UUID
             );
         } else {
+            System.out.println("getPerformanceReportStatusByUUID -- null");
+
             return null;
         }
     }
@@ -407,12 +420,18 @@ public class OZON_Service {
                     UUID
             );
 
+            System.out.println(status.getUUID());
+            System.out.println(status.getState());
+            //c3abcb2a-6431-4866-8cf3-8f63bbe292b1
+
             return status != null && status.getState().equals(OZON_PerformanceReportStatus.State.OK);
         }, 2L);
 
         if (value) {
+            System.out.println("1");
             return getPerformanceReportByUUID(clientId, UUID);
         }
+        System.out.println("2");
         return null;
     }
 
