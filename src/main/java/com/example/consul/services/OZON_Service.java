@@ -147,6 +147,7 @@ public class OZON_Service {
                 OZON_TransactionType.OperationReturnGoodsFBSofRMS,
                 OZON_TransactionType.MarketplaceRedistributionOfAcquiringOperation
         ).map(Object::toString).toList();
+        List<String> oper = new ArrayList<>();
 
         ozonApi.setHeaders(apiKey, clientId);
 
@@ -161,7 +162,7 @@ public class OZON_Service {
                 .supplyAsync(() -> getTransactionReport(
                         pairDate.a,
                         pairDate.b,
-                        operationsType,
+                        oper,
                         OZON_TransactionType.all.toString()
                 ));
 

@@ -173,13 +173,13 @@ public class OZON_DataCreator {
                         salesCommission.getOrDefault(entry.getKey(), 0.0),
                         shipmentProcessing.getOrDefault(entry.getKey(), 0.0),
                         logistic.getOrDefault(entry.getKey(), 0.0),
-                        cashbackIndividualPoints.getOrDefault(entry.getKey(), 0.0),
                         lastMile.getOrDefault(entry.getKey(), 0.0),
                         acquiring.getOrDefault(entry.getKey(), 0.0),
                         returnProcessing.getOrDefault(entry.getKey(), 0.0),
-                        returnDelivery.getOrDefault(entry.getKey(), 0.0),
-                        stencilProduct.getOrDefault(entry.getKey(), 0.0),
-                        installments.getOrDefault(entry.getKey(), 0.0)
+                        returnDelivery.getOrDefault(entry.getKey(), 0.0), //
+                        cashbackIndividualPoints.getOrDefault(entry.getKey(), 0.0), //11
+                        stencilProduct.getOrDefault(entry.getKey(), 0.0), //12
+                        installments.getOrDefault(entry.getKey(), 0.0) //13
                 ))));
 
         return mergedMap.entrySet().stream().map(x -> {
