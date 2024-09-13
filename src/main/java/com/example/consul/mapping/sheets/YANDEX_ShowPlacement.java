@@ -24,6 +24,7 @@ public class YANDEX_ShowPlacement {
     private LocalDateTime orderCreationDate;
     private String sku;
     private String productName;
+    private String productType;
     private double pricePerUnit;
     private double priceDifference;
     private int quantity;
