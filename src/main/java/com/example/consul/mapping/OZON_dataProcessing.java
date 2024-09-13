@@ -215,8 +215,8 @@ public class OZON_dataProcessing {
      * Нахождение логистики по артикулу
      *
      * @param offerSku   Map [offer_id, (sku этого offer_id)]
-     * @param operations список операци ( OZON_TransactionReport => result => operations )
-     * @return Map [offer_id, (последняя для этого товара)]
+     * @param operations список операций ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (сумма для этого артикля)]
      */
     static public Map<String, Double> sumLogistic(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
         return offerSku.entrySet().stream()
@@ -228,6 +228,29 @@ public class OZON_dataProcessing {
                                         .anyMatch(x -> "MarketplaceServiceItemDirectFlowLogistic".equals(x.getName()) || "MarketplaceServiceItemDirectFlowLogisticVDC".equals(x.getName())))
                                 .mapToDouble(x -> x.getServices().stream()
                                         .filter(y -> "MarketplaceServiceItemDirectFlowLogistic".equals(y.getName()) || "MarketplaceServiceItemDirectFlowLogisticVDC".equals(y.getName()))
+                                        .mapToDouble(OZON_TransactionReport.Service::getPrice)
+                                        .sum())
+                                .sum()
+                ));
+    }
+
+    /**
+     * Нахождение услуга продвижения «Бонусы продавца» по артикулу
+     *
+     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param operations список операций ( OZON_TransactionReport => result => operations )
+     * @return Map [offer_id, (сумма для этого артикля)]
+     */
+    static public Map<String, Double> sumCashbackIndividualPoints(Map<String, List<Long>> offerSku, List<OZON_TransactionReport.Operation> operations) {
+        return offerSku.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> operations.stream()
+                                .filter(op -> op.hasSkus(entry.getValue()))
+                                .filter(s -> s.getServices() != null && s.getServices().stream()
+                                        .anyMatch(x -> "MarketplaceServicePremiumCashbackIndividualPoints".equals(x.getName())))
+                                .mapToDouble(x -> x.getServices().stream()
+                                        .filter(y -> "MarketplaceServicePremiumCashbackIndividualPoints".equals(y.getName()))
                                         .mapToDouble(OZON_TransactionReport.Service::getPrice)
                                         .sum())
                                 .sum()

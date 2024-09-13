@@ -10,7 +10,7 @@ import lombok.*;
 @TotalCell(
         formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +
                 "-logistic-lastMile-acquiring-installment-returnProcessing-returnDelivery" +
-                "-promotion-compensation-searchPromotion-stencilProduct-ozonPremium" +
+                "-promotion-cashbackIndividualPoints-compensation-searchPromotion-stencilProduct-ozonPremium" +
                 "-crossDockingDelivery-claimsAccruals-other)/(delivered-returned)-2.47"
 )
 public class OZON_TableRow extends TableRow {
@@ -40,6 +40,8 @@ public class OZON_TableRow extends TableRow {
     private Double returnDelivery;
     @CellUnit(name = "Услуга продвижения")
     private Double promotion;
+    @CellUnit(name = "Услуга продвижения (бонусы продавца)")
+    private Double cashbackIndividualPoints;
     @CellUnit(name = "Компенсация за испорченный товар")
     private Double compensation;
     @CellUnit(name = "Продвижение в поиске")
@@ -72,6 +74,7 @@ public class OZON_TableRow extends TableRow {
                          Double returnProcessing,
                          Double returnDelivery,
                          Double promotion,
+                         Double cashbackIndividualPoints,
                          Double compensation,
                          Double searchPromotion,
                          Double stencilProduct,
@@ -93,6 +96,7 @@ public class OZON_TableRow extends TableRow {
         this.returnProcessing = returnProcessing;
         this.returnDelivery = returnDelivery;
         this.promotion = promotion;
+        this.cashbackIndividualPoints = cashbackIndividualPoints;
         this.compensation = compensation;
         this.searchPromotion = searchPromotion;
         this.stencilProduct = stencilProduct;

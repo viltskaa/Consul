@@ -59,6 +59,7 @@ public class OZON_PerformanceApi {
     }
 
     /**
+     * Статистика => Статистика по товарным кампаниям
      * @param token bearer token
      * @param dateFrom format @YYYY-MM-DD
      * @param dateTo format @YYYY-MM-DD
@@ -128,6 +129,7 @@ public class OZON_PerformanceApi {
     }
 
     /**
+     * Статистика => Cтатус отчёта
      * @param token bearer token
      * @param UUID id report
      * @return report status
