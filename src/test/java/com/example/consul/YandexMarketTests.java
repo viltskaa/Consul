@@ -5,20 +5,20 @@ import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.mapping.YANDEX_dataProcessing;
-import com.example.consul.mapping.sheets.YANDEX_BoostSales;
 import com.example.consul.services.YANDEX_Service;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
-
-import java.io.*;
+import java.util.List;
 
 @SpringBootTest
 class YandexMarketTests {
@@ -31,7 +31,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void getMapDelivery() throws FileNotFoundException {
+    public void getMapDelivery() {
         String excelFilePath = "ru-statistics-report-2024-04 (2).xlsx";
 
         try (InputStream inputStream = new FileInputStream(excelFilePath);
@@ -47,7 +47,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void getMapReturn() throws FileNotFoundException {
+    public void getMapReturn() {
         String excelFilePath = "ru-statistics-report-2024-04 (2).xlsx";
 
         try (InputStream inputStream = new FileInputStream(excelFilePath);
@@ -63,7 +63,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void getMapPlacingOnShowcase() throws FileNotFoundException {
+    public void getMapPlacingOnShowcase() {
         String excelFilePath = "united-marketplace-services-138fc204-bbaa-4e13-8499-85f6ea966537.xlsx";
 
         try (InputStream inputStream = new FileInputStream(excelFilePath);
@@ -78,7 +78,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void getMapSortingCenter() throws FileNotFoundException {
+    public void getMapSortingCenter() {
         String excelFilePath = "united-marketplace-services-e89729bc-f5b6-4f01-bdf8-74392c745c98.xlsx";
 
         try (InputStream inputStream = new FileInputStream(excelFilePath);
@@ -95,7 +95,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void getMapDeliveryToConsumer() throws FileNotFoundException {
+    public void getMapDeliveryToConsumer() {
         String excelFilePath = "united-marketplace-services-138fc204-bbaa-4e13-8499-85f6ea966537.xlsx";
 
         try (InputStream inputStream = new FileInputStream(excelFilePath);
@@ -110,7 +110,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void getAcceptAndTransferPayment() throws FileNotFoundException {
+    public void getAcceptAndTransferPayment() {
         String excelFilePath = "united-marketplace-services-138fc204-bbaa-4e13-8499-85f6ea966537.xlsx";
 
         try (InputStream inputStream = new FileInputStream(excelFilePath);
@@ -126,7 +126,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void getMapLoyaltyProgram() throws FileNotFoundException {
+    public void getMapLoyaltyProgram() {
         String excelFilePath = "united-marketplace-services-138fc204-bbaa-4e13-8499-85f6ea966537.xlsx";
         int sheetIndex = 3;
 
@@ -142,7 +142,7 @@ class YandexMarketTests {
     }
 
     @Test
-    public void testGetMapBoostSales() throws FileNotFoundException {
+    public void testGetMapBoostSales() {
         String excelFilePath = "united-marketplace-services-546509f2-f194-4fa3-8e79-db2a912e7d98.xlsx";
         int sheetIndex = 4;
 

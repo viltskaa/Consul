@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -779,44 +781,55 @@ public class YANDEX_dataProcessing {
     }
 
     public static Map<String, Double> getMapSortingCenter(Sheet sheetDelivery, Sheet sheetShip, Sheet sheetSortingCenter, Sheet sheetAcceptPay, Sheet sheetTransact) {
-        List<YANDEX_AcceptingPayment> listAccept = getAcceptingPayment(sheetAcceptPay);
-        List<YANDEX_DeliveryCustomer> listDel = getDeliveryCustomer(sheetDelivery);
-        List<YANDEX_ProcessingOrders> listSorting = getProcessingOrders(sheetSortingCenter);
-        List<YANDEX_GoodsInDelivery> listDelivery = getGoodsInDelivery(sheetShip);
-        List<YANDEX_TransactionsOrdersAndProducts> listTransact = getTransactionsOnOrdersAndProducts(sheetTransact);
+        CompletableFuture<List<YANDEX_AcceptingPayment>> acceptFuture = CompletableFuture.supplyAsync(() -> getAcceptingPayment(sheetAcceptPay));
+        CompletableFuture<List<YANDEX_DeliveryCustomer>> deliveryFuture = CompletableFuture.supplyAsync(() -> getDeliveryCustomer(sheetDelivery));
+        CompletableFuture<List<YANDEX_GoodsInDelivery>> goodsFuture = CompletableFuture.supplyAsync(() -> getGoodsInDelivery(sheetShip));
+        CompletableFuture<List<YANDEX_TransactionsOrdersAndProducts>> transactFuture = CompletableFuture.supplyAsync(() -> getTransactionsOnOrdersAndProducts(sheetTransact));
+        CompletableFuture<List<YANDEX_ProcessingOrders>> sortingFuture = CompletableFuture.supplyAsync(() -> getProcessingOrders(sheetSortingCenter));
 
-        Map<Long, Set<String>> orderNumberToSkuSetMap = new HashMap<>();
+        try {
+            List<YANDEX_AcceptingPayment> listAccept = acceptFuture.get();
+            List<YANDEX_DeliveryCustomer> listDel = deliveryFuture.get();
+            List<YANDEX_GoodsInDelivery> listDelivery = goodsFuture.get();
+            List<YANDEX_TransactionsOrdersAndProducts> listTransact = transactFuture.get();
+            List<YANDEX_ProcessingOrders> listSorting = sortingFuture.get();
 
-        Stream.of(listDel, listAccept, listDelivery, listTransact)
-                .flatMap(List::stream)
-                .forEach(record -> {
-                    Long orderNumber = getOrderNumberFromRecord(record);
-                    String sku = getSkuFromRecord(record);
+            Map<Long, Set<String>> orderNumberToSkuSetMap = Stream.of(listDel, listAccept, listDelivery, listTransact)
+                    .flatMap(List::stream)
+                    .parallel()
+                    .collect(Collectors.toConcurrentMap(
+                            YANDEX_dataProcessing::getOrderNumberFromRecord,
+                            record -> new HashSet<>(Collections.singletonList(getSkuFromRecord(record))),
+                            (existing, replacement) -> {
+                                existing.addAll(replacement);
+                                return existing;
+                            },
+                            ConcurrentHashMap::new
+                    ));
 
-                    orderNumberToSkuSetMap
-                            .computeIfAbsent(orderNumber, k -> new HashSet<>())
-                            .add(sku);
-                });
+            Map<Long, Double> orderNumberToTotalTariffMap = listSorting.parallelStream()
+                    .collect(Collectors.groupingBy(
+                            YANDEX_ProcessingOrders::getOrderNumber,
+                            Collectors.summingDouble(YANDEX_ProcessingOrders::getTariff)
+                    ));
 
-        Map<Long, Double> orderNumberToTotalTariffMap = listSorting.stream()
-                .collect(Collectors.groupingBy(YANDEX_ProcessingOrders::getOrderNumber,
-                        Collectors.summingDouble(YANDEX_ProcessingOrders::getTariff)));
+            Map<String, Double> skuToFinalTariffMap = new ConcurrentHashMap<>();
 
-        Map<String, Double> skuToFinalTariffMap = new HashMap<>();
+            orderNumberToSkuSetMap.forEach((orderNumber, skuSet) -> {
+                Double totalTariff = orderNumberToTotalTariffMap.getOrDefault(orderNumber, 0.0);
+                if (totalTariff > 0 && !skuSet.isEmpty()) {
+                    double dividedTariff = totalTariff / skuSet.size();
+                    skuSet.forEach(sku -> skuToFinalTariffMap.merge(sku, dividedTariff, Double::sum));
+                }
+            });
 
-        orderNumberToSkuSetMap.forEach((orderNumber, skuSet) -> {
-            Double totalTariff = orderNumberToTotalTariffMap.getOrDefault(orderNumber, 0.0);
-            if (totalTariff > 0 && !skuSet.isEmpty()) {
-                double dividedTariff = totalTariff / skuSet.size();
-                skuSet.forEach(sku -> skuToFinalTariffMap.merge(sku, dividedTariff, Double::sum));
-            }
-        });
+            skuToFinalTariffMap.replaceAll((sku, value) -> Math.round(value * 100.0) / 100.0);
 
-        System.out.println(skuToFinalTariffMap);
+            return skuToFinalTariffMap;
 
-        skuToFinalTariffMap.replaceAll((sku, value) -> Math.round(value * 100.0) / 100.0);
-
-        return skuToFinalTariffMap;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error while processing data", e);
+        }
     }
 
     private static Long getOrderNumberFromRecord(Object record) {
@@ -846,66 +859,51 @@ public class YANDEX_dataProcessing {
     }
 
     public static Map<String, Double> getMapStorageReturn(Sheet sheetDelivery, Sheet sheetShip, Sheet sheetStorageReturn, Sheet sheetAcceptPay, Sheet sheetTransact) {
-        List<YANDEX_AcceptingPayment> listAccept = getAcceptingPayment(sheetAcceptPay);
-        List<YANDEX_DeliveryCustomer> listDel = getDeliveryCustomer(sheetDelivery);
-        List<YANDEX_StorageReturns> listSorting = getStorageReturns(sheetStorageReturn);
-        List<YANDEX_GoodsInDelivery> listDelivery = getGoodsInDelivery(sheetShip);
-        List<YANDEX_TransactionsOrdersAndProducts> listTransact = getTransactionsOnOrdersAndProducts(sheetTransact);
+        CompletableFuture<List<YANDEX_AcceptingPayment>> acceptFuture = CompletableFuture.supplyAsync(() -> getAcceptingPayment(sheetAcceptPay));
+        CompletableFuture<List<YANDEX_DeliveryCustomer>> deliveryFuture = CompletableFuture.supplyAsync(() -> getDeliveryCustomer(sheetDelivery));
+        CompletableFuture<List<YANDEX_StorageReturns>> storageReturnFuture = CompletableFuture.supplyAsync(() -> getStorageReturns(sheetStorageReturn));
+        CompletableFuture<List<YANDEX_GoodsInDelivery>> goodsFuture = CompletableFuture.supplyAsync(() -> getGoodsInDelivery(sheetShip));
+        CompletableFuture<List<YANDEX_TransactionsOrdersAndProducts>> transactFuture = CompletableFuture.supplyAsync(() -> getTransactionsOnOrdersAndProducts(sheetTransact));
 
-        Map<Long, List<String>> orderNumberToSkuListMap = listDel.stream()
-                .collect(Collectors.groupingBy(YANDEX_DeliveryCustomer::getOrderNumber,
-                        Collectors.mapping(YANDEX_DeliveryCustomer::getSku, Collectors.toList())));
+        try {
+            List<YANDEX_AcceptingPayment> listAccept = acceptFuture.get();
+            List<YANDEX_DeliveryCustomer> listDel = deliveryFuture.get();
+            List<YANDEX_StorageReturns> listSorting = storageReturnFuture.get();
+            List<YANDEX_GoodsInDelivery> listDelivery = goodsFuture.get();
+            List<YANDEX_TransactionsOrdersAndProducts> listTransact = transactFuture.get();
 
-        Map<Long, List<String>> orderNumberToSkuListMapAccept = listAccept.stream()
-                .collect(Collectors.groupingBy(YANDEX_AcceptingPayment::getOrderNumber,
-                        Collectors.mapping(YANDEX_AcceptingPayment::getSku, Collectors.toList())));
+            Map<Long, List<String>> orderNumberToSkuListMap = Stream.of(listDel, listAccept, listDelivery, listTransact)
+                    .flatMap(List::stream)
+                    .parallel()
+                    .collect(Collectors.groupingBy(
+                            YANDEX_dataProcessing::getOrderNumberFromRecord,
+                            ConcurrentHashMap::new,
+                            Collectors.mapping(YANDEX_dataProcessing::getSkuFromRecord, Collectors.toList())
+                    ));
 
-        Map<Long, List<String>> orderNumberToSkuListMapDelivery = listDelivery.stream()
-                .collect(Collectors.groupingBy(YANDEX_GoodsInDelivery::getOrderNumber,
-                        Collectors.mapping(YANDEX_GoodsInDelivery::getProductSku, Collectors.toList())));
+            Map<Long, Double> orderNumberToTotalTariffMap = listSorting.parallelStream()
+                    .collect(Collectors.groupingBy(
+                            YANDEX_StorageReturns::getOrderNumber,
+                            Collectors.summingDouble(YANDEX_StorageReturns::getServiceCost)
+                    ));
 
-        Map<Long, List<String>> orderNumberToSkuListMapTransact = listTransact.stream()
-                .collect(Collectors.groupingBy(YANDEX_TransactionsOrdersAndProducts::getOrderNumber,
-                        Collectors.mapping(YANDEX_TransactionsOrdersAndProducts::getSku, Collectors.toList())));
+            Map<String, Double> skuToFinalTariffMap = new ConcurrentHashMap<>();
 
-        orderNumberToSkuListMapAccept.forEach((orderNumber, skuList) ->
-                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
-                    existingList.addAll(newList);
-                    return existingList;
-                })
-        );
+            orderNumberToSkuListMap.forEach((orderNumber, skuList) -> {
+                Double totalTariff = orderNumberToTotalTariffMap.getOrDefault(orderNumber, 0.0);
+                if (totalTariff > 0 && !skuList.isEmpty()) {
+                    double dividedTariff = totalTariff / skuList.size();
+                    skuList.forEach(sku -> skuToFinalTariffMap.merge(sku, dividedTariff, Double::sum));
+                }
+            });
 
-        orderNumberToSkuListMapDelivery.forEach((orderNumber, skuList) ->
-                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
-                    existingList.addAll(newList);
-                    return existingList;
-                })
-        );
+            skuToFinalTariffMap.replaceAll((sku, value) -> Math.round(value * 100.0) / 100.0);
 
-        orderNumberToSkuListMapTransact.forEach((orderNumber, skuList) ->
-                orderNumberToSkuListMap.merge(orderNumber, skuList, (existingList, newList) -> {
-                    existingList.addAll(newList);
-                    return existingList;
-                })
-        );
+            return skuToFinalTariffMap;
 
-        Map<Long, Double> orderNumberToTotalTariffMap = listSorting.stream()
-                .collect(Collectors.groupingBy(YANDEX_StorageReturns::getOrderNumber,
-                        Collectors.summingDouble(YANDEX_StorageReturns::getServiceCost)));
-
-        Map<String, Double> skuToFinalTariffMap = new HashMap<>();
-
-        orderNumberToSkuListMap.forEach((orderNumber, skuList) -> {
-            Double totalTariff = orderNumberToTotalTariffMap.getOrDefault(orderNumber, 0.0);
-            if (totalTariff > 0 && !skuList.isEmpty()) {
-                double dividedTariff = totalTariff / skuList.size();
-                skuList.forEach(sku -> skuToFinalTariffMap.merge(sku, dividedTariff, Double::sum));
-            }
-        });
-
-        skuToFinalTariffMap.replaceAll((sku, value) -> (double) Math.round(value));
-
-        return skuToFinalTariffMap;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error while processing data", e);
+        }
     }
 
     public static Map<String, Double> getMapDeliveryCost(Sheet sheet) {
@@ -966,20 +964,30 @@ public class YANDEX_dataProcessing {
     }
 
     public static Map<String, Double> getMapAcceptAndTransferPayment(Sheet sheetAccept, Sheet sheetTrans) {
-        List<YANDEX_AcceptingPayment> listAccept = getAcceptingPayment(sheetAccept);
-        List<YANDEX_TransferPayment> listTrans = getTransferPayment(sheetTrans);
+        CompletableFuture<List<YANDEX_AcceptingPayment>> acceptPaymentsFuture = CompletableFuture.supplyAsync(() -> getAcceptingPayment(sheetAccept));
+        CompletableFuture<List<YANDEX_TransferPayment>> transferPaymentsFuture = CompletableFuture.supplyAsync(() -> getTransferPayment(sheetTrans));
 
-        Map<String, Double> result = listAccept.stream()
-                .collect(Collectors.groupingBy(YANDEX_AcceptingPayment::getSku,
-                        Collectors.summingDouble(YANDEX_AcceptingPayment::getServiceCost)));
+        try {
+            List<YANDEX_AcceptingPayment> listAccept = acceptPaymentsFuture.get();
+            List<YANDEX_TransferPayment> listTrans = transferPaymentsFuture.get();
 
-        listTrans.stream()
-                .collect(Collectors.groupingBy(
-                        YANDEX_TransferPayment::getSku,
-                        Collectors.summingDouble(YANDEX_TransferPayment::getServiceCost))
-                ).forEach((key, value) -> result.merge(key, value, Double::sum));
+            Map<String, Double> result = new ConcurrentHashMap<>();
 
-        return result;
+            listAccept.parallelStream()
+                    .collect(Collectors.groupingBy(YANDEX_AcceptingPayment::getSku,
+                            Collectors.summingDouble(YANDEX_AcceptingPayment::getServiceCost)))
+                    .forEach((sku, cost) -> result.merge(sku, cost, Double::sum));
+
+            listTrans.parallelStream()
+                    .collect(Collectors.groupingBy(YANDEX_TransferPayment::getSku,
+                            Collectors.summingDouble(YANDEX_TransferPayment::getServiceCost)))
+                    .forEach((sku, cost) -> result.merge(sku, cost, Double::sum));
+
+            return result;
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error while processing payment data", e);
+        }
     }
 
     public static Map<String, Double> getMapLoyaltyProgram(Sheet sheet) {
@@ -1007,54 +1015,60 @@ public class YANDEX_dataProcessing {
     }
 
     public static Map<String, Double> calculateServiceCostRatio(Sheet deliverySheet, Sheet returnSheet, Sheet serviceSheet) {
-        Double totalServiceCost = getSumShelves(serviceSheet);
+        CompletableFuture<Double> totalServiceCostFuture = CompletableFuture.supplyAsync(() -> getSumShelves(serviceSheet));
+        CompletableFuture<Map<String, Integer>> deliveryReturnDifferenceFuture = CompletableFuture.supplyAsync(() -> getDeliveryReturnDifference(deliverySheet, returnSheet));
 
-        Map<String, Integer> deliveryReturnDifference = getDeliveryReturnDifference(deliverySheet, returnSheet);
+        try {
+            Double totalServiceCost = totalServiceCostFuture.get();
+            Map<String, Integer> deliveryReturnDifference = deliveryReturnDifferenceFuture.get();
 
-        Integer totalDeliveryReturnDifference = deliveryReturnDifference.values().stream()
-                .mapToInt(Integer::intValue)
-                .sum();
+            Integer totalDeliveryReturnDifference = deliveryReturnDifference.values().stream()
+                    .mapToInt(Integer::intValue)
+                    .sum();
 
-        Map<String, Double> resultMap = new HashMap<>();
+            Map<String, Double> resultMap = new ConcurrentHashMap<>();
 
-        if (totalDeliveryReturnDifference == 0) {
-            for (String sku : deliveryReturnDifference.keySet()) {
-                resultMap.put(sku, 0.0);
+            if (totalDeliveryReturnDifference == 0) {
+                deliveryReturnDifference.forEach((sku, difference) -> resultMap.put(sku, 0.0));
+            } else {
+                deliveryReturnDifference.forEach((sku, difference) -> {
+                    Double ratio = (totalServiceCost / totalDeliveryReturnDifference) * difference;
+                    resultMap.put(sku, ratio);
+                });
             }
+
             return resultMap;
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error while processing data", e);
         }
-
-        for (Map.Entry<String, Integer> entry : deliveryReturnDifference.entrySet()) {
-            String sku = entry.getKey();
-            Integer difference = entry.getValue();
-
-            Double ratio = (totalServiceCost / totalDeliveryReturnDifference) * difference;
-            resultMap.put(sku, ratio);
-        }
-
-        return resultMap;
     }
 
     public static Map<String, Integer> getDeliveryReturnDifference(Sheet deliverySheet, Sheet returnSheet) {
-        Map<String, Integer> deliveryCount = getMapDeliveryCount(deliverySheet);
-        Map<String, Integer> returnCount = getMapReturnCount(returnSheet);
+        CompletableFuture<Map<String, Integer>> deliveryCountFuture = CompletableFuture.supplyAsync(() -> getMapDeliveryCount(deliverySheet));
+        CompletableFuture<Map<String, Integer>> returnCountFuture = CompletableFuture.supplyAsync(() -> getMapReturnCount(returnSheet));
 
-        Map<String, Integer> differenceMap = new HashMap<>();
+        try {
+            Map<String, Integer> deliveryCount = deliveryCountFuture.get();
+            Map<String, Integer> returnCount = returnCountFuture.get();
 
-        for (Map.Entry<String, Integer> entry : deliveryCount.entrySet()) {
-            String sku = entry.getKey();
-            Integer delivery = entry.getValue();
-            Integer returns = returnCount.getOrDefault(sku, 0);
-            differenceMap.put(sku, delivery - returns);
+            Map<String, Integer> differenceMap = new ConcurrentHashMap<>();
+
+            deliveryCount.forEach((sku, delivery) -> {
+                Integer returns = returnCount.getOrDefault(sku, 0);
+                differenceMap.put(sku, delivery - returns);
+            });
+
+            returnCount.forEach((sku, returns) -> {
+                if (!differenceMap.containsKey(sku)) {
+                    differenceMap.put(sku, -returns);
+                }
+            });
+
+            return differenceMap;
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error while processing data", e);
         }
-
-        for (Map.Entry<String, Integer> entry : returnCount.entrySet()) {
-            String sku = entry.getKey();
-            if (!differenceMap.containsKey(sku)) {
-                differenceMap.put(sku, -entry.getValue());
-            }
-        }
-
-        return differenceMap;
     }
 }
