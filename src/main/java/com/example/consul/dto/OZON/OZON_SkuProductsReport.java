@@ -21,11 +21,22 @@ public class OZON_SkuProductsReport {
     }
 
     public Map<String, List<Long>> getSkuListByOfferId() {
+        for (OZON_SkuProduct item : result.getItems()) {
+            if(item.getSources().isEmpty())
+                System.out.println("!");
+        }
         return result.getItems().stream()
                 .collect(Collectors.toMap(OZON_SkuProduct::getOffer_id,
                         item -> item.getSku() != 0L ? List.of(item.getSku()) : item.getSources().stream()
                                 .map(OZON_SkuProductsReport.OZON_SkuProduct.Sources::getSku)
                                 .collect(Collectors.toList())));
+    }
+    public Map<String, Long> getSku(){
+        Map<String, Long> res = new HashMap<>();
+        for (OZON_SkuProductsReport.OZON_SkuProduct item : result.getItems()) {
+            res.put(item.getOffer_id(), item.getSku());
+        }
+        return res;
     }
 
     @Data

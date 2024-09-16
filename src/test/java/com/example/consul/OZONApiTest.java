@@ -44,7 +44,9 @@ public class OZONApiTest {
     @Test
     public void shipmentProcessing(){
         ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
-        Pair<String, String> pairDate = ozonService.getDate(2024, 5);
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+
+        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
 //        System.out.println(pairDate);
         List<String> oper = new ArrayList<>();
 //        oper.add("OperationReturnGoodsFBSofRMS");
@@ -56,17 +58,23 @@ public class OZONApiTest {
             for (OZON_TransactionReport.Service service : operation.getServices()) {
 
                 if (
-//                        Objects.equals(service.getName(), "MarketplaceServiceItemDropoffFF") ||
-                        Objects.equals(service.getName(), "MarketplaceServiceItemDropoffPVZ") ||
-                         Objects.equals(service.getName(), "MarketplaceServiceItemDropoffSC")
+//                        operation.getItems().isEmpty() &&
+                        (Objects.equals(service.getName(), "MarketplaceServiceItemDropoffPVZ") ||
+                         Objects.equals(service.getName(), "MarketplaceServiceItemDropoffSC"))
                 ) {
-                    System.out.println(count + " : " + operation.getServices().size());
-                    count++;
+                    System.out.println(operation.getItems().getFirst().getSku());
+//                    count++;
                     sum += service.getPrice();
                 }
             }
         }
+        Double res = operations.stream().filter(op -> op.getItems().isEmpty())
+//                .filter(op -> op.getPriceByServiceName("MarketplaceRedistributionOfAcquiringOperation") != null)
+                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffSC") +
+                        item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffPVZ")).sum();
+
         System.out.println(sum);
+        System.out.println(res);
     }
 
     @Test
