@@ -14,9 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 public class OZONApiTest {
@@ -27,53 +26,93 @@ public class OZONApiTest {
     private OZON_Api api;
 
     @Test
-    public void skuTest(){
-        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
+    public void newMapping() {
+        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+//        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+//        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
+
+        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
+        List<String> oper = new ArrayList<>();
+        OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
+        List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations().stream()
+                .filter(operation -> operation.checkServiceName("MarketplaceRedistributionOfAcquiringOperation")).toList();
+
+        Map<Long, Double> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku2,
+                Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceRedistributionOfAcquiringOperation"))));
+
+        double sum = collect.values().stream().mapToDouble(Double::doubleValue).sum();
+        System.out.println(sum);
+    }
+
+    @Test
+    public void skuTest() {
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+//        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
         String[] offerIds = ozonService.getListOfferIdByDate(6, 2024);
         OZON_SkuProductsReport report = ozonService.getProductInfoByOfferId(offerIds);
-//        System.out.println(report);
 
-        int count = 0;
-        for (OZON_SkuProductsReport.OZON_SkuProduct product :report.getResult().getItems()){
-            if(!product.getSources().isEmpty()){
+        System.out.println("start");
+
+        for (OZON_SkuProductsReport.OZON_SkuProduct product : report.getResult().getItems()) {
+            if (!product.getSources().isEmpty()) {
                 System.out.println(product.getOffer_id());
             }
         }
     }
 
     @Test
-    public void shipmentProcessing(){
-        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
-//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+    public void skuTest2() {
+        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+//        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
 
         Pair<String, String> pairDate = ozonService.getDate(2024, 6);
-//        System.out.println(pairDate);
+        List<String> oper = new ArrayList<>();
+        OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
+        List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
+
+        Map<Long, Long> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku2, Collectors.counting()));
+        collect.forEach((k, v) -> System.out.println(k));
+    }
+
+
+    @Test
+    public void shipmentProcessing() {
+//        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
+        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+
+        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
         List<String> oper = new ArrayList<>();
 //        oper.add("OperationReturnGoodsFBSofRMS");
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
         double sum = 0;
-        int count = 1;
         for (OZON_TransactionReport.Operation operation : operations) {
             for (OZON_TransactionReport.Service service : operation.getServices()) {
 
                 if (
-//                        operation.getItems().isEmpty() &&
                         (Objects.equals(service.getName(), "MarketplaceServiceItemDropoffPVZ") ||
-                         Objects.equals(service.getName(), "MarketplaceServiceItemDropoffSC"))
+                                Objects.equals(service.getName(), "MarketplaceServiceItemDropoffSC"))
                 ) {
-                    System.out.println(operation.getItems().getFirst().getSku());
-//                    count++;
+//                    System.out.println(operation.getItems().getFirst().getSku());
                     sum += service.getPrice();
                 }
             }
         }
-        Double res = operations.stream().filter(op -> op.getItems().isEmpty())
-//                .filter(op -> op.getPriceByServiceName("MarketplaceRedistributionOfAcquiringOperation") != null)
-                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffSC") +
-                        item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffPVZ")).sum();
+//        Double res = operations.stream()
+//                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffSC") +
+//                        item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffPVZ")).sum();
 
-        System.out.println(sum);
+        Double res = operations.stream()
+//                .filter(op -> op.getItems().isEmpty())
+//                .filter(op -> op.getPriceByServiceName("MarketplaceRedistributionOfAcquiringOperation") != null)
+                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceRedistributionOfAcquiringOperation")).sum();
+
+//        System.out.println(sum);
         System.out.println(res);
     }
 
@@ -136,7 +175,7 @@ public class OZONApiTest {
 
         ExcelBuilder.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("Стулоф_OZON_июнь_2024_.xls")
+                        .fileName("Стулоф_OZON_июнь_2024_1.xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("TEST")
@@ -184,17 +223,19 @@ public class OZONApiTest {
         Pair<String, String> pairDate = ozonService.getDate(2024, 6);
         System.out.println(pairDate);
         List<String> oper = new ArrayList<>();
-        oper.add("OperationMarketplaceServicePremiumCashbackIndividualPoints");
+//        oper.add("OperationMarketplaceServicePremiumCashbackIndividualPoints");
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
 
         double sum = 0;
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
         for (OZON_TransactionReport.Operation operation : operations) {
+
+
             if (!operation.getItems().isEmpty() && operation.getItems().getFirst().getSku() == 730591736L) {
 //                sum += operation.getAmount();
                 for (OZON_TransactionReport.Service service : operation.getServices()) {
                     if (Objects.equals(service.getName(), "MarketplaceServicePremiumCashbackIndividualPoints")) {
-                    sum += service.getPrice();
+                        sum += service.getPrice();
                     }
                 }
             }
@@ -222,6 +263,7 @@ public class OZONApiTest {
         }
         System.out.println(sum);
     }
+
 
     @Test
     public void testDetailReport() {

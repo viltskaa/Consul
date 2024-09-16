@@ -136,9 +136,7 @@ public class OZON_dataProcessing {
                                 .mapToDouble(Map.Entry::getValue).sum())
                         .sum()
         ));
-        result.put("none", operations.stream()
-                .filter(op -> op.getItems().isEmpty())
-                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceRedistributionOfAcquiringOperation")).sum());
+
         return result;
     }
 

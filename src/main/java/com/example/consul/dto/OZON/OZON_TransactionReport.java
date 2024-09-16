@@ -112,6 +112,17 @@ public class OZON_TransactionReport {
                 return items.get(0).getSku();
         }
 
+
+        /**
+         * Вернет либо sku, либо 0L (не выкинет ошибку)
+         * @return
+         */
+        public Long getSku2(){
+            if(!items.isEmpty())
+                return items.get(0).getSku();
+            return 0L;
+        }
+
         public Double getPrice(){
             return services.get(0).getPrice();
         }
