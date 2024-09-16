@@ -127,6 +127,13 @@ public class OZON_TransactionReport {
                     .findFirst().get().getPrice();
         }
 
+        public double getPriceByServiceNameNoNull(String serviceName){
+            if (!checkServiceName(serviceName))
+                return 0;
+            return services.stream().filter(service -> service.getName().equals(serviceName))
+                    .findFirst().get().getPrice();
+        }
+
         public boolean checkServiceName(String serviceName){
             return getAllServicesName().contains(serviceName);
         }

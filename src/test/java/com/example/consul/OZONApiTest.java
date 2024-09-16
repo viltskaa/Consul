@@ -5,6 +5,7 @@ import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
+import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
 import org.antlr.v4.runtime.misc.Pair;
@@ -21,6 +22,60 @@ import java.util.Objects;
 public class OZONApiTest {
     @Autowired
     private OZON_Service ozonService;
+
+    @Autowired
+    private OZON_Api api;
+
+    @Test
+    public void skuTest(){
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
+        String[] offerIds = ozonService.getListOfferIdByDate(6, 2024);
+        OZON_SkuProductsReport report = ozonService.getProductInfoByOfferId(offerIds);
+//        System.out.println(report);
+
+        int count = 0;
+        for (OZON_SkuProductsReport.OZON_SkuProduct product :report.getResult().getItems()){
+            if(!product.getSources().isEmpty()){
+                System.out.println(product.getOffer_id());
+            }
+        }
+    }
+
+    @Test
+    public void shipmentProcessing(){
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+
+        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
+//        System.out.println(pairDate);
+        List<String> oper = new ArrayList<>();
+//        oper.add("OperationReturnGoodsFBSofRMS");
+        OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
+        List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
+        double sum = 0;
+        int count = 1;
+        for (OZON_TransactionReport.Operation operation : operations) {
+            for (OZON_TransactionReport.Service service : operation.getServices()) {
+
+                if (
+//                        operation.getItems().isEmpty() &&
+                        (Objects.equals(service.getName(), "MarketplaceServiceItemDropoffPVZ") ||
+                         Objects.equals(service.getName(), "MarketplaceServiceItemDropoffSC"))
+                ) {
+                    System.out.println(operation.getItems().getFirst().getSku());
+//                    count++;
+                    sum += service.getPrice();
+                }
+            }
+        }
+        Double res = operations.stream().filter(op -> op.getItems().isEmpty())
+//                .filter(op -> op.getPriceByServiceName("MarketplaceRedistributionOfAcquiringOperation") != null)
+                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffSC") +
+                        item.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffPVZ")).sum();
+
+        System.out.println(sum);
+        System.out.println(res);
+    }
 
     @Test
     public void generateAlica_2() throws IOException {
@@ -143,6 +198,27 @@ public class OZONApiTest {
                     }
                 }
             }
+        }
+        System.out.println(sum);
+    }
+
+    // приобретение отзывов - MarketplaceSaleReviewsOperation
+    @Test
+    public void testMarketplaceSaleReviewsOperation() {
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+//        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac","350423"); // Alica_2
+        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
+        System.out.println(pairDate);
+        List<String> oper = new ArrayList<>();
+        oper.add("OperationMarketplaceServicePremiumCashbackIndividualPoints");
+        OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
+
+        double sum = 0;
+        List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
+        for (OZON_TransactionReport.Operation operation : operations) {
+            sum += operation.getAmount();
         }
         System.out.println(sum);
     }

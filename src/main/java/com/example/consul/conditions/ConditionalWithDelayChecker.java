@@ -15,7 +15,7 @@ public class ConditionalWithDelayChecker {
 
         Executor delayed = CompletableFuture
                 .delayedExecutor(delay, TimeUnit.SECONDS);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1000; i++) {
             Boolean value = CompletableFuture
                     .supplyAsync(function, delayed)
                     .join();

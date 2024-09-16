@@ -1,6 +1,7 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,23 +10,37 @@ import java.util.stream.Collectors;
  * https://api-seller.ozon.ru/v2/product/info
  */
 @Data
+@Getter
 public class OZON_SkuProductsReport {
     private Result result;
 
     @Data
-    private static class Result {
+    @Getter
+    public static class Result {
         private List<OZON_SkuProduct> items;
     }
 
     public Map<String, List<Long>> getSkuListByOfferId() {
+        for (OZON_SkuProduct item : result.getItems()) {
+            if(item.getSources().isEmpty())
+                System.out.println("!");
+        }
         return result.getItems().stream()
                 .collect(Collectors.toMap(OZON_SkuProduct::getOffer_id,
                         item -> item.getSku() != 0L ? List.of(item.getSku()) : item.getSources().stream()
                                 .map(OZON_SkuProductsReport.OZON_SkuProduct.Sources::getSku)
                                 .collect(Collectors.toList())));
     }
+    public Map<String, Long> getSku(){
+        Map<String, Long> res = new HashMap<>();
+        for (OZON_SkuProductsReport.OZON_SkuProduct item : result.getItems()) {
+            res.put(item.getOffer_id(), item.getSku());
+        }
+        return res;
+    }
 
     @Data
+    @Getter
     public static class OZON_SkuProduct {
         private Long id;
         private String name;
@@ -69,7 +84,7 @@ public class OZON_SkuProductsReport {
             private Boolean is_enabled;
             private Long sku;
             private String source;
-        }
+        } 
 
         @Data
         private static class Stocks {
