@@ -166,17 +166,18 @@ public class OZON_DataCreator {
         Map<String, Double> installments = getInstallments(ozonSkuProductsReport, ozonTransactionReport);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue(),
-                        returnCount.getOrDefault(entry.getKey(), 0),
-                        saleForDelivered.getOrDefault(entry.getKey(), 0.0),
-                        sumReturn.getOrDefault(entry.getKey(), 0.0),
-                        salesCommission.getOrDefault(entry.getKey(), 0.0),
-                        shipmentProcessing.getOrDefault(entry.getKey(), 0.0),
-                        logistic.getOrDefault(entry.getKey(), 0.0),
-                        lastMile.getOrDefault(entry.getKey(), 0.0),
-                        acquiring.getOrDefault(entry.getKey(), 0.0),
-                        returnProcessing.getOrDefault(entry.getKey(), 0.0),
-                        returnDelivery.getOrDefault(entry.getKey(), 0.0), //
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
+                        entry.getValue(), // 0
+                        returnCount.getOrDefault(entry.getKey(), 0), // 1
+                        saleForDelivered.getOrDefault(entry.getKey(), 0.0), // 2
+                        sumReturn.getOrDefault(entry.getKey(), 0.0), // 3
+                        salesCommission.getOrDefault(entry.getKey(), 0.0), //4
+                        shipmentProcessing.getOrDefault(entry.getKey(), 0.0), // 5
+                        logistic.getOrDefault(entry.getKey(), 0.0), // 6
+                        lastMile.getOrDefault(entry.getKey(), 0.0), // 7
+                        acquiring.getOrDefault(entry.getKey(), 0.0), //8
+                        returnProcessing.getOrDefault(entry.getKey(), 0.0), //9
+                        returnDelivery.getOrDefault(entry.getKey(), 0.0), // 10
                         cashbackIndividualPoints.getOrDefault(entry.getKey(), 0.0), //11
                         stencilProduct.getOrDefault(entry.getKey(), 0.0), //12
                         installments.getOrDefault(entry.getKey(), 0.0) //13

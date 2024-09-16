@@ -5,6 +5,7 @@ import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
 import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
+import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
 import com.example.consul.services.OZON_Service;
 import org.antlr.v4.runtime.misc.Pair;
@@ -21,6 +22,52 @@ import java.util.Objects;
 public class OZONApiTest {
     @Autowired
     private OZON_Service ozonService;
+
+    @Autowired
+    private OZON_Api api;
+
+    @Test
+    public void skuTest(){
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
+        String[] offerIds = ozonService.getListOfferIdByDate(6, 2024);
+        OZON_SkuProductsReport report = ozonService.getProductInfoByOfferId(offerIds);
+//        System.out.println(report);
+
+        int count = 0;
+        for (OZON_SkuProductsReport.OZON_SkuProduct product :report.getResult().getItems()){
+            if(!product.getSources().isEmpty()){
+                System.out.println(product.getOffer_id());
+            }
+        }
+    }
+
+    @Test
+    public void shipmentProcessing(){
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
+        Pair<String, String> pairDate = ozonService.getDate(2024, 5);
+//        System.out.println(pairDate);
+        List<String> oper = new ArrayList<>();
+//        oper.add("OperationReturnGoodsFBSofRMS");
+        OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
+        List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
+        double sum = 0;
+        int count = 1;
+        for (OZON_TransactionReport.Operation operation : operations) {
+            for (OZON_TransactionReport.Service service : operation.getServices()) {
+
+                if (
+//                        Objects.equals(service.getName(), "MarketplaceServiceItemDropoffFF") ||
+                        Objects.equals(service.getName(), "MarketplaceServiceItemDropoffPVZ") ||
+                         Objects.equals(service.getName(), "MarketplaceServiceItemDropoffSC")
+                ) {
+                    System.out.println(count + " : " + operation.getServices().size());
+                    count++;
+                    sum += service.getPrice();
+                }
+            }
+        }
+        System.out.println(sum);
+    }
 
     @Test
     public void generateAlica_2() throws IOException {

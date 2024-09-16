@@ -1,6 +1,7 @@
 package com.example.consul.dto.OZON;
 
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,11 +10,13 @@ import java.util.stream.Collectors;
  * https://api-seller.ozon.ru/v2/product/info
  */
 @Data
+@Getter
 public class OZON_SkuProductsReport {
     private Result result;
 
     @Data
-    private static class Result {
+    @Getter
+    public static class Result {
         private List<OZON_SkuProduct> items;
     }
 
@@ -26,6 +29,7 @@ public class OZON_SkuProductsReport {
     }
 
     @Data
+    @Getter
     public static class OZON_SkuProduct {
         private Long id;
         private String name;
@@ -69,7 +73,7 @@ public class OZON_SkuProductsReport {
             private Boolean is_enabled;
             private Long sku;
             private String source;
-        }
+        } 
 
         @Data
         private static class Stocks {
