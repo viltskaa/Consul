@@ -12,26 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 public class YANDEX_ReturnedGoods {
-    private long orderNumber;
-    private String orderType;
-    private String productName;
-    private String warehouseSku;
     private String productSku;
-    private int quantityDelivered;
     private int quantityReturned;
-    private String orderStatus;
-    private LocalDate orderDate;
-    private LocalDate shipmentDate;
-    private LocalDate deliveryDate;
-    private LocalDate returnReceiptDate;
-    private String paymentMethod;
-    private String vatRate;
-    private double priceWithoutDiscount;
-    private double marketplaceDiscount;
-    private double sberThankYouBonusDiscount;
-    private double yandexPlusPointsDiscount;
     private double priceWithDiscount;
-    private double totalReturnedPriceWithoutDiscount;
-    private double totalDiscountForReturnedItems;
-    private double totalReturnedPriceWithDiscount;
 }

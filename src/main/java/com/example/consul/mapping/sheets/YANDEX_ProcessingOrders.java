@@ -13,21 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 public class YANDEX_ProcessingOrders {
-    private long businessAccountId;
-    private String workModel;
-    private long storeId;
-    private String storeName;
-    private String inn;
-    private String placementContractNumber;
-    private String promotionContractNumber;
     private long orderNumber;
-    private String returnShippingNumber;
-    private String shippingPlace;
-    private String service;
     private double tariff;
-    private double minAmount;
-    private LocalDateTime serviceDateTime;
-    private LocalDate actFormationDate;
-    private double serviceCost;
-    private String type;
 }
