@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,6 +63,14 @@ public class OZON_TransactionReport {
 
         public Boolean hasSkus(List<Long> skus) {
             return getItems().stream().anyMatch(x -> skus.contains(x.getSku()));
+        }
+
+        public Boolean hasSkus(Long sku) {
+            return getItems().stream().anyMatch(x -> Objects.equals(sku, x.getSku()));
+        }
+
+        public boolean hasPostingNumber() {
+            return getPosting().getPosting_number() != null;
         }
 
         public static OZON_TransactionReport.Operation of(OZON_TransactionReport.Operation operation) {

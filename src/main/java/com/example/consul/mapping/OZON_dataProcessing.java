@@ -205,46 +205,68 @@ public class OZON_dataProcessing {
      * @return Map [offer_id, (последняя для этого товара)]
      */
     static public Map<String, Double> sumLastMile(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
-//        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
-//                .stream()
-//                .filter(x -> x.getPosting() != null)
-//                .map(OZON_TransactionReport.Operation::of)
-//                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
-//
-//        Map<String, Double> result = offerSku.entrySet().stream()
-//                .collect(Collectors.toMap(
-//                        Map.Entry::getKey,
-//                        entry -> groupByPostingNumber.entrySet().stream()
-//                                .filter(groupEntry -> groupEntry.getValue().stream()
-//                                        .anyMatch(op -> op.hasSkus(entry.getValue())))
-//                                .flatMap(groupEntry -> groupEntry.getValue().stream())
-//                                .filter(s -> s.getServices() != null && s.getServices().stream()
-//                                        .anyMatch(x -> "MarketplaceServiceItemDelivToCustomer".equals(x.getName())))
-//                                .mapToDouble(x -> x.getServices().stream()
-//                                        .filter(y -> "MarketplaceServiceItemDelivToCustomer".equals(y.getName()))
-//                                        .mapToDouble(OZON_TransactionReport.Service::getPrice)
-//                                        .sum())
-//                                .sum()
-//                ));
-//        result.put("none", operations.stream()
-//                .filter(op -> op.getItems().isEmpty())
-////                .filter(op -> op.getPriceByServiceName("MarketplaceRedistributionOfAcquiringOperation") != null)
-//                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());
-        return new HashMap<>();
+        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
+                .stream()
+                .filter(x -> x.getPosting() != null)
+                .map(OZON_TransactionReport.Operation::of)
+                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
+
+        Map<String, Double> result = offerSku.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> groupByPostingNumber
+                                .entrySet()
+                                .stream()
+                                .filter(groupEntry -> groupEntry.getValue()
+                                        .stream()
+                                        .anyMatch(op -> op.hasSkus(entry.getValue())))
+                                .flatMap(groupEntry -> groupEntry.getValue().stream())
+                                .filter(s -> s.getServices() != null && s.getServices().stream()
+                                        .anyMatch(x -> "MarketplaceServiceItemDelivToCustomer".equals(x.getName())))
+                                .mapToDouble(x -> x.getServices().stream()
+                                        .filter(y -> "MarketplaceServiceItemDelivToCustomer".equals(y.getName()))
+                                        .mapToDouble(OZON_TransactionReport.Service::getPrice)
+                                        .sum())
+                                .sum()
+                ));
+
+/*        result.put("none", operations.stream()
+                .filter(operation -> operation.getItems().isEmpty())
+                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());*/
+
+        return result;
     }
 
     static public Map<String, Double> sumLastMile_(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
+                .stream()
+                .filter(x -> x.getPosting() != null)
+                .map(OZON_TransactionReport.Operation::of)
+                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
+
+//        groupByPostingNumber.forEach((k, v) -> System.out.println(k + " : " + v.size()));
+
         Map<Long, Double> collect = operations.stream()
-                .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDelivToCustomer"))
+                .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDelivToCustomer")
+                        && operation.hasPostingNumber() &&
+                        (operation.getOperation_type().equals("OperationAgentDeliveredToCustomer")
+                        || operation.getOperation_type().equals("OperationAgentStornoDeliveredToCustomer")
+//                        || operation.getOperation_type().equals("OperationReturnGoodsFBSofRMS")
+                        ))
                 .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer"))));
 
-        return offerSku.entrySet().stream()
+        Map<String, Double> res = offerSku.entrySet().stream()
                 .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,               // Используем offer_id как ключ
                         entry -> collect.get(entry.getValue()) // Используем значение из collect
                 ));
+        res.put("none", operations.stream()
+                .filter(operation -> operation.getItems().isEmpty())
+                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());
+        return res;
     }
 
     /**

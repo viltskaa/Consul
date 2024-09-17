@@ -108,8 +108,10 @@ public class OZONApiTest {
 
     @Test
     public void shipmentProcessing() {
-//        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752");
-        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+//        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
 
         Pair<String, String> pairDate = ozonService.getDate(2024, 6);
         List<String> oper = new ArrayList<>();
@@ -136,7 +138,7 @@ public class OZONApiTest {
         Double res = operations.stream()
 //                .filter(op -> op.getItems().isEmpty())
 //                .filter(op -> op.getPriceByServiceName("MarketplaceRedistributionOfAcquiringOperation") != null)
-                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceRedistributionOfAcquiringOperation")).sum();
+                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum();
 
 //        System.out.println(sum);
         System.out.println(res);

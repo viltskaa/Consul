@@ -160,6 +160,10 @@ public class OZON_Service {
                 .supplyAsync(() -> getListOfferIdByDate(month, year))
                 .thenApplyAsync(this::getProductInfoByOfferId);
 
+//        CompletableFuture<OZON_SkuProductsReport> ozonSkuProductsReportCompletableFuture = CompletableFuture
+//                .supplyAsync(() -> OZON_dataProcessing.getSkus(ozonTransactionReport.getResult().getOperations()))
+//                .thenApplyAsync(this::getProductInfoByOfferId);
+
         CompletableFuture<OZON_TransactionReport> ozonTransactionReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getTransactionReport(
                         pairDate.a,
