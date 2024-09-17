@@ -117,7 +117,7 @@ public class OZON_TransactionReport {
          * Вернет либо sku, либо 0L (не выкинет ошибку)
          * @return
          */
-        public Long getSku2(){
+        public Long getSkuNoNull(){
             if(!items.isEmpty())
                 return items.get(0).getSku();
             return 0L;

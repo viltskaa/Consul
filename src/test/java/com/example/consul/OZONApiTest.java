@@ -35,14 +35,40 @@ public class OZONApiTest {
         Pair<String, String> pairDate = ozonService.getDate(2024, 6);
         List<String> oper = new ArrayList<>();
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
+
+        // фильтр по нужной операции
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations().stream()
                 .filter(operation -> operation.checkServiceName("MarketplaceRedistributionOfAcquiringOperation")).toList();
 
-        Map<Long, Double> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku2,
+        Map<Long, Double> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
                 Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceRedistributionOfAcquiringOperation"))));
 
         double sum = collect.values().stream().mapToDouble(Double::doubleValue).sum();
         System.out.println(sum);
+
+        List<OZON_SkuProductsReport.OZON_SkuProduct> prodInfo = ozonService.getProductInfoBySku(
+                collect.keySet().stream().toList()
+        ).getResult().getItems();
+
+       Map<String, Long> offerSku = prodInfo.stream().collect(Collectors.toMap(
+               OZON_SkuProductsReport.OZON_SkuProduct::getOffer_id,
+               OZON_SkuProductsReport.OZON_SkuProduct::getSku
+       ));
+
+        Map<String, Double> res = collect.entrySet().stream().collect(Collectors.toMap(
+                key -> prodInfo.stream().filter(el -> el.getSku().equals(key.getKey())).findFirst().get().getOffer_id(),
+                Map.Entry::getValue
+        ));
+
+        Map<String, Double> result = offerSku.entrySet().stream()
+                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,               // Используем offer_id как ключ
+                        entry -> collect.get(entry.getValue()) // Используем значение из collect
+                ));
+
+
+        result.forEach((k,v) -> System.out.println(k + " : " + v));
     }
 
     @Test
@@ -75,7 +101,7 @@ public class OZONApiTest {
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
 
-        Map<Long, Long> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku2, Collectors.counting()));
+        Map<Long, Long> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull, Collectors.counting()));
         collect.forEach((k, v) -> System.out.println(k));
     }
 

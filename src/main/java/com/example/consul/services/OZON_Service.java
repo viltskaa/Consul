@@ -292,6 +292,14 @@ public class OZON_Service {
         }
     }
 
+    public OZON_SkuProductsReport getProductInfoBySku(@NotNull List<Long> sku) {
+        try{
+            return ozonApi.getProductInfo(sku);
+        }catch (NullPointerException exception){
+            return null;
+        }
+    }
+
     public String[] getListOfferIdByDate(@NotNull Integer month,
                                          @NotNull Integer year) {
         OZON_DetailReport detailReport = getDetailReport(month, year);

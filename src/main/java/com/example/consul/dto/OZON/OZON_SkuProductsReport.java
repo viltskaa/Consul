@@ -28,6 +28,13 @@ public class OZON_SkuProductsReport {
                                 .collect(Collectors.toList())));
     }
 
+    public Map<String, Long> getListOfferSku() {
+        return result.getItems().stream().collect(Collectors.toMap(
+                OZON_SkuProductsReport.OZON_SkuProduct::getOffer_id,
+                OZON_SkuProductsReport.OZON_SkuProduct::getSku
+        ));
+    }
+
 
     @Data
     @Getter
