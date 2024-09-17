@@ -35,9 +35,9 @@ public class OZON_DataCreator {
 
     private Map<String, Double> getDataForMapTransaction(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
                                                          @NotNull OZON_TransactionReport ozonTransactionReport,
-                                                         @NotNull BiFunction<Map<String, List<Long>>, List<OZON_TransactionReport.Operation>, Map<String, Double>> dataFunction) {
+                                                         @NotNull BiFunction<Map<String, Long>, List<OZON_TransactionReport.Operation>, Map<String, Double>> dataFunction) {
         return dataFunction.apply(
-                ozonSkuProductsReport.getSkuListByOfferId(),
+                ozonSkuProductsReport.getListOfferSku(),
                 ozonTransactionReport.getResult().getOperations()
         );
     }

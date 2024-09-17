@@ -12,7 +12,7 @@ public class OZON_TransactionReport {
     private Result result;
 
     @Data
-    public static class Result{
+    public static class Result {
         private List<Operation> operations;
         @SerializedName("page_count")
         private Long pageCount;
@@ -21,7 +21,7 @@ public class OZON_TransactionReport {
     }
 
     @Data
-    public static class Posting{
+    public static class Posting {
         private String delivery_schema;
         private String order_date;
         private String posting_number;
@@ -29,19 +29,19 @@ public class OZON_TransactionReport {
     }
 
     @Data
-    public static class Item{
+    public static class Item {
         private String name;
         private Long sku;
     }
 
     @Data
-    public static class Service{
+    public static class Service {
         private String name;
         private Double price;
     }
 
     @Data
-    public static class Operation{
+    public static class Operation {
         private Long operation_id;
         private String operation_type;
         private String operation_date;
@@ -108,44 +108,44 @@ public class OZON_TransactionReport {
             this.services = services;
         }
 
-        public Long getSku(){
-                return items.get(0).getSku();
+        public Long getSku() {
+            return items.get(0).getSku();
         }
-
 
         /**
          * Вернет либо sku, либо 0L (не выкинет ошибку)
+         *
          * @return
          */
-        public Long getSkuNoNull(){
-            if(!items.isEmpty())
+        public Long getSkuNoNull() {
+            if (!items.isEmpty())
                 return items.get(0).getSku();
             return 0L;
         }
 
-        public Double getPrice(){
+        public Double getPrice() {
             return services.get(0).getPrice();
         }
 
-        public List<String> getAllServicesName(){
+        public List<String> getAllServicesName() {
             return services.stream().flatMap(service -> Stream.of(service.getName())).collect(Collectors.toList());
         }
 
-        public Double getPriceByServiceName(String serviceName){
+        public Double getPriceByServiceName(String serviceName) {
             if (!checkServiceName(serviceName))
                 return null;
             return services.stream().filter(service -> service.getName().equals(serviceName))
                     .findFirst().get().getPrice();
         }
 
-        public double getPriceByServiceNameNoNull(String serviceName){
+        public double getPriceByServiceNameNoNull(String serviceName) {
             if (!checkServiceName(serviceName))
                 return 0;
             return services.stream().filter(service -> service.getName().equals(serviceName))
                     .findFirst().get().getPrice();
         }
 
-        public boolean checkServiceName(String serviceName){
+        public boolean checkServiceName(String serviceName) {
             return getAllServicesName().contains(serviceName);
         }
     }

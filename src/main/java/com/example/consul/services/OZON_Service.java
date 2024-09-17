@@ -113,11 +113,13 @@ public class OZON_Service {
                 pairDate.b
         );
 
+
+        List<Long> skus = OZON_dataProcessing.getSkus(ozonTransactionReport.getResult().getOperations());
         String[] offerIds = getListOfferIdByDate(month, year);
 
         return ozonExcelCreator.mergeMapsToTableRows(
                 getDetailReport(month, year),
-                getProductInfoByOfferId(offerIds),
+                getProductInfoBySku(skus),
                 ozonTransactionReport,
                 scheduledGetPerformanceReport(performanceClientId, performanceClientSecret, year, month),
                 ozonFinanceReport
@@ -125,12 +127,12 @@ public class OZON_Service {
     }
 
     public Pair<String, String> getDate(@NotNull Integer year,
-                                        @NotNull Integer month){
+                                        @NotNull Integer month) {
         return ozonExcelCreator.getStartAndEndDateToUtc(month, year);
     }
 
     public void setHeaders(@NotNull String apiKey,
-                           @NotNull String clientId){
+                           @NotNull String clientId) {
         ozonApi.setHeaders(apiKey, clientId);
     }
 
@@ -293,11 +295,17 @@ public class OZON_Service {
     }
 
     public OZON_SkuProductsReport getProductInfoBySku(@NotNull List<Long> sku) {
-        try{
+        try {
             return ozonApi.getProductInfo(sku);
-        }catch (NullPointerException exception){
+        } catch (NullPointerException exception) {
             return null;
         }
+    }
+
+    public Map<String, Long> getOfferSku(@NotNull List<OZON_TransactionReport.Operation> operations) {
+        List<Long> skus = OZON_dataProcessing.getSkus(operations);
+        getProductInfoBySku(skus);
+        return OZON_dataProcessing.getOfferSku(getProductInfoBySku(skus).getResult().getItems());
     }
 
     public String[] getListOfferIdByDate(@NotNull Integer month,
