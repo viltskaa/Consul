@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,8 @@ public class Clustering {
 
     public <T extends TableRow> Map<String, List<T>> of(@NotNull List<T> data) {
         try {
+            ArrayList<T> dataCopy = new ArrayList<>(data);
+
             String json = new String(Files.readAllBytes(sortingJson.getFile().toPath()));
 
             List<SortRules> sortingRules = List.of(new Gson()
@@ -31,7 +34,7 @@ public class Clustering {
 
             Map<String, List<T>> output = new HashMap<>();
             for (SortRules rule: sortingRules) {
-                List<T> selected = data.stream()
+                List<T> selected = dataCopy.stream()
                         .filter(x -> {
                             String value = x.getArticle();
                             return rule.value.stream().anyMatch(
@@ -40,9 +43,11 @@ public class Clustering {
                         })
                         .toList();
 
-                data.removeAll(selected);
+                dataCopy.removeAll(selected);
                 output.put(rule.key, selected);
             }
+
+            output.put("none", dataCopy);
 
             return output;
         } catch (IOException | UnsupportedOperationException exception) {

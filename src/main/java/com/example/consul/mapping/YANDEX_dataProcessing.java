@@ -2,18 +2,10 @@ package com.example.consul.mapping;
 
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.mapping.sheets.*;
-import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,307 +13,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.example.consul.mapping.excelProcessing.DataFromExcel.*;
+import static com.example.consul.mapping.excelProcessing.FormatExcel.ungroupCells;
+
 public class YANDEX_dataProcessing {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-    private static final DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    // Разгруппировка строк и запись названия заголовка ниже (если строка ниже пустая)
-    private static void ungroupCells(Sheet sheet) {
-        for (int i = sheet.getNumMergedRegions() - 1; i >= 0; i--) {
-            CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
-
-            int mergedRow = mergedRegion.getFirstRow();
-            int mergedColumn = mergedRegion.getFirstColumn();
-
-            Row row = sheet.getRow(mergedRow);
-            Cell mergedCell = row.getCell(mergedColumn);
-
-            if (mergedCell != null) {
-                String cellValue = mergedCell.getStringCellValue();
-                Row nextRow = sheet.getRow(mergedRow + 1);
-                if (nextRow != null) {
-                    Cell nextCell = nextRow.getCell(mergedColumn);
-                    if (nextCell != null && nextCell.getCellType() == CellType.BLANK) {
-                        nextCell.setCellValue(cellValue);
-                        mergedCell.setCellValue("");
-                    }
-                }
-
-                sheet.removeMergedRegion(i);
-            }
-        }
-    }
-
-    // Если на листе есть автофильтр, вернуть строку, где содержится автофильтр (нахождение расположения заголовков)
-    private static Integer findAutofilterRow(Sheet sheet) {
-        if (sheet instanceof XSSFSheet xssfSheet) {
-            if (xssfSheet.getCTWorksheet().getAutoFilter() != null) {
-                AreaReference ref = new AreaReference(xssfSheet.getCTWorksheet().getAutoFilter().getRef(), SpreadsheetVersion.EXCEL2007);
-                CellReference firstCell = ref.getFirstCell();
-                return firstCell.getRow();
-            }
-        }
-        return null;
-    }
-
-    private static List<YANDEX_DeliveredGoods> getDeliveredGoods(Sheet sheet) {
-        List<YANDEX_DeliveredGoods> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-            Row row = sheet.getRow(j);
-            boolean hasWarehouseSku = row.getCell(4).getCellType() == CellType.STRING;
-            YANDEX_DeliveredGoods data;
-
-            if (hasWarehouseSku) {
-                data = YANDEX_DeliveredGoods.builder()
-                        .productSku(row.getCell(3).getStringCellValue())
-                        .quantityDelivered((int) row.getCell(6).getNumericCellValue())
-                        .totalDiscount(row.getCell(18).getNumericCellValue())
-                        .totalPriceWithDiscount(row.getCell(19).getNumericCellValue())
-                        .build();
-            } else {
-                YANDEX_DeliveredGoods.YANDEX_DeliveredGoodsBuilder dataBuilder = YANDEX_DeliveredGoods.builder()
-                        .productSku(row.getCell(3).getStringCellValue())
-                        .quantityDelivered((int) row.getCell(5).getNumericCellValue())
-                        .totalDiscount(row.getCell(17).getNumericCellValue())
-                        .totalPriceWithDiscount(row.getCell(18).getNumericCellValue());
-                data = dataBuilder.build();
-            }
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    private static List<YANDEX_GoodsInDelivery> getGoodsInDelivery(Sheet sheet) {
-        List<YANDEX_GoodsInDelivery> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-
-        for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-            Row row = sheet.getRow(j);
-            boolean hasWarehouseSku = row.getCell(4).getCellType() == CellType.STRING;
-            YANDEX_GoodsInDelivery data;
-
-            if (hasWarehouseSku) {
-                data = YANDEX_GoodsInDelivery.builder()
-                        .orderNumber((long) row.getCell(0).getNumericCellValue())
-                        .productSku(row.getCell(3).getStringCellValue())
-                        .build();
-            } else {
-                YANDEX_GoodsInDelivery.YANDEX_GoodsInDeliveryBuilder dataBuilder = YANDEX_GoodsInDelivery.builder()
-                        .orderNumber((long) row.getCell(0).getNumericCellValue())
-                        .productSku(row.getCell(3).getStringCellValue());
-                data = dataBuilder.build();
-            }
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    private static List<YANDEX_ReturnedGoods> getReturnedGoods(Sheet sheet) {
-        List<YANDEX_ReturnedGoods> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getLastRowNum() - 1; j++) {
-            Row row = sheet.getRow(j);
-            boolean hasWarehouseSku = row.getCell(4).getCellType() == CellType.STRING;
-            YANDEX_ReturnedGoods data;
-
-            if (hasWarehouseSku) {
-                data = YANDEX_ReturnedGoods.builder()
-                        .productSku(row.getCell(3).getStringCellValue())
-                        .quantityReturned((int) row.getCell(6).getNumericCellValue())
-                        .priceWithDiscount(row.getCell(17).getNumericCellValue())
-                        .build();
-            } else {
-                data = YANDEX_ReturnedGoods.builder()
-                        .productSku(row.getCell(3).getStringCellValue())
-                        .quantityReturned((int) row.getCell(5).getNumericCellValue())
-                        .priceWithDiscount(row.getCell(16).getNumericCellValue())
-                        .build();
-            }
-            list.add(data);
-        }
-        return list;
-    }
-
-    private static List<YANDEX_Shelves> getShelves(Sheet sheet) {
-        List<YANDEX_Shelves> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getLastRowNum(); j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_Shelves data = YANDEX_Shelves.builder()
-                    .serviceCost(row.getCell(17).getNumericCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    private static List<YANDEX_BoostSales> getBoostSales(Sheet sheet) {
-        List<YANDEX_BoostSales> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getLastRowNum(); j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_BoostSales data = YANDEX_BoostSales.builder()
-                    .sku(row.getCell(8).getStringCellValue())
-                    .postpayment(row.getCell(16) != null ? row.getCell(16).getNumericCellValue() : 0.0)
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    private static List<YANDEX_LoyaltyProgram> getLoyaltyProgram(Sheet sheet) {
-        List<YANDEX_LoyaltyProgram> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getLastRowNum(); j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_LoyaltyProgram data = YANDEX_LoyaltyProgram.builder()
-                    .sku(row.getCell(8).getStringCellValue())
-                    .serviceCost(row.getCell(19).getNumericCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    private static List<YANDEX_ShowPlacement> getShowPlacement(Sheet sheet) {
-        List<YANDEX_ShowPlacement> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 2; j <= sheet.getLastRowNum(); j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_ShowPlacement data = YANDEX_ShowPlacement.builder()
-                    .sku(row.getCell(9).getStringCellValue())
-                    .serviceCost(row.getCell(46).getNumericCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    private static List<YANDEX_DeliveryCustomer> getDeliveryCustomer(Sheet sheet) {
-        List<YANDEX_DeliveryCustomer> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getPhysicalNumberOfRows()-1; j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_DeliveryCustomer data = YANDEX_DeliveryCustomer.builder()
-                    .orderNumber((long) row.getCell(7).getNumericCellValue())
-                    .sku(row.getCell(8).getStringCellValue())
-                    .serviceCost(row.getCell(33).getNumericCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    public static List<YANDEX_AcceptingPayment> getAcceptingPayment(Sheet sheet) {
-        List<YANDEX_AcceptingPayment> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getPhysicalNumberOfRows()-1; j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_AcceptingPayment data = YANDEX_AcceptingPayment.builder()
-                    .orderNumber((long) row.getCell(7).getNumericCellValue())
-                    .sku(row.getCell(8).getStringCellValue())
-                    .serviceCost(row.getCell(15).getNumericCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    public static List<YANDEX_TransferPayment> getTransferPayment(Sheet sheet) {
-        List<YANDEX_TransferPayment> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getLastRowNum(); j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_TransferPayment data = YANDEX_TransferPayment.builder()
-                    .sku(row.getCell(8).getStringCellValue())
-                    .serviceCost(row.getCell(14).getNumericCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    public static List<YANDEX_ProcessingOrders> getProcessingOrders(Sheet sheet) {
-        List<YANDEX_ProcessingOrders> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getPhysicalNumberOfRows()-1; j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_ProcessingOrders transferPayment = YANDEX_ProcessingOrders.builder()
-                    .orderNumber((long) row.getCell(7).getNumericCellValue())
-                    .tariff(row.getCell(11).getNumericCellValue())
-                    .build();
-
-            list.add(transferPayment);
-        }
-
-        return list;
-    }
-
-    public static List<YANDEX_TransactionsOrdersAndProducts> getTransactionsOnOrdersAndProducts(Sheet sheet) {
-        List<YANDEX_TransactionsOrdersAndProducts> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getPhysicalNumberOfRows()-1; j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_TransactionsOrdersAndProducts data = YANDEX_TransactionsOrdersAndProducts.builder()
-                    .orderNumber((long) row.getCell(7).getNumericCellValue())
-                    .sku(row.getCell(11).getStringCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
-    public static List<YANDEX_StorageReturns> getStorageReturns(Sheet sheet) {
-        List<YANDEX_StorageReturns> list = new ArrayList<>();
-        int headerRow = findAutofilterRow(sheet);
-
-        for (int j = headerRow + 1; j <= sheet.getPhysicalNumberOfRows()-1; j++) {
-            Row row = sheet.getRow(j);
-            YANDEX_StorageReturns data = YANDEX_StorageReturns.builder()
-                    .orderNumber((long) row.getCell(8).getNumericCellValue())
-                    .serviceCost(row.getCell(15).getNumericCellValue())
-                    .build();
-
-            list.add(data);
-        }
-
-        return list;
-    }
-
     public static List<YANDEX_TableRow> getDataFromInputStream(InputStream inputStreamService, InputStream inputStreamRealization, InputStream inputStreamOrders) throws IOException {
         Workbook wbService = WorkbookFactory.create(inputStreamService);
 
@@ -350,6 +45,8 @@ public class YANDEX_dataProcessing {
         final Sheet[] sheetOrders = {
                 wbOrders.getSheetAt(1)
         };
+
+        ungroupCells(sheetOrders[0]);
 
         CompletableFuture<Map<String, Double>> placingOnShowcaseCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
@@ -381,12 +78,11 @@ public class YANDEX_dataProcessing {
 
         CompletableFuture<Map<String, Double>> favorSortingCenterPaymentCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapSortingCenter(
-                        sheetService[3],
-                        sheetRealization[2],
-                        sheetService[5],
-                        sheetService[4],
-                        sheetOrders[0]
-                ));
+                    sheetService[3],
+                    sheetRealization[2],
+                    sheetService[5],
+                    sheetService[4],
+                    sheetOrders[0]));
 
         CompletableFuture<Map<String, Double>> storageReturnCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapStorageReturn(
@@ -402,9 +98,6 @@ public class YANDEX_dataProcessing {
 
         CompletableFuture<Map<String, Integer>> deliveredCountCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapDeliveryCount(sheetRealization[0]));
-
-//        CompletableFuture<Map<String, Double>> marketplaceDiscountCompletableFuture = CompletableFuture
-//                .supplyAsync(() -> getMapMarketplaceDiscount(sheetRealization[0]));
 
         CompletableFuture<Map<String, Integer>> returnCountCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getMapReturnCount(sheetRealization[1]));
@@ -422,7 +115,6 @@ public class YANDEX_dataProcessing {
         Map<String, Integer> deliveredCount = deliveredCountCompletableFuture.join();
         Map<String, Integer> returnCount = returnCountCompletableFuture.join();
         Map<String, Double> returnCost = returnCostCompletableFuture.join();
-//        Map<String, Double> marketplaceDiscount = marketplaceDiscountCompletableFuture.join();
         Map<String, Double> storageReturn = storageReturnCompletableFuture.join();
         Map<String, Double> shelves = shelvesCompletableFuture.join();
 
@@ -439,7 +131,6 @@ public class YANDEX_dataProcessing {
         allKeys.addAll(loyaltyProgram.keySet());
         allKeys.addAll(boostSales.keySet());
         allKeys.addAll(shelves.keySet());
-//        allKeys.addAll(marketplaceDiscount.keySet());
 
         Map<String, List<Object>> mergedMap = new HashMap<>();
 
@@ -457,8 +148,8 @@ public class YANDEX_dataProcessing {
                     0.0, // Placeholder for "Расходы на рекламные кампании"
                     loyaltyProgram.getOrDefault(key, 0.0),
                     boostSales.getOrDefault(key, 0.0),
-                    shelves.getOrDefault(key, 0.0)
-//                    marketplaceDiscount.getOrDefault(key, 0.0)
+                    shelves.getOrDefault(key, 0.0),
+                    0.0 // Placeholder for "Услуги продвижения"
             ));
         }
 
@@ -478,8 +169,8 @@ public class YANDEX_dataProcessing {
                     (Double) values.get(9), // adCampaignCost
                     (Double) values.get(10), // loyaltyProgram
                     (Double) values.get(11), // boostSales
-                    (Double) values.get(12) //shelves
-//                    (Double) values.get(12)  // promotionFavor
+                    (Double) values.get(12), //shelves
+                    (Double) values.get(13)  // promotionFavor
             );
         }).toList();
     }
@@ -707,7 +398,7 @@ public class YANDEX_dataProcessing {
 
         return list.stream()
                 .collect(Collectors.groupingBy(YANDEX_BoostSales::getSku,
-                        Collectors.summingDouble(YANDEX_BoostSales::getPostpayment)));
+                        Collectors.summingDouble(YANDEX_BoostSales::getPostPayment)));
     }
 
     public static Double getSumShelves(Sheet sheet) {
