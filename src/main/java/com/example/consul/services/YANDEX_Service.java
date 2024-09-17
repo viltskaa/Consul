@@ -58,8 +58,8 @@ public class YANDEX_Service {
                         .fileName("report_yandex_" + month + "_" + year + ".xls")
                         .header(
                                 HeaderConfig.builder()
-                                        .title("yandex")
-                                        .description("NEW METHOD")
+                                        .title("Yandex")
+                                        .description("Бухгалтерский отчет за " + month + "." + year)
                                         .build()
                         )
                         .data(clusteredData.values().stream().toList())
