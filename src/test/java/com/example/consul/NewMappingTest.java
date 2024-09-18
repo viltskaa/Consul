@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @SpringBootTest
@@ -64,6 +65,45 @@ public class NewMappingTest {
     }
     //-43012.32
     // 732.7
+
+    @Test
+    public void testOneArticle(){
+        //        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+//        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
+
+        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
+        List<String> oper = new ArrayList<>();
+        OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
+
+        // получаем список операций
+        List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
+
+        double sum = 0;
+        for (OZON_TransactionReport.Operation operation : operations) {
+            // 731565806  MDF01R139E16 разница 336,89 (в нашу больше)
+            // 732108456  MDF02R139O16 сходится
+            //
+//            if(operation.getSkuNoNull() == 732108456L){
+                for (OZON_TransactionReport.Service service : operation.getServices()) {
+                    if (Objects.equals(service.getName(), "MarketplaceServiceItemDelivToCustomer")) {
+//                        System.out.println(operation.getOperation_type_name());
+//                        System.out.println(service.getPrice());
+//                        System.out.println(operation.getAllServicesName());
+//                        System.out.println();
+                        if(operation.getItems().isEmpty()) {
+                                                    System.out.println(operation.getOperation_type_name());
+//                        System.out.println(service.getPrice());
+                        System.out.println(operation.getAllServicesName());
+                            sum += service.getPrice();
+                        }
+                    }
+                }
+//            }
+        }
+        System.out.println(sum);
+    }
 
     @Test
     public void test(){
