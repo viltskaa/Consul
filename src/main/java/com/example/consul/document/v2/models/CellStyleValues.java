@@ -1,6 +1,5 @@
 package com.example.consul.document.v2.models;
 
-import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.jetbrains.annotations.NotNull;

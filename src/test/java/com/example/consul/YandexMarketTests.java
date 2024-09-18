@@ -1,15 +1,12 @@
 package com.example.consul;
 
-import com.example.consul.document.ExcelBuilder;
-import com.example.consul.document.configurations.ExcelConfig;
-import com.example.consul.document.configurations.HeaderConfig;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.mapping.YANDEX_dataProcessing;
 import com.example.consul.services.YANDEX_Service;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -186,6 +183,6 @@ class YandexMarketTests {
     public void generateExcel() throws IOException {
         List<YANDEX_TableRow> data = yandexService.getData("y0_AgAAAABzBvISAAu7EwAAAAED4UtWAAAtEQmj-qVJyrHP6B9zqdC6RMWeeA", 23761421L, 5731759L, 2024, 2);
 
-        ExcelBuilder.createDocument(ExcelConfig.<YANDEX_TableRow>builder().fileName("2024-02.xls").header(HeaderConfig.builder().title("TEST").description("NEW METHOD").build()).data(List.of(data)).sheetsName(List.of("1")).build());
+//        ExcelBuilder.createDocument(ExcelConfig.<YANDEX_TableRow>builder().fileName("2024-02.xls").header(HeaderConfig.builder().title("TEST").description("NEW METHOD").build()).data(List.of(data)).sheetsName(List.of("1")).build());
     }
 }

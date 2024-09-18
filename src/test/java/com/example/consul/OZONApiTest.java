@@ -231,14 +231,14 @@ public class OZONApiTest {
         for (OZON_TransactionReport.Operation operation : operations) {
 
 
-            if (!operation.getItems().isEmpty() && operation.getItems().getFirst().getSku() == 730591736L) {
-//                sum += operation.getAmount();
-                for (OZON_TransactionReport.Service service : operation.getServices()) {
-                    if (Objects.equals(service.getName(), "MarketplaceServicePremiumCashbackIndividualPoints")) {
-                        sum += service.getPrice();
-                    }
-                }
-            }
+//            if (!operation.getItems().isEmpty() && operation.getItems().getFirst().getSku() == 730591736L) {
+////                sum += operation.getAmount();
+//                for (OZON_TransactionReport.Service service : operation.getServices()) {
+//                    if (Objects.equals(service.getName(), "MarketplaceServicePremiumCashbackIndividualPoints")) {
+//                        sum += service.getPrice();
+//                    }
+//                }
+//            }
         }
         System.out.println(sum);
     }
