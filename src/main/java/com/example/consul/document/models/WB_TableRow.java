@@ -10,7 +10,7 @@ import lombok.*;
 @TotalCell(
         formula = "(retailSum - sumReturn + sumCompensationForLost + sumCompensationForReplace + sumCompensationForDefected" +
                 "- acquiringSale + acquiringReturn + additional - penalty " +
-                "- logistic - deduction) / (retailAmount - returnAmount)"
+                "- logistic - deduction) / IF(retailAmount - returnAmount=0,1,retailAmount - returnAmount)"
 )
 public class WB_TableRow extends TableRow {
     @CellUnit(name = "Кол-во")

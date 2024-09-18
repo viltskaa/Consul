@@ -11,8 +11,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @TotalCell(
         formula = "(accrued-returnCost-showcasePlacing-deliveryToConsumer" +
-                "-acceptAndTransferPayment-favorSorting-unredeemedStorage-adCampaignCost-loyaltyProgram-boostSales-shelves)" +
-                "/deliveryCount-returnCount"
+                "-acceptAndTransferPayment-favorSorting-unredeemedStorage-adCampaignCost-loyaltyProgram-boostSales-shelves+promotionFavor)" +
+                "/IF(deliveryCount-returnCount=0,1,deliveryCount-returnCount)"
 )
 public class YANDEX_TableRow extends TableRow {
     @CellUnit(name = "Кол-во отгружено (шт)")
@@ -41,8 +41,8 @@ public class YANDEX_TableRow extends TableRow {
     private Double boostSales;
     @CellUnit(name = "Полки")
     private Double shelves;
-//    @CellUnit(name = "Услуга продвижения (плюс нам)")
-//    private Double promotionFavor;
+    @CellUnit(name = "Услуга продвижения (плюс нам)")
+    private Double promotionFavor;
     @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
     private final Double total = 0.0;
 
@@ -60,7 +60,8 @@ public class YANDEX_TableRow extends TableRow {
                            Double adCampaignCost,
                            Double loyaltyProgram,
                            Double boostSales,
-                           Double shelves) {
+                           Double shelves,
+                           Double promotionFavor) {
         super(article);
         this.deliveryCount = deliveryCount;
         this.accrued = accrued;
@@ -75,6 +76,6 @@ public class YANDEX_TableRow extends TableRow {
         this.loyaltyProgram = loyaltyProgram;
         this.boostSales = boostSales;
         this.shelves = shelves;
-//        this.promotionFavor = promotionFavor;
+        this.promotionFavor = promotionFavor;
     }
 }

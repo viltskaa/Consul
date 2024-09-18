@@ -11,7 +11,7 @@ import lombok.*;
         formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +
                 "-logistic-lastMile-acquiring-installment-returnProcessing-returnDelivery" +
                 "-promotion-cashbackIndividualPoints-compensation-searchPromotion-stencilProduct-ozonPremium" +
-                "-crossDockingDelivery-claimsAccruals-other)/(delivered-returned)-2.47"
+                "-crossDockingDelivery-claimsAccruals-other)/IF(delivered-returned=0,1,delivered-returned)-2.47"
 )
 public class OZON_TableRow extends TableRow {
     @CellUnit(name = "Доставлено")
