@@ -17,23 +17,23 @@ import java.util.Map;
 
 @Component
 public class Clustering {
-    @Value("classpath:sorting.json")
-    Resource sortingJson;
+    @Value("classpath:bases.json")
+    private Resource sortingJson;
 
     public <T extends TableRow> Map<String, List<T>> of(@NotNull List<T> data) {
+        return of(data, "null");
+    }
+
+    public <T extends TableRow> Map<String, List<T>> of(@NotNull List<T> data, @NotNull String defaultKey) {
         try {
             ArrayList<T> dataCopy = new ArrayList<>(data);
 
             String json = new String(Files.readAllBytes(sortingJson.getFile().toPath()));
 
-            List<SortRules> sortingRules = List.of(new Gson()
-                    .fromJson(
-                            json.trim(),
-                            SortRules[].class
-                    ));
+            List<SortRules> sortingRules = List.of(new Gson().fromJson(json.trim(), SortRules[].class));
 
             Map<String, List<T>> output = new HashMap<>();
-            for (SortRules rule: sortingRules) {
+            for (SortRules rule : sortingRules) {
                 List<T> selected = dataCopy.stream()
                         .filter(x -> {
                             String value = x.getArticle();
@@ -47,12 +47,12 @@ public class Clustering {
                 output.put(rule.key, selected);
             }
 
-            output.put("none", dataCopy);
+            output.put(defaultKey, dataCopy);
 
             return output;
         } catch (IOException | UnsupportedOperationException exception) {
             Map<String, List<T>> defaulted = new HashMap<>();
-            defaulted.put("base", data);
+            defaulted.put(defaultKey, data);
             return defaulted;
         }
     }

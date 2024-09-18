@@ -47,11 +47,13 @@ public class WB_Service {
         this.clustering = clustering;
     }
 
-    public ReportFile createReport(@NotNull String apiKey,
-                                   @NotNull Integer year,
-                                   @NotNull Integer month) {
+    public ReportFile createReport(
+            @NotNull String apiKey,
+            @NotNull Integer year,
+            @NotNull Integer month
+    ) {
         List<WB_TableRow> data = getData(apiKey, year, month);
-        Map<String, List<WB_TableRow>> clusteredData = clustering.of(data);
+        Map<String, List<WB_TableRow>> clusteredData = clustering.of(data, "Нераспределенные");
 
         return ExcelBuilderV2.<WB_TableRow>builder()
                 .setFilename("report_wb.xlsx")
@@ -72,10 +74,12 @@ public class WB_Service {
                 .createDocument();
     }
 
-    public ReportFile createReport(@NotNull String apiKey,
-                                   @NotNull Integer year,
-                                   @NotNull Integer month,
-                                   @NotNull Integer weekNumber) {
+    public ReportFile createReport(
+            @NotNull String apiKey,
+            @NotNull Integer year,
+            @NotNull Integer month,
+            @NotNull Integer weekNumber
+    ) {
         List<WB_TableRow> data = getData(
                 apiKey,
                 year,
@@ -98,8 +102,7 @@ public class WB_Service {
         );
     }
 
-    public ReportFile createReport(@NotNull String apiKey,
-                                   @NotNull String day) {
+    public ReportFile createReport(@NotNull String apiKey, @NotNull String day) {
         List<WB_SaleRow> data = getData(
                 apiKey,
                 day
@@ -120,6 +123,7 @@ public class WB_Service {
         );
     }
 
+    // @todo move to date utils, create class Week, Month
     private Pair<String, String> getDateFrom(@NotNull Integer year, @NotNull Integer month) {
         LocalDate date = LocalDate.of(year, month, 1);
 
@@ -138,9 +142,11 @@ public class WB_Service {
         return month.equals(1);
     }
 
-    private Pair<String, String> findWeekRange(@NotNull Integer year,
-                                               @NotNull Integer month,
-                                               @NotNull Integer weekNumber) {
+    private Pair<String, String> findWeekRange(
+            @NotNull Integer year,
+            @NotNull Integer month,
+            @NotNull Integer weekNumber
+    ) {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate firstMonday = yearMonth.atDay(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
 
@@ -150,9 +156,11 @@ public class WB_Service {
         return new Pair<>(startOfWeek.toString(), endOfWeek.toString());
     }
 
-    public List<WB_TableRow> getData(@NotNull String apiKey,
-                                     @NotNull Integer year,
-                                     @NotNull Integer month) {
+    public List<WB_TableRow> getData(
+            @NotNull String apiKey,
+            @NotNull Integer year,
+            @NotNull Integer month
+    ) {
         wbApi.setApiKey(apiKey);
         CompletableFuture<List<WB_DetailReport>> reportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
@@ -181,10 +189,12 @@ public class WB_Service {
         return wbDataCreator.createTableRows(reportCompletableFuture.join());
     }
 
-    public List<WB_TableRow> getData(@NotNull String apiKey,
-                                     @NotNull Integer year,
-                                     @NotNull Integer month,
-                                     @NotNull Integer weekNumber) {
+    public List<WB_TableRow> getData(
+            @NotNull String apiKey,
+            @NotNull Integer year,
+            @NotNull Integer month,
+            @NotNull Integer weekNumber
+    ) {
         wbApi.setApiKey(apiKey);
         CompletableFuture<List<WB_DetailReport>> reportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
@@ -211,6 +221,7 @@ public class WB_Service {
         return wbDataCreator.createTableRows(reportCompletableFuture.join());
     }
 
+    // @todo move to mapping
     private List<WB_SaleRow> mapToSaleRows(Map<String, Long> salesCountMap) {
         return salesCountMap.entrySet().stream()
                 .map(entry -> WB_SaleRow.builder()
@@ -221,42 +232,46 @@ public class WB_Service {
                 .toList();
     }
 
-    public List<WB_SaleRow> getData(@NotNull String apiKey,
-                                    @NotNull String day) {
+    public List<WB_SaleRow> getData(@NotNull String apiKey, @NotNull String day) {
         wbApi.setApiKey(apiKey);
         return mapToSaleRows(WB_dataProcessing.getSalesCount(getSaleReport(day)));
     }
 
-    public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year,
-                                                               @NotNull Integer month) {
+    public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year, @NotNull Integer month) {
         Pair<String, String> dates = getDateFrom(year, month);
         return isNeedV1(month)
                 ? getDetailReportV1(dates.a, dates.b)
                 : getDetailReportV5(dates.a, dates.b);
     }
 
-    public List<WB_DetailReport> getDetailReportByWeek(@NotNull Integer year,
-                                                       @NotNull Integer month,
-                                                       @NotNull Integer weekNumber) {
+    public List<WB_DetailReport> getDetailReportByWeek(
+            @NotNull Integer year,
+            @NotNull Integer month,
+            @NotNull Integer weekNumber
+    ) {
         Pair<String, String> dates = findWeekRange(year, month, weekNumber);
         return isNeedV1(month)
                 ? getDetailReportV1(dates.a, dates.b)
                 : getDetailReportV5(dates.a, dates.b);
     }
 
-    public List<WB_DetailReport> getDetailReportByYearAndMonthWithOffset(@NotNull Integer year,
-                                                                         @NotNull Integer month,
-                                                                         @NotNull Long rrdId) {
+    public List<WB_DetailReport> getDetailReportByYearAndMonthWithOffset(
+            @NotNull Integer year,
+            @NotNull Integer month,
+            @NotNull Long rrdId
+    ) {
         Pair<String, String> dates = getDateFrom(year, month);
         return isNeedV1(month)
                 ? getDetailReportV1(dates.a, dates.b, rrdId)
                 : getDetailReportV5(dates.a, dates.b, rrdId);
     }
 
-    public List<WB_DetailReport> getDetailReportByWeekWithOffset(@NotNull Integer year,
-                                                                 @NotNull Integer month,
-                                                                 @NotNull Integer weekNumber,
-                                                                 @NotNull Long rrdId) {
+    public List<WB_DetailReport> getDetailReportByWeekWithOffset(
+            @NotNull Integer year,
+            @NotNull Integer month,
+            @NotNull Integer weekNumber,
+            @NotNull Long rrdId
+    ) {
         Pair<String, String> dates = findWeekRange(year, month, weekNumber);
         return isNeedV1(month)
                 ? getDetailReportV1(dates.a, dates.b, rrdId)
@@ -279,7 +294,11 @@ public class WB_Service {
         }
     }
 
-    public List<WB_DetailReport> getDetailReportV1(@NotNull String dateFrom, @NotNull String dateTo, @NotNull Long rrdId) {
+    public List<WB_DetailReport> getDetailReportV1(
+            @NotNull String dateFrom,
+            @NotNull String dateTo,
+            @NotNull Long rrdId
+    ) {
         try {
             return wbApi.getDetailReportWithOffsetV1(dateFrom, dateTo, rrdId);
         } catch (NullPointerException exception) {
@@ -287,7 +306,11 @@ public class WB_Service {
         }
     }
 
-    public List<WB_DetailReport> getDetailReportV5(@NotNull String dateFrom, @NotNull String dateTo, @NotNull Long rrdId) {
+    public List<WB_DetailReport> getDetailReportV5(
+            @NotNull String dateFrom,
+            @NotNull String dateTo,
+            @NotNull Long rrdId
+    ) {
         try {
             return wbApi.getDetailReportWithOffsetV5(dateFrom, dateTo, rrdId);
         } catch (NullPointerException exception) {
