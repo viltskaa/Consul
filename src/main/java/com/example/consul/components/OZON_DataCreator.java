@@ -165,9 +165,10 @@ public class OZON_DataCreator {
         Double actionCost = getActionCost(ozonTransactionReport);
         Map<String, Double> installments = getInstallments(ozonSkuProductsReport, ozonTransactionReport);
 
-        Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
+        Map<String, List<Object>> mergedMap = new HashMap<>(
+                ozonSkuProductsReport.getListOfferSku().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
-                        entry.getValue(), // 0
+                        saleCount.getOrDefault(entry.getKey(), 0), //0
                         returnCount.getOrDefault(entry.getKey(), 0), // 1
                         saleForDelivered.getOrDefault(entry.getKey(), 0.0), // 2
                         sumReturn.getOrDefault(entry.getKey(), 0.0), // 3

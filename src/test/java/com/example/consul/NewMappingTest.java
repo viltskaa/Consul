@@ -138,42 +138,20 @@ public class NewMappingTest {
                         OZON_SkuProductsReport.OZON_SkuProduct::getSku
                 ));
 
-        Map<String, Double> res = OZON_dataProcessing.sumReturnDelivery(offerSku, operations);
+        Map<String, Double> res = OZON_dataProcessing.sumCashbackIndividualPoints(offerSku, operations);
 
-        double sum = res.values()
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        System.out.println(" доставки возврата" + sum);
+//        double sum = res.values()
+//                .stream()
+//                .mapToDouble(Double::doubleValue)
+//                .sum();
+//        System.out.println(" sumCashbackIndividualPoints" + sum);
+//
+//        sum = collect.values()
+//                .stream()
+//                .mapToDouble(Double::doubleValue)
+//                .sum();
+//        System.out.println("collect sumCashbackIndividualPoints" + sum);
 
-        sum = 0;
-        res = OZON_dataProcessing.sumReturnProcessing(offerSku, operations);
-
-        sum = res.values()
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        System.out.println("обработки возврата" + sum);
-
-        sum = 0;
-        res = OZON_dataProcessing.sumShipmentProcessing(offerSku, operations);
-
-        sum = res.values()
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        System.out.println("обработки отправления" + sum);
-
-        sum = 0;
-        res = OZON_dataProcessing.sumAcquiring(offerSku, operations);
-
-        sum = res.values()
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        System.out.println("эквайринга" + sum);
-
-//        res.forEach((k, v) -> System.out.println(k + " : " + v));
     }
 
     @Test

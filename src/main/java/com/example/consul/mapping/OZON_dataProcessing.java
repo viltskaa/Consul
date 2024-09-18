@@ -60,7 +60,7 @@ public class OZON_dataProcessing {
      * @return Map [offer_id, (доставлено для этого товара)]
      */
     static public Map<String, Integer> saleCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
-        Map<String, Integer> result = groupMap
+        return groupMap
                 .entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -68,8 +68,6 @@ public class OZON_dataProcessing {
                                 .filter(row -> row.getDeliveryCommission() != null)
                                 .mapToInt(row -> row.getDeliveryCommission().getQuantity())
                                 .sum()));
-        result.put("none", 0);
-        return result;
     }
 
     /**
@@ -79,7 +77,7 @@ public class OZON_dataProcessing {
      * @return Map [offer_id, (возвращено для этого товара)]
      */
     static public Map<String, Integer> returnCount(Map<String, List<OZON_DetailReport.Row>> groupMap) {
-        Map<String, Integer> result = groupMap
+        return groupMap
                 .entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -87,8 +85,6 @@ public class OZON_dataProcessing {
                                 .filter(row -> row.getReturnCommission() != null)
                                 .mapToInt(row -> row.getReturnCommission().getQuantity())
                                 .sum()));
-        result.put("none", 0);
-        return result;
     }
 
     /**
@@ -115,15 +111,13 @@ public class OZON_dataProcessing {
      * @return Map [offer_id, (комиссия за продажу для этого товара)]
      */
     static public Map<String, Double> sumSalesCommission(Map<String, List<OZON_DetailReport.Row>> groupMap) {
-        Map<String, Double> result = groupMap
+        return groupMap
                 .entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .mapToDouble(row -> row.getSellerPricePerInstance() * row.getCommissionRatio() * ((row.getDeliveryCommission() == null ? 0 : row.getDeliveryCommission().getQuantity()) - (row.getReturnCommission() == null ? 0 : row.getReturnCommission().getQuantity())))
                                 .sum()));
-        result.put("none", 0D);
-        return result;
     }
 
 
@@ -263,9 +257,9 @@ public class OZON_dataProcessing {
                         Map.Entry::getKey,               // Используем offer_id как ключ
                         entry -> collect.get(entry.getValue()) // Используем значение из collect
                 ));
-        res.put("none", operations.stream()
-                .filter(operation -> operation.getItems().isEmpty())
-                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());
+//        res.put("none", operations.stream()
+//                .filter(operation -> operation.getItems().isEmpty())
+//                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());
         return res;
     }
 
@@ -305,12 +299,43 @@ public class OZON_dataProcessing {
                 .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServicePremiumCashbackIndividualPoints"))));
 
-        return offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
+        double sum = collect.values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        System.out.println("offerSku  " + offerSku.size());
+
+        Map<Long, String> skuOffer = offerSku.entrySet().stream()
                 .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
+                        Map.Entry::getValue,
+                        Map.Entry::getKey
                 ));
+        System.out.println("skuOffer  " + skuOffer.size());
+
+        Map<String, Double> res = skuOffer.entrySet().stream()
+                .filter(entry -> collect.containsKey(entry.getKey())) // фильтруем, если есть ключ в collect
+                .collect(Collectors.toMap(
+                        Map.Entry::getValue,               // Используем offer_id как ключ
+                        entry -> collect.get(entry.getKey()) // Используем значение из collect
+                ));
+        System.out.println("res " + res.size());
+
+        sum = res.values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        System.out.println("s " + sum);
+
+//        Map<String, Double> res = getOfferSku(operations).entrySet().stream()
+//                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
+//                .collect(Collectors.toMap(
+//                        Map.Entry::getKey,               // Используем offer_id как ключ
+//                        entry -> collect.get(entry.getValue()) // Используем значение из collect
+//                ));
+
+
+//        res.forEach((k, v) -> System.out.println(k + " : " + v));
+        return res;
     }
 
 
@@ -330,12 +355,18 @@ public class OZON_dataProcessing {
                                 + val.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffPVZ")
                         )));
 
-        return offerSku.entrySet().stream()
+        Map<String, Double> res = offerSku.entrySet().stream()
                 .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,               // Используем offer_id как ключ
                         entry -> collect.get(entry.getValue()) // Используем значение из collect
                 ));
+        double sum = res.values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        System.out.println("обработки возврата" + sum);
+        return res;
     }
 
     /**

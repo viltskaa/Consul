@@ -143,12 +143,6 @@ public class OZON_Service {
                                        @NotNull Integer year,
                                        @NotNull Integer month) {
         Pair<String, String> pairDate = ozonExcelCreator.getStartAndEndDateToUtc(month, year);
-        List<String> operationsType = Stream.of(
-                OZON_TransactionType.OperationAgentDeliveredToCustomer,
-                OZON_TransactionType.OperationAgentStornoDeliveredToCustomer,
-                OZON_TransactionType.OperationReturnGoodsFBSofRMS,
-                OZON_TransactionType.MarketplaceRedistributionOfAcquiringOperation
-        ).map(Object::toString).toList();
         List<String> oper = new ArrayList<>();
 
         ozonApi.setHeaders(apiKey, clientId);
@@ -156,21 +150,14 @@ public class OZON_Service {
         CompletableFuture<OZON_DetailReport> detailReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getDetailReport(month, year));
 
-        CompletableFuture<OZON_SkuProductsReport> ozonSkuProductsReportCompletableFuture = CompletableFuture
-                .supplyAsync(() -> getListOfferIdByDate(month, year))
-                .thenApplyAsync(this::getProductInfoByOfferId);
-
-//        CompletableFuture<OZON_SkuProductsReport> ozonSkuProductsReportCompletableFuture = CompletableFuture
-//                .supplyAsync(() -> OZON_dataProcessing.getSkus(ozonTransactionReport.getResult().getOperations()))
-//                .thenApplyAsync(this::getProductInfoByOfferId);
-
-        CompletableFuture<OZON_TransactionReport> ozonTransactionReportCompletableFuture = CompletableFuture
+        CompletableFuture<Pair<OZON_TransactionReport, OZON_SkuProductsReport>> ozonTransactionsAndProducts = CompletableFuture
                 .supplyAsync(() -> getTransactionReport(
                         pairDate.a,
                         pairDate.b,
                         oper,
                         OZON_TransactionType.all.toString()
-                ));
+                ))
+                .thenApplyAsync(this::getProductInfoBySku);
 
         CompletableFuture<OZON_FinanceReport> ozonFinanceReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getFinanceReport(
@@ -188,8 +175,8 @@ public class OZON_Service {
 
         return ozonExcelCreator.mergeMapsToTableRows(
                 detailReportCompletableFuture.join(),
-                ozonSkuProductsReportCompletableFuture.join(),
-                ozonTransactionReportCompletableFuture.join(),
+                ozonTransactionsAndProducts.join().b,
+                ozonTransactionsAndProducts.join().a,
                 ozonPerformanceReportCompletableFuture.join(),
                 ozonFinanceReportCompletableFuture.join()
         );
@@ -298,9 +285,18 @@ public class OZON_Service {
         }
     }
 
-    public OZON_SkuProductsReport getProductInfoBySku(@NotNull List<Long> sku) {
+    public OZON_SkuProductsReport getProductInfoBySku(@NotNull List<Long> skus) {
         try {
-            return ozonApi.getProductInfo(sku);
+            return ozonApi.getProductInfo(skus);
+        } catch (NullPointerException exception) {
+            return null;
+        }
+    }
+
+    public Pair<OZON_TransactionReport, OZON_SkuProductsReport> getProductInfoBySku(@NotNull OZON_TransactionReport report) {
+        try {
+            List<Long> skus = OZON_dataProcessing.getSkus(report.getResult().getOperations());
+            return new Pair<>(report, ozonApi.getProductInfo(skus));
         } catch (NullPointerException exception) {
             return null;
         }

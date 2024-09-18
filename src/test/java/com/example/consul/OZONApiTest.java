@@ -227,7 +227,7 @@ public class OZONApiTest {
 
         ExcelBuilder.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("застолье_OZON_июнь_2024.xls")
+                        .fileName("застолье_OZON_июнь_2024_2.xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("TEST")
@@ -255,20 +255,41 @@ public class OZONApiTest {
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
 
         double sum = 0;
+        int count = 0;
+        Map<Long, Double> map = new HashMap<>();
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
         for (OZON_TransactionReport.Operation operation : operations) {
 
-
-            if (!operation.getItems().isEmpty() && operation.getItems().getFirst().getSku() == 730591736L) {
-//                sum += operation.getAmount();
-                for (OZON_TransactionReport.Service service : operation.getServices()) {
-                    if (Objects.equals(service.getName(), "MarketplaceServicePremiumCashbackIndividualPoints")) {
-                        sum += service.getPrice();
+            for (OZON_TransactionReport.Service service : operation.getServices()) {
+                if (Objects.equals(service.getName(), "MarketplaceServicePremiumCashbackIndividualPoints")) {
+                    if(!map.containsKey(operation.getSku())){
+                        map.put(operation.getSku(), service.getPrice());
                     }
+                    else{
+                        map.put(operation.getSku(), map.get(operation.getSku()) + service.getPrice());
+                    }
+
+                    sum += service.getPrice();
+                    count++;
                 }
             }
+
+//            if (!operation.getItems().isEmpty() && operation.getItems().getFirst().getSku() == 730591736L) {
+////                sum += operation.getAmount();
+//                for (OZON_TransactionReport.Service service : operation.getServices()) {
+//                    if (Objects.equals(service.getName(), "MarketplaceServicePremiumCashbackIndividualPoints")) {
+//                        sum += service.getPrice();
+//                    }
+//                }
+//            }
         }
+
+        sum = map.values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
         System.out.println(sum);
+        System.out.println(count);
     }
 
     // приобретение отзывов - MarketplaceSaleReviewsOperation
