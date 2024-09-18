@@ -445,7 +445,7 @@ const App = (): React.ReactElement => {
                             <Select options={months.map((value, index) => ({value: index + 1, label: value}))}/>
                         </Form.Item>
 
-                        <Form.Item<ReportForm> className="w-100 mb-0">
+                        <Form.Item<ReportForm> className="w-100 mb-0 mt-5">
                             <Button className="w-100" htmlType={"submit"} type={"primary"}>Создать</Button>
                         </Form.Item>
                     </Form>

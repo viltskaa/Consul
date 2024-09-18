@@ -17,6 +17,7 @@ import com.example.consul.dto.WB.WB_DetailReport;
 import com.example.consul.dto.WB.WB_SaleReport;
 import com.example.consul.mapping.WB_dataProcessing;
 import com.example.consul.utils.Clustering;
+import com.example.consul.utils.DateUtils;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -123,37 +124,8 @@ public class WB_Service {
         );
     }
 
-    // @todo move to date utils, create class Week, Month
-    private Pair<String, String> getDateFrom(@NotNull Integer year, @NotNull Integer month) {
-        LocalDate date = LocalDate.of(year, month, 1);
-
-        LocalDate startOfMonth = date.withDayOfMonth(1);
-        LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth());
-
-        String startOfMonthString = startOfMonth.atStartOfDay(ZoneOffset.UTC)
-                .toString().replace("T00:00", "T00:00:00.000");
-        String endOfMonthString = endOfMonth.atStartOfDay(ZoneOffset.UTC)
-                .plusDays(1).minusNanos(1000000).toString();
-
-        return new Pair<>(startOfMonthString, endOfMonthString);
-    }
-
     private boolean isNeedV1(@NotNull Integer month) {
         return month.equals(1);
-    }
-
-    private Pair<String, String> findWeekRange(
-            @NotNull Integer year,
-            @NotNull Integer month,
-            @NotNull Integer weekNumber
-    ) {
-        YearMonth yearMonth = YearMonth.of(year, month);
-        LocalDate firstMonday = yearMonth.atDay(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
-
-        LocalDate startOfWeek = firstMonday.plusWeeks(weekNumber - 1);
-        LocalDate endOfWeek = startOfWeek.plusDays(6);
-
-        return new Pair<>(startOfWeek.toString(), endOfWeek.toString());
     }
 
     public List<WB_TableRow> getData(
@@ -238,10 +210,10 @@ public class WB_Service {
     }
 
     public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year, @NotNull Integer month) {
-        Pair<String, String> dates = getDateFrom(year, month);
+        DateUtils.Month date = DateUtils.getMonth(year, month);
         return isNeedV1(month)
-                ? getDetailReportV1(dates.a, dates.b)
-                : getDetailReportV5(dates.a, dates.b);
+                ? getDetailReportV1(date.getFirstDay(), date.getLastDay())
+                : getDetailReportV5(date.getFirstDay(), date.getLastDay());
     }
 
     public List<WB_DetailReport> getDetailReportByWeek(
@@ -249,10 +221,10 @@ public class WB_Service {
             @NotNull Integer month,
             @NotNull Integer weekNumber
     ) {
-        Pair<String, String> dates = findWeekRange(year, month, weekNumber);
+        DateUtils.Week week = DateUtils.getWeek(year, month, weekNumber);
         return isNeedV1(month)
-                ? getDetailReportV1(dates.a, dates.b)
-                : getDetailReportV5(dates.a, dates.b);
+                ? getDetailReportV1(week.getFirstDay(), week.getLastDay())
+                : getDetailReportV5(week.getFirstDay(), week.getLastDay());
     }
 
     public List<WB_DetailReport> getDetailReportByYearAndMonthWithOffset(
@@ -260,10 +232,10 @@ public class WB_Service {
             @NotNull Integer month,
             @NotNull Long rrdId
     ) {
-        Pair<String, String> dates = getDateFrom(year, month);
+        DateUtils.Month date = DateUtils.getMonth(year, month);
         return isNeedV1(month)
-                ? getDetailReportV1(dates.a, dates.b, rrdId)
-                : getDetailReportV5(dates.a, dates.b, rrdId);
+                ? getDetailReportV1(date.getFirstDay(), date.getLastDay(), rrdId)
+                : getDetailReportV5(date.getFirstDay(), date.getLastDay(), rrdId);
     }
 
     public List<WB_DetailReport> getDetailReportByWeekWithOffset(
@@ -272,10 +244,10 @@ public class WB_Service {
             @NotNull Integer weekNumber,
             @NotNull Long rrdId
     ) {
-        Pair<String, String> dates = findWeekRange(year, month, weekNumber);
+        DateUtils.Week week = DateUtils.getWeek(year, month, weekNumber);
         return isNeedV1(month)
-                ? getDetailReportV1(dates.a, dates.b, rrdId)
-                : getDetailReportV5(dates.a, dates.b, rrdId);
+                ? getDetailReportV1(week.getFirstDay(), week.getLastDay(), rrdId)
+                : getDetailReportV5(week.getFirstDay(), week.getLastDay(), rrdId);
     }
 
     public List<WB_DetailReport> getDetailReportV1(@NotNull String dateFrom, @NotNull String dateTo) {

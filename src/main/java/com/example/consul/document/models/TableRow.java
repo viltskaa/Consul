@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class TableRow {
-    @CellUnit(name = "Артикул", total = false)
+    @CellUnit(name = "Артикул")
     protected String article;
 }

@@ -122,6 +122,8 @@ public class ExcelBuilderV2<T> {
 
                 if (cellWithParams.isTotal()) {
                     cell.setCellFormula(formula);
+                } else if (cellWithParams.getValue().equals(0)) {
+                    cell.setCellValue("");
                 } else if (cellWithParams.getValue().getClass().equals(String.class)) {
                     cell.setCellValue(cellWithParams.getValue().toString());
                 } else if (cellWithParams.getValue().getClass().equals(Integer.class)) {
@@ -148,6 +150,7 @@ public class ExcelBuilderV2<T> {
     private byte[] createWorkbook() {
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelBuilderV2.this.cellStyles = new HashMap<>();
+
             ExcelBuilderV2.this.cellStyles.put(
                     ExcelCellType.BASE, CellStyleValues.BASE.getCellStyle(workbook)
             );
