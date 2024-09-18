@@ -2,7 +2,6 @@ package com.example.consul.mapping.excelProcessing;
 
 import com.example.consul.mapping.annotations.ColumnName;
 import com.example.consul.mapping.sheets.*;
-import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -33,7 +32,6 @@ public class DataFromExcel {
         return fieldColumnMapping;
     }
 
-    @SneakyThrows
     public static List<YANDEX_DeliveredGoods> getDeliveredGoods(Sheet sheet) {
         List<YANDEX_DeliveredGoods> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -57,13 +55,25 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "int":
-                        field.set(data, (int) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (int) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -74,7 +84,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_GoodsInDelivery> getGoodsInDelivery(Sheet sheet) {
         List<YANDEX_GoodsInDelivery> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -98,10 +107,18 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "long":
-                        field.set(data, (long) row.getCell(columnIndex).getNumericCellValue());
+                        try {
+                            field.set(data, (long) row.getCell(columnIndex).getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, row.getCell(columnIndex).getStringCellValue());
+                        try {
+                            field.set(data, row.getCell(columnIndex).getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -112,7 +129,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_ReturnedGoods> getReturnedGoods(Sheet sheet) {
         List<YANDEX_ReturnedGoods> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -136,13 +152,25 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "int":
-                        field.set(data, (int) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (int) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -153,7 +181,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_Shelves> getShelves(Sheet sheet) {
         List<YANDEX_Shelves> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -176,7 +203,11 @@ public class DataFromExcel {
                 if (cell == null) continue;
 
                 if (field.getType().getSimpleName().equals("double")) {
-                    field.set(data, cell.getNumericCellValue());
+                    try {
+                        field.set(data, cell.getNumericCellValue());
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
 
@@ -186,7 +217,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_BoostSales> getBoostSales(Sheet sheet) {
         List<YANDEX_BoostSales> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -210,10 +240,18 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -224,7 +262,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_LoyaltyProgram> getLoyaltyProgram(Sheet sheet) {
         List<YANDEX_LoyaltyProgram> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -248,10 +285,18 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -262,7 +307,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_ShowPlacement> getShowPlacement(Sheet sheet) {
         List<YANDEX_ShowPlacement> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -286,10 +330,18 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -300,7 +352,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_DeliveryCustomer> getDeliveryCustomer(Sheet sheet) {
         List<YANDEX_DeliveryCustomer> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -324,13 +375,25 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "long":
-                        field.set(data, (long) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (long) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -341,7 +404,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_AcceptingPayment> getAcceptingPayment(Sheet sheet) {
         List<YANDEX_AcceptingPayment> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -365,13 +427,25 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "long":
-                        field.set(data, (long) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (long) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -382,7 +456,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_TransferPayment> getTransferPayment(Sheet sheet) {
         List<YANDEX_TransferPayment> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -406,13 +479,25 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "long":
-                        field.set(data, (long) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (long) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -423,7 +508,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_ProcessingOrders> getProcessingOrders(Sheet sheet) {
         List<YANDEX_ProcessingOrders> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -447,13 +531,25 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "long":
-                        field.set(data, (long) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (long) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -464,7 +560,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_TransactionsOrdersAndProducts> getTransactionsOnOrdersAndProducts(Sheet sheet) {
         List<YANDEX_TransactionsOrdersAndProducts> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -488,10 +583,18 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "long":
-                        field.set(data, (long) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (long) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
@@ -502,7 +605,6 @@ public class DataFromExcel {
         return list;
     }
 
-    @SneakyThrows
     public static List<YANDEX_StorageReturns> getStorageReturns(Sheet sheet) {
         List<YANDEX_StorageReturns> list = new ArrayList<>();
         int headerRow = findAutoFilterRow(sheet);
@@ -526,13 +628,25 @@ public class DataFromExcel {
 
                 switch (field.getType().getSimpleName()) {
                     case "long":
-                        field.set(data, (long) cell.getNumericCellValue());
+                        try {
+                            field.set(data, (long) cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "double":
-                        field.set(data, cell.getNumericCellValue());
+                        try {
+                            field.set(data, cell.getNumericCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                     case "String":
-                        field.set(data, cell.getStringCellValue());
+                        try {
+                            field.set(data, cell.getStringCellValue());
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                         break;
                 }
             }
