@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @TotalCell(
         formula = "(accrued-returnCost-showcasePlacing-deliveryToConsumer" +
                 "-acceptAndTransferPayment-favorSorting-unredeemedStorage-adCampaignCost-loyaltyProgram-boostSales-shelves+promotionFavor)" +
-                "/deliveryCount-returnCount"
+                "/IF(deliveryCount-returnCount=0,1,deliveryCount-returnCount)"
 )
 public class YANDEX_TableRow extends TableRow {
     @CellUnit(name = "Кол-во отгружено (шт)")
