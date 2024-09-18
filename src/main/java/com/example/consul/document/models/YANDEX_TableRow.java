@@ -2,7 +2,7 @@ package com.example.consul.document.models;
 
 import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
-import com.example.consul.document.configurations.ExcelCellType;
+import com.example.consul.document.v1.configurations.ExcelCellType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

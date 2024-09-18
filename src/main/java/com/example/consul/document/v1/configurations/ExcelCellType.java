@@ -1,4 +1,4 @@
-package com.example.consul.document.configurations;
+package com.example.consul.document.v1.configurations;
 
 public enum ExcelCellType {
     BASE,

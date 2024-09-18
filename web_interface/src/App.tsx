@@ -156,7 +156,7 @@ const App = (): React.ReactElement => {
                 const url = window.URL.createObjectURL(blob)
 
                 setHref(url)
-                setDownload(`Отчет_По_${market.type}_${market.name}_от_${month}_${year}.xls`)
+                setDownload(`Отчет_По_${market.type}_${market.name}_от_${month}_${year}.xlsx`)
             }
         })().then((_: any) => setLoading(false))
     }

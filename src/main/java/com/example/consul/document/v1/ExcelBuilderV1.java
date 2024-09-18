@@ -1,10 +1,10 @@
-package com.example.consul.document;
+package com.example.consul.document.v1;
 
 import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
-import com.example.consul.document.configurations.ExcelCellType;
-import com.example.consul.document.configurations.ExcelConfig;
-import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.v1.configurations.ExcelCellType;
+import com.example.consul.document.v1.configurations.ExcelConfig;
+import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.ReportFile;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.hssf.usermodel.HSSFFont;
@@ -28,10 +28,10 @@ import java.util.List;
 import static org.apache.poi.ss.usermodel.Font.COLOR_RED;
 import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
 
-public class ExcelBuilder {
+public class ExcelBuilderV1 {
     private static List<CellStyle> cellStyles;
 
-    private ExcelBuilder() {
+    private ExcelBuilderV1() {
     }
 
     @NotNull
@@ -187,8 +187,10 @@ public class ExcelBuilder {
                     }
 
                     if (formula != null) {
-                        formula = formula.replace(field.getName(),
-                                String.valueOf((char) (65 + columnIndex)) + (rowIndex));
+                        formula = formula.replace(
+                                field.getName(),
+                                String.valueOf((char) (65 + columnIndex)) + (rowIndex)
+                        );
                     }
 
                     Method method = fieldMethodPair.getValue();

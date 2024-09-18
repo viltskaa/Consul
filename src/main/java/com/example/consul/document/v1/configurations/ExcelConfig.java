@@ -1,4 +1,4 @@
-package com.example.consul.document.configurations;
+package com.example.consul.document.v1.configurations;
 
 import lombok.Getter;
 import lombok.Setter;

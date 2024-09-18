@@ -2,7 +2,7 @@ package com.example.consul.document.models;
 
 import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
-import com.example.consul.document.configurations.ExcelCellType;
+import com.example.consul.document.v1.configurations.ExcelCellType;
 import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
@@ -41,7 +41,7 @@ public class WB_TableRow extends TableRow {
     private Double storage;
     @CellUnit(name = "Логистика")
     private Double logistic;
-    @CellUnit(name = "Итого", type = ExcelCellType.TOTAL)
+    @CellUnit(name = "Итого", type = ExcelCellType.TOTAL, total = true)
     private final Double total = 0.0;
 
     @Builder

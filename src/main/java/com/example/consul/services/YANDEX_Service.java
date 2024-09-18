@@ -4,9 +4,9 @@ import com.example.consul.api.YANDEX_Api;
 import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
 import com.example.consul.components.YANDEX_DataCreator;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
-import com.example.consul.document.ExcelBuilder;
-import com.example.consul.document.configurations.ExcelConfig;
-import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.v1.ExcelBuilderV1;
+import com.example.consul.document.v1.configurations.ExcelConfig;
+import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
@@ -55,7 +55,7 @@ public class YANDEX_Service {
 
         Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data);
 
-        return ExcelBuilder.createDocumentToReportFile(
+        return ExcelBuilderV1.createDocumentToReportFile(
                 ExcelConfig.<YANDEX_TableRow>builder()
                         .fileName("report_yandex_" + month + "_" + year + ".xls")
                         .header(

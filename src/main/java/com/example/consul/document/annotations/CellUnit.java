@@ -1,6 +1,6 @@
 package com.example.consul.document.annotations;
 
-import com.example.consul.document.configurations.ExcelCellType;
+import com.example.consul.document.v1.configurations.ExcelCellType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 public @interface CellUnit {
     String name() default "";
     int width() default 16;
-    boolean total() default true;
+    boolean total() default false;
     ExcelCellType type() default ExcelCellType.BASE;
     String defaultValue() default "";
 }

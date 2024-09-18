@@ -1,9 +1,9 @@
 package com.example.consul;
 
 import com.example.consul.api.OZON_Api;
-import com.example.consul.document.ExcelBuilder;
-import com.example.consul.document.configurations.ExcelConfig;
-import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.v1.ExcelBuilderV1;
+import com.example.consul.document.v1.configurations.ExcelConfig;
+import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
@@ -125,7 +125,7 @@ public class OZONApiTest {
                 "PSCVDiFfWGgV0rWcF6MrA_0gZAW8iyYXH6AFTDk5ZviS4JRETHIBXHLX0033IVnRzr106ULnGks5le2SPg",
                 2024, 6);
 
-        ExcelBuilder.createDocument(
+        ExcelBuilderV1.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
                         .fileName("Алиса2_OZON_июнь_2024.xls")
                         .header(
@@ -149,7 +149,7 @@ public class OZONApiTest {
                 "cPOjX52_rQEOZ6nDtHP6_6UUQyA1vpWu1Ku60-km7xVJAZPQE1Tduc1x0u3mtawa6wjM6uzNGyH2BZ4fiA",
                 2024, 6);
 
-        ExcelBuilder.createDocument(
+        ExcelBuilderV1.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
                         .fileName("Алиса_OZON_июнь_2024.xls")
                         .header(
@@ -173,7 +173,7 @@ public class OZONApiTest {
                 "BmuHOndqm93S7x_dqpTVNqyfdQf6zGO5OOkrAn72cSDI3PR6sqDx_CyBnPe1CgQwAlMWfLpMFLAy-BhyeQ",
                 2024, 6);
 
-        ExcelBuilder.createDocument(
+        ExcelBuilderV1.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
                         .fileName("Стулоф_OZON_июнь_2024_1.xls")
                         .header(
@@ -197,7 +197,7 @@ public class OZONApiTest {
                 "zFRlltf5AJlgU5ro-y1JCnVPr7JZwCAsLI7Gh8RUiuKb2McOieo2NXB_E9wWSfVbJcIMyZntMa1t5uv-SQ",
                 2024, 6);
 
-        ExcelBuilder.createDocument(
+        ExcelBuilderV1.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
                         .fileName("застолье_OZON_июнь_2024.xls")
                         .header(

@@ -1,8 +1,8 @@
 package com.example.consul;
 
-import com.example.consul.document.ExcelBuilder;
-import com.example.consul.document.configurations.ExcelConfig;
-import com.example.consul.document.configurations.HeaderConfig;
+import com.example.consul.document.v1.ExcelBuilderV1;
+import com.example.consul.document.v1.configurations.ExcelConfig;
+import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.services.WB_Service;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class WBApiTest {
                 2024,
                 4
         );
-        ExcelBuilder.createDocument(
+        ExcelBuilderV1.createDocument(
                 ExcelConfig.<WB_TableRow>builder()
                         .fileName("WB202404.xls")
                         .data(List.of(rows))
@@ -66,7 +66,7 @@ class WBApiTest {
                 4,
                 2
         );
-        ExcelBuilder.createDocument(
+        ExcelBuilderV1.createDocument(
                 ExcelConfig.<WB_TableRow>builder()
                         .fileName("WBY2024M04W2_z.xls")
                         .data(List.of(rows))
