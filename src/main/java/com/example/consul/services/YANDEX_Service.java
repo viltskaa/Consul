@@ -2,6 +2,7 @@ package com.example.consul.services;
 
 import com.example.consul.api.YANDEX_Api;
 import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
+import com.example.consul.components.YANDEX_DataCreator;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
 import com.example.consul.document.ExcelBuilder;
 import com.example.consul.document.configurations.ExcelConfig;
@@ -10,7 +11,6 @@ import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
-import com.example.consul.mapping.YANDEX_dataProcessing;
 import com.example.consul.utils.Clustering;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -30,12 +30,14 @@ public class YANDEX_Service {
     private final YANDEX_Api yandexApi;
     private final ConditionalWithDelayChecker reportChecker;
     private final Clustering clustering;
+    private final YANDEX_DataCreator yandexDataCreator;
 
     public YANDEX_Service(YANDEX_Api api,
-                          ConditionalWithDelayChecker reportChecker, Clustering clustering) {
+                          ConditionalWithDelayChecker reportChecker, Clustering clustering, YANDEX_DataCreator yandexDataCreator) {
         this.yandexApi = api;
         this.reportChecker = reportChecker;
         this.clustering = clustering;
+        this.yandexDataCreator = yandexDataCreator;
     }
 
     public ReportFile createReport(@NotNull String auth,
@@ -173,7 +175,7 @@ public class YANDEX_Service {
                 InputStream inputStreamServices = new ByteArrayInputStream(servicesInputStream.readAllBytes());
                 InputStream inputStreamOrders = new ByteArrayInputStream(ordersInputStream.readAllBytes());
 
-                return YANDEX_dataProcessing.getDataFromInputStream(inputStreamServices, inputStreamRealization, inputStreamOrders);
+                return yandexDataCreator.getDataFromInputStream(inputStreamServices, inputStreamRealization, inputStreamOrders);
             } catch (IOException exception) {
                 return new ArrayList<>();
             }
