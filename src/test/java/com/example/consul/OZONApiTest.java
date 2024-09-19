@@ -51,7 +51,7 @@ public class OZONApiTest {
 //        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
 //        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
         ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
-        String[] offerIds = ozonService.getListOfferIdByDate(6, 2024);
+        List<String> offerIds = ozonService.getListOfferIdByDate(6, 2024);
         OZON_SkuProductsReport report = ozonService.getProductInfoByOfferId(offerIds);
 
         System.out.println("start");
@@ -138,6 +138,12 @@ public class OZONApiTest {
                         .sheetsName(List.of("1"))
                         .build()
         );
+    }
+
+    @Test
+    public void getMap() {
+        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+        System.out.println(ozonService.getOfferIdToSkuMap(4, 2024));
     }
 
     @Test
@@ -264,6 +270,15 @@ public class OZONApiTest {
         System.out.println(sum);
     }
 
+    @Test
+    public void testRelatedSku() {
+        OZON_Api api = new OZON_Api();
+        api.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423");
+        List<Long> skus = new ArrayList<>();
+        skus.add(477040104L);
+
+        System.out.println(api.getRelatedSku(skus));
+    }
 
     @Test
     public void testDetailReport() {

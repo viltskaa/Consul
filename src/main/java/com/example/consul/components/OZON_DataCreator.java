@@ -33,11 +33,11 @@ public class OZON_DataCreator {
         );
     }
 
-    private Map<String, Double> getDataForMapTransaction(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    private Map<String, Double> getDataForMapTransaction(@NotNull Map<String, List<Long>> offerSkus,
                                                          @NotNull OZON_TransactionReport ozonTransactionReport,
                                                          @NotNull BiFunction<Map<String, List<Long>>, List<OZON_TransactionReport.Operation>, Map<String, Double>> dataFunction) {
         return dataFunction.apply(
-                ozonSkuProductsReport.getSkuListByOfferId(),
+                offerSkus,
                 ozonTransactionReport.getResult().getOperations()
         );
     }
@@ -81,51 +81,51 @@ public class OZON_DataCreator {
         return getDataForMapDouble(ozonDetailReport, OZON_dataProcessing::sumSalesCommission);
     }
 
-    public Map<String, Double> getMapLastMile(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapLastMile(@NotNull Map<String, List<Long>> offerSkus,
                                               @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumLastMile);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumLastMile);
     }
 
-    public Map<String, Double> getMapAcquiring(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapAcquiring(@NotNull Map<String, List<Long>> offerSkus,
                                                @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumAcquiring);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumAcquiring);
     }
 
-    public Map<String, Double> getInstallments(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getInstallments(@NotNull Map<String, List<Long>> offerSkus,
                                                @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumInstallments);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumInstallments);
     }
 
-    public Map<String, Double> getMapReturnDelivery(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapReturnDelivery(@NotNull Map<String, List<Long>> offerSkus,
                                                     @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumReturnDelivery);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumReturnDelivery);
     }
 
-    public Map<String, Double> getMapReturnProcessing(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapReturnProcessing(@NotNull Map<String, List<Long>> offerSkus,
                                                       @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumReturnProcessing);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumReturnProcessing);
     }
 
-    public Map<String, Double> getMapShipmentProcessing(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapShipmentProcessing(@NotNull Map<String, List<Long>> offerSkus,
                                                         @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumShipmentProcessing);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumShipmentProcessing);
     }
 
-    public Map<String, Double> getMapLogistic(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapLogistic(@NotNull Map<String, List<Long>> offerSkus,
                                               @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumLogistic);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumLogistic);
     }
 
-    public Map<String, Double> getMapCashbackIndividualPoints(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapCashbackIndividualPoints(@NotNull Map<String, List<Long>> offerSkus,
                                                               @NotNull OZON_TransactionReport ozonTransactionReport) {
-        return getDataForMapTransaction(ozonSkuProductsReport, ozonTransactionReport, OZON_dataProcessing::sumCashbackIndividualPoints);
+        return getDataForMapTransaction(offerSkus, ozonTransactionReport, OZON_dataProcessing::sumCashbackIndividualPoints);
     }
 
-    public Map<String, Double> getMapStencils(@NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+    public Map<String, Double> getMapStencils(@NotNull Map<String, List<Long>> offerSkus,
                                               @NotNull List<OZON_PerformanceReport> ozonPerformanceReports) {
         return OZON_dataProcessing.sumStencilByOfferId(
                 OZON_dataProcessing.sumStencilBySku(ozonPerformanceReports),
-                ozonSkuProductsReport.getSkuListByOfferId()
+                offerSkus
         );
     }
 
@@ -142,7 +142,7 @@ public class OZON_DataCreator {
     }
 
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull OZON_DetailReport ozonDetailReport,
-                                                    @NotNull OZON_SkuProductsReport ozonSkuProductsReport,
+                                                    @NotNull Map<String, List<Long>> offerSkus,
                                                     @NotNull OZON_TransactionReport ozonTransactionReport,
                                                     @NotNull List<OZON_PerformanceReport> ozonPerformanceReports,
                                                     @NotNull OZON_FinanceReport ozonFinanceReport) {
@@ -152,18 +152,18 @@ public class OZON_DataCreator {
         Map<String, Double> saleForDelivered = getMapSaleForDelivered(ozonDetailReport);
         Map<String, Double> sumReturn = getMapSumReturn(ozonDetailReport);
         Map<String, Double> salesCommission = getMapSalesCommission(ozonDetailReport);
-        Map<String, Double> shipmentProcessing = getMapShipmentProcessing(ozonSkuProductsReport, ozonTransactionReport);
-        Map<String, Double> logistic = getMapLogistic(ozonSkuProductsReport, ozonTransactionReport);
-        Map<String, Double> lastMile = getMapLastMile(ozonSkuProductsReport, ozonTransactionReport);
-        Map<String, Double> acquiring = getMapAcquiring(ozonSkuProductsReport, ozonTransactionReport);
-        Map<String, Double> returnProcessing = getMapReturnProcessing(ozonSkuProductsReport, ozonTransactionReport);
-        Map<String, Double> returnDelivery = getMapReturnDelivery(ozonSkuProductsReport, ozonTransactionReport);
-        Map<String, Double> stencilProduct = getMapStencils(ozonSkuProductsReport, ozonPerformanceReports);
-        Map<String, Double> cashbackIndividualPoints = getMapCashbackIndividualPoints(ozonSkuProductsReport, ozonTransactionReport);
+        Map<String, Double> shipmentProcessing = getMapShipmentProcessing(offerSkus, ozonTransactionReport);
+        Map<String, Double> logistic = getMapLogistic(offerSkus, ozonTransactionReport);
+        Map<String, Double> lastMile = getMapLastMile(offerSkus, ozonTransactionReport);
+        Map<String, Double> acquiring = getMapAcquiring(offerSkus, ozonTransactionReport);
+        Map<String, Double> returnProcessing = getMapReturnProcessing(offerSkus, ozonTransactionReport);
+        Map<String, Double> returnDelivery = getMapReturnDelivery(offerSkus, ozonTransactionReport);
+        Map<String, Double> stencilProduct = getMapStencils(offerSkus, ozonPerformanceReports);
+        Map<String, Double> cashbackIndividualPoints = getMapCashbackIndividualPoints(offerSkus, ozonTransactionReport);
         Double accrualInternalClaim = getAccrualInternalClaim(ozonFinanceReport);
         Double ozonPremium = getOzonPremium(ozonTransactionReport);
         Double actionCost = getActionCost(ozonTransactionReport);
-        Map<String, Double> installments = getInstallments(ozonSkuProductsReport, ozonTransactionReport);
+        Map<String, Double> installments = getInstallments(offerSkus, ozonTransactionReport);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(

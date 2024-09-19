@@ -4,11 +4,11 @@ import com.example.consul.api.OZON_Api;
 import com.example.consul.api.OZON_PerformanceApi;
 import com.example.consul.components.OZON_DataCreator;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
-import com.example.consul.document.v1.ExcelBuilderV1;
-import com.example.consul.document.v1.configurations.ExcelConfig;
-import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.document.models.ReportFile;
+import com.example.consul.document.v2.ExcelBuilderV2;
+import com.example.consul.document.v2.models.Sheet;
+import com.example.consul.document.v2.models.Table;
 import com.example.consul.dto.OZON.*;
 import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.utils.Clustering;
@@ -17,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -62,22 +59,25 @@ public class OZON_Service {
                 year,
                 month
         );
+        Map<String, List<OZON_TableRow>> clusteredData = clustering.of(data, "Нераспределенные");
 
-        Map<String, List<OZON_TableRow>> clusteredData = clustering.of(data);
-
-        return ExcelBuilderV1.createDocumentToReportFile(
-                ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("report_ozon" + clientId + "_" + month + "_" + year + ".xls")
-                        .header(
-                                HeaderConfig.builder()
-                                        .title("OZON")
-                                        .description("NEW METHOD")
-                                        .build()
-                        )
-                        .data(clusteredData.values().stream().toList())
-                        .sheetsName(clusteredData.keySet().stream().toList())
-                        .build()
-        );
+        return ExcelBuilderV2.<OZON_TableRow>builder()
+                .setFilename("report_ozon.xlsx")
+                .setSheets(
+                        Sheet.<OZON_TableRow>builder()
+                                .name("1")
+                                .tables(
+                                        clusteredData.entrySet().stream()
+                                                .map(entry ->
+                                                        Table.<OZON_TableRow>builder()
+                                                                .name(entry.getKey())
+                                                                .data(entry.getValue())
+                                                                .build()
+                                                ).toList()
+                                ).build()
+                )
+                .build()
+                .createDocument();
     }
 
     @Deprecated
@@ -113,11 +113,9 @@ public class OZON_Service {
                 pairDate.b
         );
 
-        String[] offerIds = getListOfferIdByDate(month, year);
-
         return ozonExcelCreator.mergeMapsToTableRows(
                 getDetailReport(month, year),
-                getProductInfoByOfferId(offerIds),
+                getOfferIdToSkuMap(month, year),
                 ozonTransactionReport,
                 scheduledGetPerformanceReport(performanceClientId, performanceClientSecret, year, month),
                 ozonFinanceReport
@@ -154,9 +152,8 @@ public class OZON_Service {
         CompletableFuture<OZON_DetailReport> detailReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getDetailReport(month, year));
 
-        CompletableFuture<OZON_SkuProductsReport> ozonSkuProductsReportCompletableFuture = CompletableFuture
-                .supplyAsync(() -> getListOfferIdByDate(month, year))
-                .thenApplyAsync(this::getProductInfoByOfferId);
+        CompletableFuture<Map<String, List<Long>>> ozonSkuProductsReportCompletableFuture = CompletableFuture
+                .supplyAsync(() -> getOfferIdToSkuMap(month, year));
 
         CompletableFuture<OZON_TransactionReport> ozonTransactionReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getTransactionReport(
@@ -284,7 +281,7 @@ public class OZON_Service {
         }
     }
 
-    public OZON_SkuProductsReport getProductInfoByOfferId(@NotNull String[] offerId) {
+    public OZON_SkuProductsReport getProductInfoByOfferId(@NotNull List<String> offerId) {
         try {
             return ozonApi.getProductInfoByOfferId(offerId);
         } catch (NullPointerException exception) {
@@ -292,21 +289,69 @@ public class OZON_Service {
         }
     }
 
-    public String[] getListOfferIdByDate(@NotNull Integer month,
-                                         @NotNull Integer year) {
+    public OZON_RelatedSku getRelatedSku(@NotNull List<Long> skus) {
+        try {
+            return ozonApi.getRelatedSku(skus);
+        } catch (NullPointerException exception) {
+            return null;
+        }
+    }
+
+    public Map<String, List<Long>> getOfferIdToSkuMap(Integer month, Integer year) {
+        List<String> offerIds = getListOfferIdByDate(month, year);
+
+        if (offerIds == null || offerIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        OZON_SkuProductsReport productReport = getProductInfoByOfferId(offerIds);
+
+        if (productReport == null || productReport.getResult() == null || productReport.getResult().getItems() == null) {
+            return new HashMap<>();
+        }
+
+        Map<String, List<Long>> offerIdToSkuMap = new HashMap<>();
+
+        for (OZON_SkuProductsReport.OZON_SkuProduct product : productReport.getResult().getItems()) {
+            String offerId = product.getOffer_id();
+            Long sku = product.getSku();
+
+            List<Long> skuList = offerIdToSkuMap.computeIfAbsent(offerId, k -> new ArrayList<>());
+
+            skuList.add(sku);
+
+            List<Long> relatedSkuList = Collections.singletonList(sku);
+            OZON_RelatedSku relatedSkuReport = getRelatedSku(relatedSkuList);
+
+            if (relatedSkuReport != null && relatedSkuReport.getItems() != null) {
+                for (OZON_RelatedSku.Item relatedSku : relatedSkuReport.getItems()) {
+                    Long relatedSkuId = relatedSku.getSku();
+                    if (!skuList.contains(relatedSkuId)) {
+                        skuList.add(relatedSkuId);
+                    }
+                }
+            }
+        }
+
+        return offerIdToSkuMap;
+    }
+
+
+    public List<String> getListOfferIdByDate(@NotNull Integer month,
+                                             @NotNull Integer year) {
         OZON_DetailReport detailReport = getDetailReport(month, year);
 
         if (detailReport == null) {
-            return new String[0];
+            return new ArrayList<>();
         }
 
         if (detailReport.getResult() == null) {
-            return new String[0];
+            return new ArrayList<>();
         }
 
         return OZON_dataProcessing.groupByOfferId(detailReport.getResult().getRows())
                 .keySet()
-                .toArray(new String[0]);
+                .stream().toList();
     }
 
     public void getPerformanceToken(@NotNull String clientId,

@@ -122,6 +122,10 @@ public class ExcelBuilderV2<T> {
 
                 if (cellWithParams.isTotal()) {
                     cell.setCellFormula(formula);
+                }
+                //todo: fix this condition
+                else if (cellWithParams.getValue() == null) {
+                    cell.setCellValue("");
                 } else if (cellWithParams.getValue().equals(0)) {
                     cell.setCellValue("");
                 } else if (cellWithParams.getValue().getClass().equals(String.class)) {

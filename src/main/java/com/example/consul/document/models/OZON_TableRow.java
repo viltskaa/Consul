@@ -56,7 +56,7 @@ public class OZON_TableRow extends TableRow {
     private Double claimsAccruals;
     @CellUnit(name = "Прочие начисления")
     private Double other;
-    @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
+    @CellUnit(name="Итого", type = ExcelCellType.TOTAL, total = true)
     private final Double total = 0.0;
 
     @Builder
