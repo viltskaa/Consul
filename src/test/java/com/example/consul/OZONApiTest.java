@@ -7,6 +7,7 @@ import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
+import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.services.OZON_Service;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.Test;
@@ -64,19 +65,19 @@ public class OZONApiTest {
     }
 
     @Test
-    public void skuTest2() {
-        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+    public void testCrossDocking() {
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
 //        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
 //        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
         ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
 
-        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
+        Pair<String, String> pairDate = ozonService.getDate(2024, 3);
         List<String> oper = new ArrayList<>();
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
 
-        Map<Long, Long> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku2, Collectors.counting()));
-        collect.forEach((k, v) -> System.out.println(k));
+        Double res = OZON_dataProcessing.sumCrossDocking(operations);
+        System.out.println(res);
     }
 
 
@@ -205,7 +206,7 @@ public class OZONApiTest {
 
         ExcelBuilderV1.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("застолье_OZON_июнь_2024.xls")
+                        .fileName("застолье_OZON_июнь_2024_3.xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("TEST")

@@ -141,6 +141,11 @@ public class OZON_DataCreator {
         return OZON_dataProcessing.sumActionCost(ozonTransactionReport.getResult().getOperations());
     }
 
+    public Double getCrossDocking(@NotNull OZON_TransactionReport ozonTransactionReport) {
+        return OZON_dataProcessing.sumCrossDocking(ozonTransactionReport.getResult().getOperations());
+    }
+
+
     public List<OZON_TableRow> mergeMapsToTableRows(@NotNull OZON_DetailReport ozonDetailReport,
                                                     @NotNull Map<String, List<Long>> offerSkus,
                                                     @NotNull OZON_TransactionReport ozonTransactionReport,
@@ -164,6 +169,7 @@ public class OZON_DataCreator {
         Double ozonPremium = getOzonPremium(ozonTransactionReport);
         Double actionCost = getActionCost(ozonTransactionReport);
         Map<String, Double> installments = getInstallments(offerSkus, ozonTransactionReport);
+        Double crossDocking = getCrossDocking(ozonTransactionReport);
 
         Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
@@ -205,7 +211,7 @@ public class OZON_DataCreator {
                     .cashbackIndividualPoints((Double) values.get(11) * -1)
                     .stencilProduct((Double) values.get(12))
                     .ozonPremium(ozonPremium / mergedMap.size() * -1)
-                    .crossDockingDelivery(0.0)
+                    .crossDockingDelivery(crossDocking / mergedMap.size() * -1)
                     .claimsAccruals(0.0)
                     .build();
         }).toList();
