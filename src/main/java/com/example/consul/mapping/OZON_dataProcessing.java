@@ -25,6 +25,29 @@ public class OZON_dataProcessing {
     }
 
     /**
+     * Общий метод приведения в итоговую map, для тех случаев, когда смотрим на сервисы в транзакциях
+     *
+     * @param collect
+     * @param skuOffer
+     * @return
+     */
+    static public Map<String, Double> toOfferPrice(Map<Long, Double> collect, Map<Long, String> skuOffer) {
+        Map<String, Double> res = skuOffer.entrySet().stream()
+                .filter(entry -> collect.containsKey(entry.getKey())) // фильтруем, если есть ключ в collect
+                .collect(Collectors.toMap(
+                        Map.Entry::getValue,               // Используем offer_id как ключ
+                        entry -> collect.get(entry.getKey()) // Используем значение из collect
+                ));
+
+        res.put("none", collect.entrySet().stream()
+                .filter(entry -> !skuOffer.containsKey(entry.getKey()))
+                .mapToDouble(Map.Entry::getValue)
+                .sum());
+
+        return res;
+    }
+
+    /**
      * Группировка отчета о реализации товаров по артикулу(offer_id)
      *
      * @param ozonDetailReports таблица отчета (rows из result в OZON_DetailReport)F
@@ -151,126 +174,97 @@ public class OZON_dataProcessing {
     /**
      * Нахождение эквайринга по артикулу
      *
-     * @param offerSku   Map [offer_id, sku этого offer_id]
+     * @param skuOffer   Map [offer_id, sku этого offer_id]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (эквайринг для этого товара)]
      */
-    static public Map<String, Double> sumAcquiring(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+    static public Map<String, Double> sumAcquiring(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
                 .filter(operation -> operation.checkServiceName("MarketplaceRedistributionOfAcquiringOperation"))
                 .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceRedistributionOfAcquiringOperation"))));
 
-        return offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
+//        return skuOffer.entrySet().stream()
+//                .filter(entry -> collect.containsKey(entry.getKey())) // фильтруем, если есть ключ в collect
+//                .collect(Collectors.toMap(
+//                        Map.Entry::getValue,               // Используем offer_id как ключ
+//                        entry -> collect.get(entry.getKey()) // Используем значение из collect
+//                ));
+        return toOfferPrice(collect, skuOffer);
     }
 
     /**
      * Нахождение Ozon Рассрочки по артикулу
      *
-     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param skuOffer   Map [offer_id, (sku этого offer_id)]
      * @param operations список операций ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (Ozon Рассрочка для товара)]
      */
-    static public Map<String, Double> sumInstallments(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+    static public Map<String, Double> sumInstallments(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
                 .filter(operation -> operation.checkServiceName("MarketplaceServiceItemInstallment"))
                 .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServiceItemInstallment"))));
 
-        return offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
+        return toOfferPrice(collect, skuOffer);
     }
 
 
     /**
      * Нахождение последней мили по артикулу
      *
-     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param skuOffer   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (последняя для этого товара)]
      */
-    static public Map<String, Double> sumLastMile(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
-        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
-                .stream()
-                .filter(x -> x.getPosting() != null)
-                .map(OZON_TransactionReport.Operation::of)
-                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
-
-        Map<String, Double> result = offerSku.entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> groupByPostingNumber
-                                .entrySet()
-                                .stream()
-                                .filter(groupEntry -> groupEntry.getValue()
-                                        .stream()
-                                        .anyMatch(op -> op.hasSkus(entry.getValue())))
-                                .flatMap(groupEntry -> groupEntry.getValue().stream())
-                                .filter(s -> s.getServices() != null && s.getServices().stream()
-                                        .anyMatch(x -> "MarketplaceServiceItemDelivToCustomer".equals(x.getName())))
-                                .mapToDouble(x -> x.getServices().stream()
-                                        .filter(y -> "MarketplaceServiceItemDelivToCustomer".equals(y.getName()))
-                                        .mapToDouble(OZON_TransactionReport.Service::getPrice)
-                                        .sum())
-                                .sum()
-                ));
-
-/*        result.put("none", operations.stream()
-                .filter(operation -> operation.getItems().isEmpty())
-                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());*/
-
-        return result;
-    }
-
-    static public Map<String, Double> sumLastMile_(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
-        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
-                .stream()
-                .filter(x -> x.getPosting() != null)
-                .map(OZON_TransactionReport.Operation::of)
-                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
-
-//        groupByPostingNumber.forEach((k, v) -> System.out.println(k + " : " + v.size()));
-
+    static public Map<String, Double> sumLastMile(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
-                .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDelivToCustomer")
-                        && operation.hasPostingNumber() &&
-                        (operation.getOperation_type().equals("OperationAgentDeliveredToCustomer")
-                        || operation.getOperation_type().equals("OperationAgentStornoDeliveredToCustomer")
-//                        || operation.getOperation_type().equals("OperationReturnGoodsFBSofRMS")
-                        ))
+                .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDelivToCustomer"))
                 .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer"))));
 
-        Map<String, Double> res = offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
+        return toOfferPrice(collect, skuOffer);
+    }
+
+    static public Map<String, Double> sumLastMile_(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
+//        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
+//                .stream()
+//                .filter(x -> x.getPosting() != null)
+//                .map(OZON_TransactionReport.Operation::of)
+//                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
+//
+////        groupByPostingNumber.forEach((k, v) -> System.out.println(k + " : " + v.size()));
+//
+//        Map<Long, Double> collect = operations.stream()
+//                .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDelivToCustomer")
+//                        && operation.hasPostingNumber() &&
+//                        (operation.getOperation_type().equals("OperationAgentDeliveredToCustomer")
+//                                || operation.getOperation_type().equals("OperationAgentStornoDeliveredToCustomer")
+////                        || operation.getOperation_type().equals("OperationReturnGoodsFBSofRMS")
+//                        ))
+//                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
+//                        Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer"))));
+//
+//        Map<String, Double> res = skuOffer.entrySet().stream()
+//                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
+//                .collect(Collectors.toMap(
+//                        Map.Entry::getKey,               // Используем offer_id как ключ
+//                        entry -> collect.get(entry.getValue()) // Используем значение из collect
+//                ));
 //        res.put("none", operations.stream()
 //                .filter(operation -> operation.getItems().isEmpty())
 //                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());
-        return res;
+        return new HashMap<>();
     }
 
     /**
      * Нахождение логистики по артикулу
      *
-     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param skuOffer   Map [offer_id, (sku этого offer_id)]
      * @param operations список операций ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (сумма для этого артикля)]
      */
-    static public Map<String, Double> sumLogistic(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+    static public Map<String, Double> sumLogistic(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
                 .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDirectFlowLogistic")
                         || operation.checkServiceName("MarketplaceServiceItemDirectFlowLogisticVDC"))
@@ -278,75 +272,33 @@ public class OZON_dataProcessing {
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServiceItemDirectFlowLogistic")
                                 + val.getPriceByServiceNameNoNull("MarketplaceServiceItemDirectFlowLogisticVDC"))));
 
-        return offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
+        return toOfferPrice(collect, skuOffer);
     }
 
     /**
      * Нахождение услуга продвижения «Бонусы продавца» по артикулу
      *
-     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param skuOffer   Map [offer_id, (sku этого offer_id)]
      * @param operations список операций ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (сумма для этого артикля)]
      */
-    static public Map<String, Double> sumCashbackIndividualPoints(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+    static public Map<String, Double> sumCashbackIndividualPoints(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
                 .filter(operation -> operation.checkServiceName("MarketplaceServicePremiumCashbackIndividualPoints"))
                 .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServicePremiumCashbackIndividualPoints"))));
 
-        double sum = collect.values()
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        System.out.println("offerSku  " + offerSku.size());
-
-        Map<Long, String> skuOffer = offerSku.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getValue,
-                        Map.Entry::getKey
-                ));
-        System.out.println("skuOffer  " + skuOffer.size());
-
-        Map<String, Double> res = skuOffer.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getKey())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getValue,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getKey()) // Используем значение из collect
-                ));
-        System.out.println("res " + res.size());
-
-        sum = res.values()
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        System.out.println("s " + sum);
-
-//        Map<String, Double> res = getOfferSku(operations).entrySet().stream()
-//                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-//                .collect(Collectors.toMap(
-//                        Map.Entry::getKey,               // Используем offer_id как ключ
-//                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-//                ));
-
-
-//        res.forEach((k, v) -> System.out.println(k + " : " + v));
-        return res;
+        return toOfferPrice(collect, skuOffer);
     }
-
 
     /**
      * Нахождение обработки отправления по артикулу
      *
-     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param skuOffer   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (обработка отправления для этого товара)]
      */
-    static public Map<String, Double> sumShipmentProcessing(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+    static public Map<String, Double> sumShipmentProcessing(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
                 .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDropoffSC")
                         || operation.checkServiceName("MarketplaceServiceItemDropoffPVZ"))
@@ -355,28 +307,17 @@ public class OZON_dataProcessing {
                                 + val.getPriceByServiceNameNoNull("MarketplaceServiceItemDropoffPVZ")
                         )));
 
-        Map<String, Double> res = offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
-        double sum = res.values()
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        System.out.println("обработки возврата" + sum);
-        return res;
+        return toOfferPrice(collect, skuOffer);
     }
 
     /**
      * Нахождение обработки возврата по артикулу
      *
-     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param skuOffer   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (обработка отправления для этого товара)]
      */
-    static public Map<String, Double> sumReturnProcessing(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+    static public Map<String, Double> sumReturnProcessing(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
                 .filter(operation -> operation.checkServiceName("MarketplaceServiceItemRedistributionReturnsPVZ")
                         || operation.checkServiceName("MarketplaceServiceItemReturnNotDelivToCustomer")
@@ -387,22 +328,17 @@ public class OZON_dataProcessing {
                                 + val.getPriceByServiceNameNoNull("MarketplaceServiceItemReturnPartGoodsCustomer")
                         )));
 
-        return offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
+        return toOfferPrice(collect, skuOffer);
     }
 
     /**
      * Нахождение доставки возврата по артикулу
      *
-     * @param offerSku   Map [offer_id, (sku этого offer_id)]
+     * @param skuOffer   Map [offer_id, (sku этого offer_id)]
      * @param operations список операци ( OZON_TransactionReport => result => operations )
      * @return Map [offer_id, (доставка возврата для этого товара)]
      */
-    static public Map<String, Double> sumReturnDelivery(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+    static public Map<String, Double> sumReturnDelivery(Map<Long, String> skuOffer, List<OZON_TransactionReport.Operation> operations) {
         Map<Long, Double> collect = operations.stream()
                 .filter(operation -> (operation.checkServiceName("MarketplaceServiceItemReturnFlowLogistic")
                         || operation.checkServiceName("MarketplaceServiceItemDirectFlowLogistic"))
@@ -413,12 +349,7 @@ public class OZON_dataProcessing {
                                 + val.getPriceByServiceNameNoNull("MarketplaceServiceItemDirectFlowLogistic")
                         )));
 
-        return offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
+        return toOfferPrice(collect, skuOffer);
     }
 
     /**
