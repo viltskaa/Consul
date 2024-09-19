@@ -232,35 +232,44 @@ public class OZON_dataProcessing {
         return result;
     }
 
-    static public Map<String, Double> sumLastMile_(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
-        Map<String, List<OZON_TransactionReport.Operation>> groupByPostingNumber = operations
-                .stream()
-                .filter(x -> x.getPosting() != null)
-                .map(OZON_TransactionReport.Operation::of)
-                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getPostingNumber));
+    public static Map<String, Double> sumLastMile_(Map<String, Long> offerSku, List<OZON_TransactionReport.Operation> operations) {
+        Map<String, Double> result = new HashMap<>();
 
-//        groupByPostingNumber.forEach((k, v) -> System.out.println(k + " : " + v.size()));
+        for (Map.Entry<String, Long> entry : offerSku.entrySet()) {
+            String offerId = entry.getKey();
+            Long sku = entry.getValue();
 
-        Map<Long, Double> collect = operations.stream()
-                .filter(operation -> operation.checkServiceName("MarketplaceServiceItemDelivToCustomer")
-                        && operation.hasPostingNumber() &&
-                        (operation.getOperation_type().equals("OperationAgentDeliveredToCustomer")
-                        || operation.getOperation_type().equals("OperationAgentStornoDeliveredToCustomer")
-//                        || operation.getOperation_type().equals("OperationReturnGoodsFBSofRMS")
-                        ))
-                .collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSkuNoNull,
-                        Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer"))));
+            double totalPrice = operations.stream()
+                    .filter(operation -> operation.getItems() != null && operation.hasSkus(sku))
+                    .filter(operation -> operation.getServices() != null)
+                    .flatMap(operation -> operation.getServices().stream())
+                    .filter(service -> "MarketplaceServiceItemDelivToCustomer".equals(service.getName()))
+                    .mapToDouble(OZON_TransactionReport.Service::getPrice)
+                    .sum();
 
-        Map<String, Double> res = offerSku.entrySet().stream()
-                .filter(entry -> collect.containsKey(entry.getValue())) // фильтруем, если есть ключ в collect
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,               // Используем offer_id как ключ
-                        entry -> collect.get(entry.getValue()) // Используем значение из collect
-                ));
-//        res.put("none", operations.stream()
-//                .filter(operation -> operation.getItems().isEmpty())
-//                .mapToDouble(item -> item.getPriceByServiceNameNoNull("MarketplaceServiceItemDelivToCustomer")).sum());
-        return res;
+            result.put(offerId, totalPrice);
+        }
+
+        double notFoundSum = operations.stream()
+                .filter(operation -> operation.getServices() != null)
+                .flatMap(operation -> operation.getServices().stream())
+                .filter(service -> "MarketplaceServiceItemDelivToCustomer".equals(service.getName()))
+                .filter(service -> !isServiceLinkedToOffer(service, operations, offerSku))
+                .mapToDouble(OZON_TransactionReport.Service::getPrice)
+                .sum();
+
+        if (notFoundSum != 0) {
+            result.put("not_found", notFoundSum);
+        }
+
+        return result;
+    }
+
+    private static boolean isServiceLinkedToOffer(OZON_TransactionReport.Service service, List<OZON_TransactionReport.Operation> operations, Map<String, Long> offerSku) {
+        return operations.stream()
+                .filter(operation -> operation.getServices() != null && operation.getServices().contains(service)) // Проверяем, что service есть в операции
+                .flatMap(operation -> operation.getItems().stream()) // Проходим по элементам (items)
+                .anyMatch(item -> offerSku.containsValue(item.getSku())); // Проверяем, связан ли item с offerSku
     }
 
     /**
