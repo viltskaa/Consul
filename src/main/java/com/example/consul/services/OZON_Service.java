@@ -113,9 +113,7 @@ public class OZON_Service {
                 pairDate.b
         );
 
-
         List<Long> skus = OZON_dataProcessing.getSkus(ozonTransactionReport.getResult().getOperations());
-        String[] offerIds = getListOfferIdByDate(month, year);
 
         return ozonExcelCreator.mergeMapsToTableRows(
                 getDetailReport(month, year),
@@ -143,8 +141,6 @@ public class OZON_Service {
                                        @NotNull Integer year,
                                        @NotNull Integer month) {
         Pair<String, String> pairDate = ozonExcelCreator.getStartAndEndDateToUtc(month, year);
-        List<String> oper = new ArrayList<>();
-
         ozonApi.setHeaders(apiKey, clientId);
 
         CompletableFuture<OZON_DetailReport> detailReportCompletableFuture = CompletableFuture
@@ -154,7 +150,7 @@ public class OZON_Service {
                 .supplyAsync(() -> getTransactionReport(
                         pairDate.a,
                         pairDate.b,
-                        oper,
+                        new ArrayList<>(),
                         OZON_TransactionType.all.toString()
                 ))
                 .thenApplyAsync(this::getProductInfoBySku);

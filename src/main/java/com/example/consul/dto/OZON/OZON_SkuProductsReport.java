@@ -28,7 +28,17 @@ public class OZON_SkuProductsReport {
                                 .collect(Collectors.toList())));
     }
 
-    public Map<String, Long> getListOfferSku() {
+    public Map<Long, String> getListOfferSku() {
+        Map<Long, String> res = result.getItems().stream().collect(Collectors.toMap(
+                OZON_SkuProductsReport.OZON_SkuProduct::getSku,
+                OZON_SkuProductsReport.OZON_SkuProduct::getOffer_id
+        ));
+        // для того, если вдруг есть два ску для одного оффер айди, то сумма с этого ску капала в none
+        res.put(0L, "none");
+        return res;
+    }
+
+        public Map<String, Long> getListOfferSkuWithoutNone() {
         return result.getItems().stream().collect(Collectors.toMap(
                 OZON_SkuProductsReport.OZON_SkuProduct::getOffer_id,
                 OZON_SkuProductsReport.OZON_SkuProduct::getSku

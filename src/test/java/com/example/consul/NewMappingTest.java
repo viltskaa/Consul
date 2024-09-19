@@ -53,15 +53,15 @@ public class NewMappingTest {
                         OZON_SkuProductsReport.OZON_SkuProduct::getSku
                 ));
 
-        Map<String, Double> res = OZON_dataProcessing.sumLastMile_(offerSku, operations);
-
-        double sum = res.values()
+//        Map<String, Double> res = OZON_dataProcessing.sumLastMile_(offerSku, operations);
+//
+        double sum = collect.values()
                 .stream()
                 .mapToDouble(Double::doubleValue)
                 .sum();
         System.out.println(sum);
-
-        res.forEach((k, v) -> System.out.println(k + " : " + v));
+//
+//        res.forEach((k, v) -> System.out.println(k + " : " + v));
     }
     //-43012.32
     // 732.7
@@ -126,7 +126,7 @@ public class NewMappingTest {
                         Collectors.summingDouble(val -> val.getPriceByServiceNameNoNull("MarketplaceRedistributionOfAcquiringOperation"))));
 
 
-        Map<String, Long> offerSku = ozonService.getProductInfoBySku(
+        Map<Long, String> offerSku = ozonService.getProductInfoBySku(
                         OZON_dataProcessing.getSkus(operations)
                 ).getResult()
                 // получаем информация по всем ску, которые были выявлены в транзакциях
@@ -134,17 +134,17 @@ public class NewMappingTest {
                 .stream()
                 // приводим инфу к мапу, где ключ это оффер айди, а значение ску
                 .collect(Collectors.toMap(
-                        OZON_SkuProductsReport.OZON_SkuProduct::getOffer_id,
-                        OZON_SkuProductsReport.OZON_SkuProduct::getSku
+                        OZON_SkuProductsReport.OZON_SkuProduct::getSku,
+                        OZON_SkuProductsReport.OZON_SkuProduct::getOffer_id
                 ));
 
-        Map<String, Double> res = OZON_dataProcessing.sumCashbackIndividualPoints(offerSku, operations);
+        Map<String, Double> res = OZON_dataProcessing.sumLastMile(offerSku, operations);
 
-//        double sum = res.values()
-//                .stream()
-//                .mapToDouble(Double::doubleValue)
-//                .sum();
-//        System.out.println(" sumCashbackIndividualPoints" + sum);
+        double sum = res.values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        System.out.println(" sumLastMile " + sum);
 //
 //        sum = collect.values()
 //                .stream()
