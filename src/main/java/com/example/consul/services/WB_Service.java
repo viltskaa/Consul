@@ -16,7 +16,7 @@ import com.example.consul.dto.WB.WB_AdReport;
 import com.example.consul.dto.WB.WB_DetailReport;
 import com.example.consul.dto.WB.WB_SaleReport;
 import com.example.consul.mapping.WB_dataProcessing;
-import com.example.consul.utils.Clustering;
+import com.example.consul.utils.ClassificationByArticle;
 import com.example.consul.utils.DateUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -29,18 +29,18 @@ public class WB_Service {
     private final WB_Api wbApi;
     private final WB_DataCreator wbDataCreator;
     private final ConditionalWithDelayChecker withDelayChecker;
-    private final Clustering clustering;
+    private final ClassificationByArticle classificationByArticle;
 
     public WB_Service(
             WB_Api wbApi,
             WB_DataCreator wbDataCreator,
             ConditionalWithDelayChecker withDelayChecker,
-            Clustering clustering
+            ClassificationByArticle classificationByArticle
     ) {
         this.wbApi = wbApi;
         this.wbDataCreator = wbDataCreator;
         this.withDelayChecker = withDelayChecker;
-        this.clustering = clustering;
+        this.classificationByArticle = classificationByArticle;
     }
 
     public ReportFile createReport(
@@ -52,7 +52,7 @@ public class WB_Service {
         Map<String, Map<String, List<WB_TableRow>>> clusteredData = new TreeMap<>();
 
         for (Map.Entry<String, List<WB_TableRow>> entry : data.entrySet()) {
-            Map<String, List<WB_TableRow>> clsData = clustering.of(entry.getValue(), "Не распределены");
+            Map<String, List<WB_TableRow>> clsData = classificationByArticle.of(entry.getValue(), "Не распределены");
 
             clsData.forEach((key, value) -> {
                 if (clusteredData.containsKey(key)) {

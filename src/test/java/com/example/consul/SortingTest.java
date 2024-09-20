@@ -1,19 +1,14 @@
 package com.example.consul;
 
-import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.services.WB_Service;
-import com.example.consul.utils.Clustering;
-import org.junit.jupiter.api.Test;
+import com.example.consul.utils.ClassificationByArticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
-import java.util.Map;
 
 @SpringBootTest
 public class SortingTest {
     @Autowired
-    private Clustering clustering;
+    private ClassificationByArticle classificationByArticle;
     @Autowired
     private WB_Service wbService;
 
