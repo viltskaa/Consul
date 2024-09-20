@@ -143,7 +143,7 @@ public class DateUtils {
             }
 
             return weeks;
-        };
+        }
     }
 
     @Data
