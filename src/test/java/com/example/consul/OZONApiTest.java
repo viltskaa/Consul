@@ -7,7 +7,6 @@ import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
-import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.services.OZON_Service;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.Test;
@@ -76,8 +75,8 @@ public class OZONApiTest {
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
 
-        Double res = OZON_dataProcessing.sumCrossDocking(operations);
-        System.out.println(res);
+        //Double res = OZON_dataProcessing.perCrossDocking(operations);
+        //System.out.println(res);
     }
 
 

@@ -9,13 +9,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 public class OZON_DataCreator {
@@ -133,16 +129,32 @@ public class OZON_DataCreator {
         return OZON_dataProcessing.getAccrualInternalClaim(ozonFinanceReport);
     }
 
-    public Double getOzonPremium(@NotNull OZON_TransactionReport ozonTransactionReport) {
-        return OZON_dataProcessing.sumOzonPremium(ozonTransactionReport.getResult().getOperations());
+    public Double getOzonPremium(@NotNull OZON_DetailReport ozonDetailReport,
+                                 @NotNull OZON_TransactionReport ozonTransactionReport) {
+        return OZON_dataProcessing.perOzonPremium(
+                ozonDetailReport.getResult().getRows(),
+                ozonTransactionReport.getResult().getOperations()
+        );
+    }
+
+    public Double getBuyReview(@NotNull OZON_DetailReport ozonDetailReport,
+                               @NotNull OZON_TransactionReport ozonTransactionReport) {
+        return OZON_dataProcessing.perBuyReview(
+                ozonDetailReport.getResult().getRows(),
+                ozonTransactionReport.getResult().getOperations()
+        );
     }
 
     public Double getActionCost(@NotNull OZON_TransactionReport ozonTransactionReport) {
         return OZON_dataProcessing.sumActionCost(ozonTransactionReport.getResult().getOperations());
     }
 
-    public Double getCrossDocking(@NotNull OZON_TransactionReport ozonTransactionReport) {
-        return OZON_dataProcessing.sumCrossDocking(ozonTransactionReport.getResult().getOperations());
+    public Double getCrossDocking(@NotNull OZON_DetailReport ozonDetailReport,
+                                  @NotNull OZON_TransactionReport ozonTransactionReport) {
+        return OZON_dataProcessing.perCrossDocking(
+                ozonDetailReport.getResult().getRows(),
+                ozonTransactionReport.getResult().getOperations()
+        );
     }
 
 
@@ -151,7 +163,6 @@ public class OZON_DataCreator {
                                                     @NotNull OZON_TransactionReport ozonTransactionReport,
                                                     @NotNull List<OZON_PerformanceReport> ozonPerformanceReports,
                                                     @NotNull OZON_FinanceReport ozonFinanceReport) {
-
         Map<String, Integer> saleCount = getMapSaleCount(ozonDetailReport);
         Map<String, Integer> returnCount = getMapReturnCount(ozonDetailReport);
         Map<String, Double> saleForDelivered = getMapSaleForDelivered(ozonDetailReport);
@@ -166,35 +177,57 @@ public class OZON_DataCreator {
         Map<String, Double> stencilProduct = getMapStencils(offerSkus, ozonPerformanceReports);
         Map<String, Double> cashbackIndividualPoints = getMapCashbackIndividualPoints(offerSkus, ozonTransactionReport);
         Double accrualInternalClaim = getAccrualInternalClaim(ozonFinanceReport);
-        Double ozonPremium = getOzonPremium(ozonTransactionReport);
+        Double ozonPremium = getOzonPremium(ozonDetailReport, ozonTransactionReport);
+        Double buyReview = getBuyReview(ozonDetailReport, ozonTransactionReport);
         Double actionCost = getActionCost(ozonTransactionReport);
         Map<String, Double> installments = getInstallments(offerSkus, ozonTransactionReport);
-        Double crossDocking = getCrossDocking(ozonTransactionReport);
+        Double crossDocking = getCrossDocking(ozonDetailReport,ozonTransactionReport);
 
-        Map<String, List<Object>> mergedMap = new HashMap<>(saleCount.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
-                        entry.getValue(), // 0
-                        returnCount.getOrDefault(entry.getKey(), 0), // 1
-                        saleForDelivered.getOrDefault(entry.getKey(), 0.0), // 2
-                        sumReturn.getOrDefault(entry.getKey(), 0.0), // 3
-                        salesCommission.getOrDefault(entry.getKey(), 0.0), //4
-                        shipmentProcessing.getOrDefault(entry.getKey(), 0.0), // 5
-                        logistic.getOrDefault(entry.getKey(), 0.0), // 6
-                        lastMile.getOrDefault(entry.getKey(), 0.0), // 7
-                        acquiring.getOrDefault(entry.getKey(), 0.0), //8
-                        returnProcessing.getOrDefault(entry.getKey(), 0.0), //9
-                        returnDelivery.getOrDefault(entry.getKey(), 0.0), // 10
-                        cashbackIndividualPoints.getOrDefault(entry.getKey(), 0.0), //11
-                        stencilProduct.getOrDefault(entry.getKey(), 0.0), //12
-                        installments.getOrDefault(entry.getKey(), 0.0) //13
-                ))));
+        Set<String> allKeys = new HashSet<>();
+        allKeys.addAll(saleCount.keySet());
+        allKeys.addAll(returnCount.keySet());
+        allKeys.addAll(saleForDelivered.keySet());
+        allKeys.addAll(sumReturn.keySet());
+        allKeys.addAll(salesCommission.keySet());
+        allKeys.addAll(shipmentProcessing.keySet());
+        allKeys.addAll(logistic.keySet());
+        allKeys.addAll(lastMile.keySet());
+        allKeys.addAll(acquiring.keySet());
+        allKeys.addAll(returnProcessing.keySet());
+        allKeys.addAll(returnDelivery.keySet());
+        allKeys.addAll(stencilProduct.keySet());
+        allKeys.addAll(cashbackIndividualPoints.keySet());
+        allKeys.addAll(installments.keySet());
 
-        return mergedMap.entrySet().stream().map(x -> {
-            List<Object> values = x.getValue();
+        Map<String, List<Object>> mergedMap = new HashMap<>();
+        for (String key : allKeys) {
+            mergedMap.put(key, Arrays.asList(
+                    saleCount.getOrDefault(key, 0), // 0
+                    returnCount.getOrDefault(key, 0), // 1
+                    saleForDelivered.getOrDefault(key, 0.0), // 2
+                    sumReturn.getOrDefault(key, 0.0), // 3
+                    salesCommission.getOrDefault(key, 0.0), // 4
+                    shipmentProcessing.getOrDefault(key, 0.0), // 5
+                    logistic.getOrDefault(key, 0.0), // 6
+                    lastMile.getOrDefault(key, 0.0), // 7
+                    acquiring.getOrDefault(key, 0.0), // 8
+                    returnProcessing.getOrDefault(key, 0.0), // 9
+                    returnDelivery.getOrDefault(key, 0.0), // 10
+                    cashbackIndividualPoints.getOrDefault(key, 0.0), // 11
+                    stencilProduct.getOrDefault(key, 0.0), // 12
+                    installments.getOrDefault(key, 0.0) // 13
+            ));
+        }
+
+        return mergedMap.entrySet().stream().map(entry -> {
+            String article = entry.getKey();
+            List<Object> values = entry.getValue();
+            Integer deliveredCount = (Integer) values.get(0);
+            Integer returnedCount = (Integer) values.get(1);
             return OZON_TableRow.builder()
-                    .article(x.getKey())
-                    .delivered((Integer) values.get(0))
-                    .returned((Integer) values.get(1))
+                    .article(article)
+                    .delivered(deliveredCount)
+                    .returned(returnedCount)
                     .saleForDelivered((Double) values.get(2))
                     .sumReturn((Double) values.get(3))
                     .salesCommission((Double) values.get(4))
@@ -210,9 +243,10 @@ public class OZON_DataCreator {
                     .searchPromotion(0.0)
                     .cashbackIndividualPoints((Double) values.get(11) * -1)
                     .stencilProduct((Double) values.get(12))
-                    .ozonPremium(ozonPremium / mergedMap.size() * -1)
-                    .crossDockingDelivery(crossDocking / mergedMap.size() * -1)
+                    .ozonPremium(ozonPremium * (deliveredCount - returnedCount) * -1)
+                    .crossDockingDelivery(crossDocking * (deliveredCount - returnedCount) * -1)
                     .claimsAccruals(0.0)
+                    .buyReview(buyReview * (deliveredCount - returnedCount) * -1)
                     .build();
         }).toList();
     }

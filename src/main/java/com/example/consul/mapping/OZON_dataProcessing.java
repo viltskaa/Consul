@@ -62,6 +62,20 @@ public class OZON_dataProcessing {
         return result;
     }
 
+    static public Integer totalDeliveryCount(List<OZON_DetailReport.Row> data) {
+        return data.stream()
+                .filter(row -> row.getDeliveryCommission() != null)
+                .mapToInt(row -> row.getDeliveryCommission().getQuantity())
+                .sum();
+    }
+
+    static public Integer totalReturnCount(List<OZON_DetailReport.Row> data) {
+        return data.stream()
+                .filter(row -> row.getReturnCommission() != null)
+                .mapToInt(row -> row.getReturnCommission().getQuantity())
+                .sum();
+    }
+
     /**
      * Нахождение количества возвращенных товаров по артикулу
      *
@@ -169,11 +183,22 @@ public class OZON_dataProcessing {
      * @param operations список операций ( OZON_TransactionReport => result => operations )
      * @return Общая сумма Ozon Premium
      */
-    static public Double sumOzonPremium(List<OZON_TransactionReport.Operation> operations) {
-        return operations.stream()
+    static public Double perOzonPremium(List<OZON_DetailReport.Row> rows, List<OZON_TransactionReport.Operation> operations) {
+        Double totalSumOzonPremium = operations.stream()
                 .filter(op -> Objects.equals(op.getOperation_type(), "OperationMarketplacePremiumSubscribtion"))
                 .mapToDouble(OZON_TransactionReport.Operation::getAmount)
                 .sum();
+        Integer div = totalDeliveryCount(rows)-totalReturnCount(rows);
+        return totalSumOzonPremium/div;
+    }
+
+    static public Double perBuyReview(List<OZON_DetailReport.Row> rows, List<OZON_TransactionReport.Operation> operations) {
+        Double totalSumBuyReview = operations.stream()
+                .filter(op -> Objects.equals(op.getOperation_type(), "MarketplaceSaleReviewsOperation"))
+                .mapToDouble(OZON_TransactionReport.Operation::getAmount)
+                .sum();
+        Integer div = totalDeliveryCount(rows)-totalReturnCount(rows);
+        return totalSumBuyReview/div;
     }
 
     /**
@@ -334,11 +359,9 @@ public class OZON_dataProcessing {
                         entry -> operations.stream()
                                 .filter(op -> op.hasSkus(entry.getValue()) && !op.checkServiceName("MarketplaceServiceItemDropoffSC") && !op.checkServiceName("MarketplaceServiceItemDropoffPVZ"))
                                 .filter(s -> s.getServices() != null && s.getServices().stream()
-                                        .anyMatch(x -> "MarketplaceServiceItemReturnFlowLogistic".equals(x.getName())
-                                                || "MarketplaceServiceItemDirectFlowLogistic".equals(x.getName())))
+                                        .anyMatch(x -> "MarketplaceServiceItemReturnFlowLogistic".equals(x.getName())))
                                 .mapToDouble(x -> x.getServices().stream()
-                                        .filter(y -> "MarketplaceServiceItemReturnFlowLogistic".equals(y.getName())
-                                                || "MarketplaceServiceItemDirectFlowLogistic".equals(y.getName()))
+                                        .filter(y -> "MarketplaceServiceItemReturnFlowLogistic".equals(y.getName()))
                                         .mapToDouble(OZON_TransactionReport.Service::getPrice)
                                         .sum())
                                 .sum()
@@ -351,11 +374,13 @@ public class OZON_dataProcessing {
      * @param operations
      * @return
      */
-    static public Double sumCrossDocking(List<OZON_TransactionReport.Operation> operations) {
-        return operations.stream()
+    static public Double perCrossDocking(List<OZON_DetailReport.Row> rows, List<OZON_TransactionReport.Operation> operations) {
+        Double totalSumCrossDocking = operations.stream()
                 .filter(op -> Objects.equals(op.getOperation_type(), "OperationMarketplaceCrossDockServiceWriteOff"))
                 .mapToDouble(OZON_TransactionReport.Operation::getAmount)
                 .sum();
+        Integer div = totalDeliveryCount(rows)-totalReturnCount(rows);
+        return totalSumCrossDocking/div;
     }
 
     /**

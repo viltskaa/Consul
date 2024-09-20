@@ -11,7 +11,7 @@ import lombok.*;
         formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +
                 "-logistic-lastMile-acquiring-installment-returnProcessing-returnDelivery" +
                 "-promotion-cashbackIndividualPoints-compensation-searchPromotion-stencilProduct-ozonPremium" +
-                "-crossDockingDelivery-claimsAccruals-other)/IF(delivered-returned=0,1,delivered-returned)-2.47"
+                "-crossDockingDelivery-claimsAccruals-other-buyReview)/IF(delivered-returned=0,1,delivered-returned)-2.47"
 )
 public class OZON_TableRow extends TableRow {
     @CellUnit(name = "Доставлено")
@@ -56,6 +56,8 @@ public class OZON_TableRow extends TableRow {
     private Double claimsAccruals;
     @CellUnit(name = "Прочие начисления")
     private Double other;
+    @CellUnit(name = "Покупка отзывов")
+    private Double buyReview;
     @CellUnit(name="Итого", type = ExcelCellType.TOTAL, total = true)
     private final Double total = 0.0;
 
@@ -81,7 +83,8 @@ public class OZON_TableRow extends TableRow {
                          Double ozonPremium,
                          Double crossDockingDelivery,
                          Double claimsAccruals,
-                         Double other) {
+                         Double other,
+                         Double buyReview) {
         super(article);
         this.delivered = delivered;
         this.returned = returned;
@@ -104,5 +107,6 @@ public class OZON_TableRow extends TableRow {
         this.crossDockingDelivery = crossDockingDelivery;
         this.claimsAccruals = claimsAccruals;
         this.other = other;
+        this.buyReview = buyReview;
     }
 }
