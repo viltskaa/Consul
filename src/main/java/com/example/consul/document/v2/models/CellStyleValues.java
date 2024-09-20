@@ -42,6 +42,7 @@ public enum CellStyleValues implements CellOperator {
             CellStyle style = CellStyleValues.BASE.getCellStyle(workbook);
             style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
             style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            style.setDataFormat(workbook.createDataFormat().getFormat("0.00"));
             return style;
         }
     },

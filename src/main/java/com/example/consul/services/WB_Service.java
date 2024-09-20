@@ -18,15 +18,10 @@ import com.example.consul.dto.WB.WB_SaleReport;
 import com.example.consul.mapping.WB_dataProcessing;
 import com.example.consul.utils.Clustering;
 import com.example.consul.utils.DateUtils;
-import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
-import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -53,23 +48,46 @@ public class WB_Service {
             @NotNull Integer year,
             @NotNull Integer month
     ) {
-        List<WB_TableRow> data = getData(apiKey, year, month);
-        Map<String, List<WB_TableRow>> clusteredData = clustering.of(data, "Нераспределенные");
+        Map<String, List<WB_TableRow>> data = getData(apiKey, year, month);
+        Map<String, Map<String, List<WB_TableRow>>> clusteredData = new TreeMap<>();
+
+        for (Map.Entry<String, List<WB_TableRow>> entry : data.entrySet()) {
+            Map<String, List<WB_TableRow>> clsData = clustering.of(entry.getValue(), "Не распределены");
+
+            clsData.forEach((key, value) -> {
+                if (clusteredData.containsKey(key)) {
+                    Map<String, List<WB_TableRow>> keyValue = clusteredData.get(key);
+                    if (keyValue.containsKey(entry.getKey())) {
+                        keyValue.get(entry.getKey()).addAll(value);
+                    } else {
+                        keyValue.put(entry.getKey(), value);
+                    }
+                } else {
+                    Map<String, List<WB_TableRow>> map = new TreeMap<>();
+                    map.put(entry.getKey(), value);
+                    clusteredData.put(key, map);
+                }
+            });
+        }
+
+        Comparator<WB_TableRow> wbTableRowComparator = Comparator.comparing(WB_TableRow::getArticle);
 
         return ExcelBuilderV2.<WB_TableRow>builder()
                 .setFilename("report_wb.xlsx")
                 .setSheets(
-                        Sheet.<WB_TableRow>builder()
-                                .name("1")
-                                .tables(
-                                        clusteredData.entrySet().stream()
-                                                .map(entry ->
-                                                        Table.<WB_TableRow>builder()
-                                                                .name(entry.getKey())
-                                                                .data(entry.getValue())
-                                                                .build()
-                                                ).toList()
-                                ).build()
+                        clusteredData.entrySet().stream()
+                                .map(entry -> Sheet.<WB_TableRow>builder()
+                                        .name(entry.getKey())
+                                        .tables(
+                                                entry.getValue().entrySet().stream()
+                                                        .map(entryData ->
+                                                                Table.<WB_TableRow>builder()
+                                                                        .name(String.valueOf(entryData.getKey()))
+                                                                        .data(entryData.getValue().stream()
+                                                                                .sorted(wbTableRowComparator).toList())
+                                                                        .build()
+                                                        ).toList()
+                                        ).build()).toList()
                 )
                 .build()
                 .createDocument();
@@ -128,14 +146,17 @@ public class WB_Service {
         return month.equals(1);
     }
 
-    public List<WB_TableRow> getData(
+    public Map<String, List<WB_TableRow>> getData(
             @NotNull String apiKey,
             @NotNull Integer year,
             @NotNull Integer month
     ) {
         wbApi.setApiKey(apiKey);
-        CompletableFuture<List<WB_DetailReport>> reportCompletableFuture = CompletableFuture
+        CompletableFuture<Map<String, List<WB_DetailReport>>> reportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> {
+                    Map<String, List<WB_DetailReport>> weeksReport = new TreeMap<>();
+                    DateUtils.WeekPeriod week4 = DateUtils.getNearMonday(year, month);
+
                     List<WB_DetailReport> report = getDetailReportByYearAndMonth(year, month);
                     if (report == null) {
                         return null;
@@ -155,7 +176,13 @@ public class WB_Service {
                         }, 65L);
                     }
 
-                    return report;
+                    for (DateUtils.Week week: week4.getWeeks()) {
+                        List<WB_DetailReport> weeklyReport = report.stream()
+                                .filter(wbDetailReport -> week.isInRange(wbDetailReport.getDate_from())).toList();
+                        weeksReport.put(week.toString(), weeklyReport);
+                    }
+
+                    return weeksReport;
                 });
 
         return wbDataCreator.createTableRows(reportCompletableFuture.join());
@@ -210,7 +237,7 @@ public class WB_Service {
     }
 
     public List<WB_DetailReport> getDetailReportByYearAndMonth(@NotNull Integer year, @NotNull Integer month) {
-        DateUtils.Month date = DateUtils.getMonth(year, month);
+        DateUtils.WeekPeriod date = DateUtils.getNearMonday(year, month);
         return isNeedV1(month)
                 ? getDetailReportV1(date.getFirstDay(), date.getLastDay())
                 : getDetailReportV5(date.getFirstDay(), date.getLastDay());

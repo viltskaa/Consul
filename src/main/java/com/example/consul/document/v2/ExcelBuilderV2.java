@@ -50,6 +50,7 @@ public class ExcelBuilderV2<T> {
         CellStyle boldStyle = sheet.getWorkbook().createCellStyle();
         boldStyle.cloneStyleFrom(cellStyles.get(ExcelCellType.BASE));
         Font boldFont = sheet.getWorkbook().createFont();
+        boldFont.setFontHeightInPoints((short) 16);
         boldFont.setBold(true);
         boldStyle.setFont(boldFont);
         boldStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
@@ -85,7 +86,7 @@ public class ExcelBuilderV2<T> {
                             headerRow.getRowNum(),
                             headerRow.getRowNum(),
                             0,
-                            headerRow.getLastCellNum()-1)
+                            headerRow.getLastCellNum() - 1)
             );
         }
 
@@ -112,17 +113,20 @@ public class ExcelBuilderV2<T> {
 
                 Cell cell = tableRow.createCell(column);
                 cell.setCellStyle(cellStyles.get(cellWithParams.getType()));
+                sheet.autoSizeColumn(column);
 
                 if (formula != null) {
                     formula = formula.replace(
                             cellWithParams.getFieldName(),
-                            CellReference.convertNumToColString(column)+(tableRow.getRowNum()+1)
+                            CellReference.convertNumToColString(column) + (tableRow.getRowNum() + 1)
                     );
                 }
 
                 if (cellWithParams.isTotal()) {
                     cell.setCellFormula(formula);
-                } else if (cellWithParams.getValue().equals(0)) {
+                } else if (cellWithParams.getValue() == null
+                        || cellWithParams.getValue().equals(0)
+                        || cellWithParams.getValue().equals(0.00)) {
                     cell.setCellValue("");
                 } else if (cellWithParams.getValue().getClass().equals(String.class)) {
                     cell.setCellValue(cellWithParams.getValue().toString());
@@ -161,7 +165,7 @@ public class ExcelBuilderV2<T> {
                     ExcelCellType.TOTAL, CellStyleValues.TOTAL.getCellStyle(workbook)
             );
 
-            for (Sheet<T> sheet: sheets) {
+            for (Sheet<T> sheet : sheets) {
                 createSheet(workbook, sheet);
             }
 
@@ -205,6 +209,11 @@ public class ExcelBuilderV2<T> {
         @SafeVarargs
         public final Builder setSheets(Sheet<T>... sheets) {
             ExcelBuilderV2.this.sheets = Arrays.stream(sheets).toList();
+            return this;
+        }
+
+        public Builder setSheets(List<Sheet<T>> sheets) {
+            ExcelBuilderV2.this.sheets = sheets;
             return this;
         }
 
