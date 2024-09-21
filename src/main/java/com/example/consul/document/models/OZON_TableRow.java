@@ -10,7 +10,7 @@ import lombok.*;
 @TotalCell(
         formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +
                 "-logistic-lastMile-acquiring-installment-returnProcessing-returnDelivery" +
-                "-promotion-cashbackIndividualPoints-compensation-searchPromotion-stencilProduct-ozonPremium" +
+                "-ozonPremium-searchPromotion-stencilProduct-cashbackIndividualPoints-compensation" +
                 "-crossDockingDelivery-claimsAccruals-other-buyReview)/IF(delivered-returned=0,1,delivered-returned)-2.47"
 )
 public class OZON_TableRow extends TableRow {

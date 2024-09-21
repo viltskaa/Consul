@@ -14,6 +14,13 @@ import java.util.stream.Collectors;
 
 public class OZON_dataProcessing {
 
+    static public List<Long> getSkusFromTransactions(List<OZON_TransactionReport.Operation> operations) {
+        return operations.stream().
+                flatMap(operation -> operation.getItems().stream())
+                .map(OZON_TransactionReport.Item::getSku)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Группировка отчета о реализации товаров по артикулу(offer_id)
      *
@@ -188,8 +195,8 @@ public class OZON_dataProcessing {
                 .filter(op -> Objects.equals(op.getOperation_type(), "OperationMarketplacePremiumSubscribtion"))
                 .mapToDouble(OZON_TransactionReport.Operation::getAmount)
                 .sum();
-        Integer div = totalDeliveryCount(rows)-totalReturnCount(rows);
-        return totalSumOzonPremium/div;
+        Integer div = totalDeliveryCount(rows) - totalReturnCount(rows);
+        return totalSumOzonPremium / div;
     }
 
     static public Double perBuyReview(List<OZON_DetailReport.Row> rows, List<OZON_TransactionReport.Operation> operations) {
@@ -197,8 +204,8 @@ public class OZON_dataProcessing {
                 .filter(op -> Objects.equals(op.getOperation_type(), "MarketplaceSaleReviewsOperation"))
                 .mapToDouble(OZON_TransactionReport.Operation::getAmount)
                 .sum();
-        Integer div = totalDeliveryCount(rows)-totalReturnCount(rows);
-        return totalSumBuyReview/div;
+        Integer div = totalDeliveryCount(rows) - totalReturnCount(rows);
+        return totalSumBuyReview / div;
     }
 
     /**
@@ -379,8 +386,8 @@ public class OZON_dataProcessing {
                 .filter(op -> Objects.equals(op.getOperation_type(), "OperationMarketplaceCrossDockServiceWriteOff"))
                 .mapToDouble(OZON_TransactionReport.Operation::getAmount)
                 .sum();
-        Integer div = totalDeliveryCount(rows)-totalReturnCount(rows);
-        return totalSumCrossDocking/div;
+        Integer div = totalDeliveryCount(rows) - totalReturnCount(rows);
+        return totalSumCrossDocking / div;
     }
 
     /**
@@ -436,8 +443,22 @@ public class OZON_dataProcessing {
         return report.getResult().getDetails()
                 .stream()
                 .flatMap(detail -> detail.getOthers().getItems().stream())
-                .filter(item -> Objects.equals(item.getName(), "AccrualInternalClaim"))
+                .filter(item -> Objects.equals(item.getName(), "AccrualInternalClaim")
+                )
                 .mapToDouble(OZON_FinanceReport.Items::getPrice)
                 .sum();
     }
+
+    // пыталась найти утилизацию
+
+//    static public Double getDisposal(@NotNull OZON_FinanceReport report) {
+//        return report.getResult().getDetails()
+//                .stream()
+//                .flatMap(detail -> detail.getOthers().getItems().stream())
+//                .filter(item -> Objects.equals(item.getName(), "MarketplaceServiceStockDisposal")
+//                        || Objects.equals(item.getName(), "MarketplaceReturnDisposalServiceFbsItem")
+//                )
+//                .mapToDouble(OZON_FinanceReport.Items::getPrice)
+//                .sum();
+//    }
 }

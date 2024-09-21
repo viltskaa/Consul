@@ -115,7 +115,7 @@ public class OZON_Service {
 
         return ozonExcelCreator.mergeMapsToTableRows(
                 getDetailReport(month, year),
-                getOfferIdToSkuMap(month, year),
+                getOfferWithSkus(ozonTransactionReport),
                 ozonTransactionReport,
                 scheduledGetPerformanceReport(performanceClientId, performanceClientSecret, year, month),
                 ozonFinanceReport
@@ -139,29 +139,18 @@ public class OZON_Service {
                                        @NotNull Integer year,
                                        @NotNull Integer month) {
         Pair<String, String> pairDate = ozonExcelCreator.getStartAndEndDateToUtc(month, year);
-        List<String> operationsType = Stream.of(
-                OZON_TransactionType.OperationAgentDeliveredToCustomer,
-                OZON_TransactionType.OperationAgentStornoDeliveredToCustomer,
-                OZON_TransactionType.OperationReturnGoodsFBSofRMS,
-                OZON_TransactionType.MarketplaceRedistributionOfAcquiringOperation
-        ).map(Object::toString).toList();
-        List<String> oper = new ArrayList<>();
-
         ozonApi.setHeaders(apiKey, clientId);
 
         CompletableFuture<OZON_DetailReport> detailReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getDetailReport(month, year));
 
-        CompletableFuture<Map<String, List<Long>>> ozonSkuProductsReportCompletableFuture = CompletableFuture
-                .supplyAsync(() -> getOfferIdToSkuMap(month, year));
-
-        CompletableFuture<OZON_TransactionReport> ozonTransactionReportCompletableFuture = CompletableFuture
+        CompletableFuture<Pair<OZON_TransactionReport, Map<String, List<Long>>>> ozonTransactionsAndProducts = CompletableFuture
                 .supplyAsync(() -> getTransactionReport(
                         pairDate.a,
                         pairDate.b,
-                        oper,
+                        new ArrayList<>(),
                         OZON_TransactionType.all.toString()
-                ));
+                )).thenApplyAsync(this::getTransactionsAndProducts);
 
         CompletableFuture<OZON_FinanceReport> ozonFinanceReportCompletableFuture = CompletableFuture
                 .supplyAsync(() -> getFinanceReport(
@@ -179,8 +168,8 @@ public class OZON_Service {
 
         return ozonExcelCreator.mergeMapsToTableRows(
                 detailReportCompletableFuture.join(),
-                ozonSkuProductsReportCompletableFuture.join(),
-                ozonTransactionReportCompletableFuture.join(),
+                ozonTransactionsAndProducts.join().b,
+                ozonTransactionsAndProducts.join().a,
                 ozonPerformanceReportCompletableFuture.join(),
                 ozonFinanceReportCompletableFuture.join()
         );
@@ -289,6 +278,14 @@ public class OZON_Service {
         }
     }
 
+    public OZON_SkuProductsReport getProductInfoBySku(@NotNull List<Long> skus) {
+        try {
+            return ozonApi.getProductInfo(skus);
+        } catch (NullPointerException exception) {
+            return null;
+        }
+    }
+
     public OZON_RelatedSku getRelatedSku(@NotNull List<Long> skus) {
         try {
             return ozonApi.getRelatedSku(skus);
@@ -297,45 +294,32 @@ public class OZON_Service {
         }
     }
 
-    public Map<String, List<Long>> getOfferIdToSkuMap(Integer month, Integer year) {
-        List<String> offerIds = getListOfferIdByDate(month, year);
-
-        if (offerIds == null || offerIds.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        OZON_SkuProductsReport productReport = getProductInfoByOfferId(offerIds);
-
-        if (productReport == null || productReport.getResult() == null || productReport.getResult().getItems() == null) {
-            return new HashMap<>();
-        }
-
-        Map<String, List<Long>> offerIdToSkuMap = new HashMap<>();
-
-        for (OZON_SkuProductsReport.OZON_SkuProduct product : productReport.getResult().getItems()) {
-            String offerId = product.getOffer_id();
-            Long sku = product.getSku();
-
-            List<Long> skuList = offerIdToSkuMap.computeIfAbsent(offerId, k -> new ArrayList<>());
-
-            skuList.add(sku);
-
+    public OZON_RelatedSku getRelatedSku(@NotNull Long sku) {
+        try {
             List<Long> relatedSkuList = Collections.singletonList(sku);
-            OZON_RelatedSku relatedSkuReport = getRelatedSku(relatedSkuList);
-
-            if (relatedSkuReport != null && relatedSkuReport.getItems() != null) {
-                for (OZON_RelatedSku.Item relatedSku : relatedSkuReport.getItems()) {
-                    Long relatedSkuId = relatedSku.getSku();
-                    if (!skuList.contains(relatedSkuId)) {
-                        skuList.add(relatedSkuId);
-                    }
-                }
-            }
+            return ozonApi.getRelatedSku(relatedSkuList);
+        } catch (NullPointerException exception) {
+            return null;
         }
-
-        return offerIdToSkuMap;
     }
 
+    public Pair<OZON_TransactionReport, Map<String, List<Long>>> getTransactionsAndProducts(@NotNull OZON_TransactionReport report) {
+        return new Pair<>(report,getOfferWithSkus(report));
+    }
+
+    public Map<String, List<Long>> getOfferWithSkus(@NotNull OZON_TransactionReport report){
+        List<Long> skus = OZON_dataProcessing.getSkusFromTransactions(report.getResult().getOperations());
+        if (skus == null || skus.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        Map<String, List<Long>> res = new HashMap<>();
+        getProductInfoBySku(skus).getResult().getItems().forEach(item -> {
+            List<Long> skuList = res.computeIfAbsent(item.getOffer_id(), k -> new ArrayList<>());
+            getRelatedSku(item.getSku()).getItems().forEach(el -> skuList.add(el.getSku()));
+        });
+        return res;
+    }
 
     public List<String> getListOfferIdByDate(@NotNull Integer month,
                                              @NotNull Integer year) {
