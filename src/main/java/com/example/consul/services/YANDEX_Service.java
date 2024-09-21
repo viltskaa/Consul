@@ -4,11 +4,11 @@ import com.example.consul.api.YANDEX_Api;
 import com.example.consul.api.utils.YANDEX.YANDEX_ReportStatusType;
 import com.example.consul.components.YANDEX_DataCreator;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
-import com.example.consul.document.v1.ExcelBuilderV1;
-import com.example.consul.document.v1.configurations.ExcelConfig;
-import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.YANDEX_TableRow;
+import com.example.consul.document.v2.ExcelBuilderV2;
+import com.example.consul.document.v2.models.Sheet;
+import com.example.consul.document.v2.models.Table;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
 import com.example.consul.utils.Clustering;
@@ -53,21 +53,25 @@ public class YANDEX_Service {
                 month
         );
 
-        Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data);
+        Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data, "Нераспределенные");
 
-        return ExcelBuilderV1.createDocumentToReportFile(
-                ExcelConfig.<YANDEX_TableRow>builder()
-                        .fileName("report_yandex_" + month + "_" + year + ".xls")
-                        .header(
-                                HeaderConfig.builder()
-                                        .title("Yandex")
-                                        .description("Бухгалтерский отчет за " + month + "." + year)
-                                        .build()
-                        )
-                        .data(clusteredData.values().stream().toList())
-                        .sheetsName(clusteredData.keySet().stream().toList())
-                        .build()
-        );
+        return ExcelBuilderV2.<YANDEX_TableRow>builder()
+                .setFilename("report_yandex.xlsx")
+                .setSheets(
+                        Sheet.<YANDEX_TableRow>builder()
+                                .name("1")
+                                .tables(
+                                        clusteredData.entrySet().stream()
+                                                .map(entry ->
+                                                        Table.<YANDEX_TableRow>builder()
+                                                                .name(entry.getKey())
+                                                                .data(entry.getValue())
+                                                                .build()
+                                                ).toList()
+                                ).build()
+                )
+                .build()
+                .createDocument();
     }
 
     public YANDEX_CreateReport getServicesReport(@NotNull Long businessId,
