@@ -44,7 +44,7 @@ public class OZON_FinanceReport {
     }
 
     @Data
-    private static class Services {
+    public static class Services {
         private Double total;
         private List<Items> items;
     }

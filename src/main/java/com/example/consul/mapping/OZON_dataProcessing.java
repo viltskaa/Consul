@@ -449,16 +449,23 @@ public class OZON_dataProcessing {
                 .sum();
     }
 
-    // пыталась найти утилизацию
+    static public Double getCompensation(@NotNull List<OZON_DetailReport.Row> rows, @NotNull List<OZON_TransactionReport.Operation> operation) {
+        Double totalCompensation = operation.stream()
+                .filter(op -> Objects.equals(op.getType(), "compensation"))
+                .mapToDouble(OZON_TransactionReport.Operation::getAmount)
+                .sum();
+        Integer div = totalDeliveryCount(rows) - totalReturnCount(rows);
+        return totalCompensation / div;
+    }
 
-//    static public Double getDisposal(@NotNull OZON_FinanceReport report) {
-//        return report.getResult().getDetails()
-//                .stream()
-//                .flatMap(detail -> detail.getOthers().getItems().stream())
-//                .filter(item -> Objects.equals(item.getName(), "MarketplaceServiceStockDisposal")
-//                        || Objects.equals(item.getName(), "MarketplaceReturnDisposalServiceFbsItem")
-//                )
-//                .mapToDouble(OZON_FinanceReport.Items::getPrice)
-//                .sum();
-//    }
+    static public Double getDisposal(@NotNull List<OZON_DetailReport.Row> rows, @NotNull OZON_FinanceReport report) {
+        Double totalDisposal = report.getResult().getDetails()
+                .stream()
+                .flatMap(detail -> detail.getServices().getItems().stream())
+                .filter(item -> Objects.equals(item.getName(), "MarketplaceServiceStockDisposal"))
+                .mapToDouble(OZON_FinanceReport.Items::getPrice)
+                .sum();
+        Integer div = totalDeliveryCount(rows) - totalReturnCount(rows);
+        return totalDisposal / div;
+    }
 }

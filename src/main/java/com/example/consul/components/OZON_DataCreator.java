@@ -137,6 +137,22 @@ public class OZON_DataCreator {
         );
     }
 
+    public Double getDisposal(@NotNull OZON_DetailReport ozonDetailReport,
+                              @NotNull OZON_FinanceReport ozonFinanceReport) {
+        return OZON_dataProcessing.getDisposal(
+                ozonDetailReport.getResult().getRows(),
+                ozonFinanceReport
+        );
+    }
+
+    public Double getCompensation(@NotNull OZON_DetailReport ozonDetailReport,
+                                  @NotNull OZON_TransactionReport ozonTransactionReport) {
+        return OZON_dataProcessing.getCompensation(
+                ozonDetailReport.getResult().getRows(),
+                ozonTransactionReport.getResult().getOperations()
+        );
+    }
+
     public Double getBuyReview(@NotNull OZON_DetailReport ozonDetailReport,
                                @NotNull OZON_TransactionReport ozonTransactionReport) {
         return OZON_dataProcessing.perBuyReview(
@@ -176,10 +192,11 @@ public class OZON_DataCreator {
         Map<String, Double> returnDelivery = getMapReturnDelivery(offerSkus, ozonTransactionReport);
         Map<String, Double> stencilProduct = getMapStencils(offerSkus, ozonPerformanceReports);
         Map<String, Double> cashbackIndividualPoints = getMapCashbackIndividualPoints(offerSkus, ozonTransactionReport);
-        Double accrualInternalClaim = getAccrualInternalClaim(ozonFinanceReport);
+        Double compensation = getCompensation(ozonDetailReport, ozonTransactionReport);
         Double ozonPremium = getOzonPremium(ozonDetailReport, ozonTransactionReport);
+        Double disposal = getDisposal(ozonDetailReport, ozonFinanceReport);
         Double buyReview = getBuyReview(ozonDetailReport, ozonTransactionReport);
-        Double actionCost = getActionCost(ozonTransactionReport);
+        //Double actionCost = getActionCost(ozonTransactionReport);
         Map<String, Double> installments = getInstallments(offerSkus, ozonTransactionReport);
         Double crossDocking = getCrossDocking(ozonDetailReport,ozonTransactionReport);
 
@@ -238,15 +255,16 @@ public class OZON_DataCreator {
                     .installment((Double) values.get(13) * -1)
                     .returnProcessing((Double) values.get(9) * -1)
                     .returnDelivery((Double) values.get(10) * -1)
-                    .promotion(actionCost / mergedMap.size() * -1)
-                    .compensation(accrualInternalClaim / mergedMap.size())
+                    //.promotion(actionCost / mergedMap.size() * -1)
+                    .compensation(compensation  * (deliveredCount - returnedCount))
                     .searchPromotion(0.0)
                     .cashbackIndividualPoints((Double) values.get(11) * -1)
                     .stencilProduct((Double) values.get(12))
                     .ozonPremium(ozonPremium * (deliveredCount - returnedCount) * -1)
                     .crossDockingDelivery(crossDocking * (deliveredCount - returnedCount) * -1)
-                    .claimsAccruals(0.0)
+                    //.claimsAccruals(0.0)
                     .buyReview(buyReview * (deliveredCount - returnedCount) * -1)
+                    .disposal(disposal * (deliveredCount - returnedCount) * -1)
                     .build();
         }).toList();
     }
