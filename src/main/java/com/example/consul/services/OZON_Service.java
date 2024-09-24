@@ -60,26 +60,24 @@ public class OZON_Service {
                 month
         );
 
-        Map<String, List<OZON_TableRow>> clusteredData = classificationByArticle.of(data);
-
-        return ExcelBuilderV1.createDocumentToReportFile(
-                ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("report_ozon" + clientId + "_" + month + "_" + year + ".xls")
-                        .header(
-                                HeaderConfig.builder()
-                                        .title("OZON")
-                                        .description("NEW METHOD")
-                                        .build()
-                        ))
-                        .build()
-                )
-                .toList();
-
-        Sheet[] sheetsArray = listOfSheets.toArray(new Sheet[0]);
+        Map<String, List<OZON_TableRow>> clusteredData = classificationByArticle.of(data, "Не распределены");
 
         return ExcelBuilderV2.<OZON_TableRow>builder()
                 .setFilename("report_ozon.xlsx")
-                .setSheets(sheetsArray)
+                .setSheets(
+                        clusteredData.entrySet().stream()
+                                .map(entry -> Sheet.<OZON_TableRow>builder()
+                                        .name(entry.getKey())
+                                        .tables(Collections.singletonList(
+                                                Table.<OZON_TableRow>builder()
+                                                        .name(entry.getKey())
+                                                        .data(entry.getValue())
+                                                        .build()
+                                        ))
+                                        .build()
+                                )
+                                .toList()
+                )
                 .build()
                 .createDocument();
     }

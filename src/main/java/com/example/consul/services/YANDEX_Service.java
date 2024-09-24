@@ -54,27 +54,24 @@ public class YANDEX_Service {
                 month
         );
 
-        Map<String, List<YANDEX_TableRow>> clusteredData = classificationByArticle.of(data);
-
-        List<Sheet<YANDEX_TableRow>> listOfSheets = clusteredData.entrySet().stream()
-                .map(entry -> Sheet.<YANDEX_TableRow>builder()
-                        .name(entry.getKey())
-                        .tables(Collections.singletonList(
-                                Table.<YANDEX_TableRow>builder()
-                                        .name(entry.getKey())
-                                        .data(entry.getValue())
-                                        .build()
-                        ))
-                        .build()
-                )
-                .toList();
-
-        Sheet[] sheetsArray = listOfSheets.toArray(new Sheet[0]);
-
+        Map<String, List<YANDEX_TableRow>> clusteredData = classificationByArticle.of(data, "Не распределены");
 
         return ExcelBuilderV2.<YANDEX_TableRow>builder()
                 .setFilename("report_yandex.xlsx")
-                .setSheets(sheetsArray)
+                .setSheets(
+                        clusteredData.entrySet().stream()
+                                .map(entry -> Sheet.<YANDEX_TableRow>builder()
+                                        .name(entry.getKey())
+                                        .tables(Collections.singletonList(
+                                                Table.<YANDEX_TableRow>builder()
+                                                        .name(entry.getKey())
+                                                        .data(entry.getValue())
+                                                        .build()
+                                        ))
+                                        .build()
+                                )
+                                .toList()
+                )
                 .build()
                 .createDocument();
     }
