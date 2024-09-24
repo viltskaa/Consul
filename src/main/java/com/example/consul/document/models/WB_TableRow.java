@@ -27,13 +27,15 @@ public class WB_TableRow extends TableRow {
     private Double sumCompensationForReplace;
     @CellUnit(name = "Компенсация испорченного товара")
     private Double sumCompensationForDefected;
-    @CellUnit(name = "поверенный (ПВЗ+эквайринг)")
+    @CellUnit(name = "Поверенный (ПВЗ+эквайринг)")
     private Double acquiringSale;
+    @CellUnit(name = "Вознаграждение ВБ")
+    private Double acquiringReplace;
     @CellUnit(name = "Возврат комиссии, поверенный", type = ExcelCellType.EXPENSIVE)
     private Double acquiringReturn;
     @CellUnit(name = "Доплаты", type = ExcelCellType.EXPENSIVE)
     private Double additional;
-    @CellUnit(name = "штраф")
+    @CellUnit(name = "Штрафы")
     private Double penalty;
     @CellUnit(name = "Прочие удержания")
     private Double deduction;
@@ -41,25 +43,29 @@ public class WB_TableRow extends TableRow {
     private Double storage;
     @CellUnit(name = "Логистика")
     private Double logistic;
+    @CellUnit(name = "Логистика сторно (+ нам)")
+    private Double logisticStorno;
     @CellUnit(name = "Итого", type = ExcelCellType.TOTAL, total = true)
     private final Double total = 0.0;
 
     @Builder
-    public WB_TableRow(String article,
-                       Integer retailAmount,
-                       Double retailSum,
-                       Integer returnAmount,
-                       Double sumReturn,
-                       Double sumCompensationForLost,
-                       Double sumCompensationForReplace,
-                       Double sumCompensationForDefected,
-                       Double acquiringSale,
-                       Double acquiringReturn,
-                       Double additional,
-                       Double penalty,
-                       Double deduction,
-                       Double storage,
-                       Double logistic) {
+    public WB_TableRow(
+            String article,
+            Integer retailAmount,
+            Double retailSum,
+            Integer returnAmount,
+            Double sumReturn,
+            Double sumCompensationForLost,
+            Double sumCompensationForReplace,
+            Double sumCompensationForDefected,
+            Double acquiringSale,
+            Double acquiringReturn,
+            Double additional,
+            Double penalty,
+            Double deduction,
+            Double storage,
+            Double logistic
+    ) {
         super(article);
         this.retailAmount = retailAmount;
         this.retailSum = retailSum;

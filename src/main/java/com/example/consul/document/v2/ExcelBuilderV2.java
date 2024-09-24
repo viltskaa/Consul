@@ -1,5 +1,6 @@
 package com.example.consul.document.v2;
 
+import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.v1.configurations.ExcelCellType;
@@ -18,6 +19,7 @@ import org.springframework.core.io.ByteArrayResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class ExcelBuilderV2<T> {
@@ -27,6 +29,10 @@ public class ExcelBuilderV2<T> {
     private String filename;
 
     private Map<ExcelCellType, CellStyle> cellStyles;
+
+    private String numbersToCellAddress(int row, int column) {
+        return CellReference.convertNumToColString(column) + row;
+    }
 
     public static <T> ExcelBuilderV2<T>.Builder builder() {
         return new ExcelBuilderV2<T>().new Builder();
@@ -118,7 +124,7 @@ public class ExcelBuilderV2<T> {
                 if (formula != null) {
                     formula = formula.replace(
                             cellWithParams.getFieldName(),
-                            CellReference.convertNumToColString(column) + (tableRow.getRowNum() + 1)
+                            numbersToCellAddress(startIndex, column)
                     );
                 }
 
@@ -139,6 +145,29 @@ public class ExcelBuilderV2<T> {
                 }
                 column++;
             }
+        }
+        Row totalRow = sheet.createRow(startIndex);
+        List<Field> fields = ObjectDeepReflection.getFieldsWithAnnotation(
+                table.getDataClass(),
+                CellUnit.class
+        );
+        int column = 0;
+
+        for (Field field : fields) {
+            Cell cell = totalRow.createCell(column);
+            cell.setCellStyle(cellStyles.get(ExcelCellType.TOTAL));
+            sheet.autoSizeColumn(column);
+
+            if (!field.getType().equals(String.class)) {
+                cell.setCellFormula(
+                        "SUM(%s:%s)".formatted(
+                                numbersToCellAddress(totalRow.getRowNum() - table.getDataSize() + 1, column),
+                                numbersToCellAddress(totalRow.getRowNum(), column)
+                        )
+                );
+            }
+
+            column++;
         }
     }
 
