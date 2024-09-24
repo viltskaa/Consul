@@ -11,7 +11,7 @@ public enum ColumnNameEnum {
     PRICE_WITH_DISCOUNT("Цена с НДС с учётом всех скидок, руб. за шт."),
     SERVICE_COST("Стоимость услуги, ₽"),
     POST_PAYMENT("Постоплата, ₽"),
-    SERVICE_COST_PLACEMENT("Стоимость услуги (гр.47=гр. 35-гр.37+гр.42+гр.44-гр.45-гр.46), ₽"),
+    SERVICE_COST_PLACEMENT("Стоимость услуги (гр.48=гр. 35-гр.37+гр.42+гр.44-гр.45-гр.46-гр.47), ₽"),
     TARIFF("Тариф за заказ или отправление, ₽");
 
     public final String name;

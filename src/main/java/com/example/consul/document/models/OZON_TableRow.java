@@ -10,8 +10,8 @@ import lombok.*;
 @TotalCell(
         formula = "(saleForDelivered-sumReturn-salesCommission-shipmentProcessing" +
                 "-logistic-lastMile-acquiring-installment-returnProcessing-returnDelivery" +
-                "-promotion-cashbackIndividualPoints-compensation-searchPromotion-stencilProduct-ozonPremium" +
-                "-crossDockingDelivery-claimsAccruals-other)/IF(delivered-returned=0,1,delivered-returned)-2.47"
+                "-ozonPremium-searchPromotion-stencilProduct-cashbackIndividualPoints+compensation" +
+                "-crossDockingDelivery-other-buyReview-disposal)/IF(delivered-returned=0,1,delivered-returned)-2.47"
 )
 public class OZON_TableRow extends TableRow {
     @CellUnit(name = "Доставлено")
@@ -38,11 +38,11 @@ public class OZON_TableRow extends TableRow {
     private Double returnProcessing;
     @CellUnit(name = "Доставка возврата")
     private Double returnDelivery;
-    @CellUnit(name = "Услуга продвижения")
-    private Double promotion;
+    //@CellUnit(name = "Услуга продвижения")
+    //private Double promotion;
     @CellUnit(name = "Услуга продвижения (бонусы продавца)")
     private Double cashbackIndividualPoints;
-    @CellUnit(name = "Компенсация за испорченный товар")
+    @CellUnit(name = "Компенсации (+)")
     private Double compensation;
     @CellUnit(name = "Продвижение в поиске")
     private Double searchPromotion;
@@ -52,11 +52,15 @@ public class OZON_TableRow extends TableRow {
     private Double ozonPremium;
     @CellUnit(name = "Кросс-докинг")
     private Double crossDockingDelivery;
-    @CellUnit(name = "Начисления по претензиям")
-    private Double claimsAccruals;
+    //@CellUnit(name = "Начисления по претензиям")
+    //private Double claimsAccruals;
     @CellUnit(name = "Прочие начисления")
     private Double other;
-    @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
+    @CellUnit(name = "Покупка отзывов")
+    private Double buyReview;
+    @CellUnit(name = "Утилизация")
+    private Double disposal;
+    @CellUnit(name="Итого", type = ExcelCellType.TOTAL, total = true)
     private final Double total = 0.0;
 
     @Builder
@@ -73,15 +77,17 @@ public class OZON_TableRow extends TableRow {
                          Double installment,
                          Double returnProcessing,
                          Double returnDelivery,
-                         Double promotion,
+                         //Double promotion,
                          Double cashbackIndividualPoints,
                          Double compensation,
                          Double searchPromotion,
                          Double stencilProduct,
                          Double ozonPremium,
                          Double crossDockingDelivery,
-                         Double claimsAccruals,
-                         Double other) {
+                         //Double claimsAccruals,
+                         Double other,
+                         Double buyReview,
+                         Double disposal) {
         super(article);
         this.delivered = delivered;
         this.returned = returned;
@@ -95,14 +101,16 @@ public class OZON_TableRow extends TableRow {
         this.installment = installment;
         this.returnProcessing = returnProcessing;
         this.returnDelivery = returnDelivery;
-        this.promotion = promotion;
+        //this.promotion = promotion;
         this.cashbackIndividualPoints = cashbackIndividualPoints;
         this.compensation = compensation;
         this.searchPromotion = searchPromotion;
         this.stencilProduct = stencilProduct;
         this.ozonPremium = ozonPremium;
         this.crossDockingDelivery = crossDockingDelivery;
-        this.claimsAccruals = claimsAccruals;
+        //this.claimsAccruals = claimsAccruals;
         this.other = other;
+        this.buyReview = buyReview;
+        this.disposal = disposal;
     }
 }

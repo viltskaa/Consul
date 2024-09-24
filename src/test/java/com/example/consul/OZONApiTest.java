@@ -5,8 +5,10 @@ import com.example.consul.document.v1.ExcelBuilderV1;
 import com.example.consul.document.v1.configurations.ExcelConfig;
 import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.OZON_TableRow;
+import com.example.consul.dto.OZON.OZON_FinanceReport;
 import com.example.consul.dto.OZON.OZON_SkuProductsReport;
 import com.example.consul.dto.OZON.OZON_TransactionReport;
+import com.example.consul.mapping.OZON_dataProcessing;
 import com.example.consul.services.OZON_Service;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,40 @@ public class OZONApiTest {
 
     @Autowired
     private OZON_Api api;
+
+    @Test
+    public void testDisposal(){
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+//        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
+        Pair<String, String> pairDate = ozonService.getDate(2024, 5);
+        OZON_FinanceReport report = ozonService.getFinanceReport(pairDate.a, pairDate.b);
+//        System.out.println(OZON_dataProcessing.getDisposal(report));
+    }
+
+    @Test
+    public void test(){
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
+//        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
+//        ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
+        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
+        OZON_FinanceReport report = ozonService.getFinanceReport(pairDate.a, pairDate.b);
+        List<OZON_FinanceReport.Details> details = report.getResult().getDetails();
+
+        List<OZON_FinanceReport.Items> items = new ArrayList<>();
+        details.forEach(el -> items.addAll(el.getOthers().getItems()));
+
+        Map<String, Long> res = items.stream().collect(Collectors.groupingBy(
+                OZON_FinanceReport.Items::getName,
+                Collectors.counting()
+        ));
+
+        res.forEach((k,v) -> System.out.println(k + "  " + v));
+
+//        System.out.println(OZON_dataProcessing.getAccrualInternalClaim(report));
+    }
 
     @Test
     public void newMapping() {
@@ -51,7 +87,7 @@ public class OZONApiTest {
 //        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
 //        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
         ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
-        String[] offerIds = ozonService.getListOfferIdByDate(6, 2024);
+        List<String> offerIds = ozonService.getListOfferIdByDate(6, 2024);
         OZON_SkuProductsReport report = ozonService.getProductInfoByOfferId(offerIds);
 
         System.out.println("start");
@@ -64,19 +100,19 @@ public class OZONApiTest {
     }
 
     @Test
-    public void skuTest2() {
-        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
+    public void testCrossDocking() {
+//        ozonService.setHeaders("1b04be41-8998-4189-a0cf-d40f2edb9f93", "1380622"); //stulof
 //        ozonService.setHeaders("4670697c-2557-432b-bc5e-8979d12b3618", "633752"); //Zastole
 //        ozonService.setHeaders("2bdf5f47-2351-4b4a-8303-896be2fd80c6","1380673"); // Alica
         ozonService.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423"); // Alica_2
 
-        Pair<String, String> pairDate = ozonService.getDate(2024, 6);
+        Pair<String, String> pairDate = ozonService.getDate(2024, 3);
         List<String> oper = new ArrayList<>();
         OZON_TransactionReport report = ozonService.getTransactionReport(pairDate.a, pairDate.b, oper, "all");
         List<OZON_TransactionReport.Operation> operations = report.getResult().getOperations();
 
-        Map<Long, Long> collect = operations.stream().collect(Collectors.groupingBy(OZON_TransactionReport.Operation::getSku2, Collectors.counting()));
-        collect.forEach((k, v) -> System.out.println(k));
+        //Double res = OZON_dataProcessing.perCrossDocking(operations);
+        //System.out.println(res);
     }
 
 
@@ -199,7 +235,7 @@ public class OZONApiTest {
 
         ExcelBuilderV1.createDocument(
                 ExcelConfig.<OZON_TableRow>builder()
-                        .fileName("застолье_OZON_июнь_2024.xls")
+                        .fileName("застолье_OZON_июнь_2024_3.xls")
                         .header(
                                 HeaderConfig.builder()
                                         .title("TEST")
@@ -264,6 +300,15 @@ public class OZONApiTest {
         System.out.println(sum);
     }
 
+    @Test
+    public void testRelatedSku() {
+        OZON_Api api = new OZON_Api();
+        api.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423");
+        List<Long> skus = new ArrayList<>();
+        skus.add(477040104L);
+
+        System.out.println(api.getRelatedSku(skus));
+    }
 
     @Test
     public void testDetailReport() {
@@ -272,12 +317,4 @@ public class OZONApiTest {
 
         System.out.println(api.getDetailReport(4, 2024));
     }
-
-//    @Test
-//    public void testDetailReport(){
-//        OZON_Api api = new OZON_Api();
-//        api.setHeaders("9e98a805-4717-4ea4-a852-41ed1e5948ac", "350423");
-//
-//        System.out.println(api.getDetailReport(4, 2024));
-//    }
 }

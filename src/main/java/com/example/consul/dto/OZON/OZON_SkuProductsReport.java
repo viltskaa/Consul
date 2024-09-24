@@ -20,54 +20,53 @@ public class OZON_SkuProductsReport {
         private List<OZON_SkuProduct> items;
     }
 
-    public Map<String, List<Long>> getSkuListByOfferId() {
-        return result.getItems().stream()
-                .collect(Collectors.toMap(OZON_SkuProduct::getOffer_id,
-                        item -> item.getSku() != 0L ? List.of(item.getSku()) : item.getSources().stream()
-                                .map(OZON_SkuProductsReport.OZON_SkuProduct.Sources::getSku)
-                                .collect(Collectors.toList())));
-    }
-
-
     @Data
     @Getter
     public static class OZON_SkuProduct {
-        private Long id;
-        private String name;
-        private String offer_id;
-        private Boolean is_archived;
-        private Boolean is_autoarchived;
-        private Long sku;
-        private String barcode;
-        private List<String> barcodes;
-        private String buybox_price;
-        private Long description_category_id;
-        private Integer type_id;
-        private String created_at;
-        private List<String> images;
-        private String currency_code;
-        private String marketing_price;
-        private String min_price;
-        private String old_price;
-        private String price;
-        private String recommended_price;
-        private List<Sources> sources;
-        private Boolean has_discounted_item;
-        private Boolean is_discounted;
-        private Stocks discounted_stocks;
-        private String state;
-        private Stocks stocks;
-        private List<String> errors;
-        private String updated_at;
-        private String vat;
-        private Boolean visible;
-        private Details visibility_details;
-        private Object price_indexes;
-        private List<String> images360;
-        private Boolean is_kgt;
-        private String color_image;
-        private String primary_image;
-        private Status status;
+        private Long id;//есть
+        private String name;//есть
+        private String offer_id;//есть
+        private Boolean is_archived; //есть
+        private Boolean is_autoarchived; //есть
+        private Long sku; //есть
+        private String barcode;//есть
+        private List<String> barcodes; //есть
+        private String buybox_price; //есть
+        private Long category_id; //есть
+        private Long description_category_id; //есть
+        private Integer type_id; //есть
+        private String created_at; //есть
+        private List<String> images; //есть
+        private String currency_code; //есть
+        private String marketing_price;//есть
+        private String min_ozon_price; //есть
+        private String min_price; //есть
+        private String old_price; //есть
+        private String premium_price; //есть
+        private String price; //есть
+        private String recommended_price; //есть
+        private List<Sources> sources; //есть
+        private Boolean has_discounted_item; //есть
+        private Boolean is_discounted; //есть
+        private Stocks discounted_stocks; //есть
+        private String state; //есть
+        private Stocks stocks; //есть
+        private List<String> errors; //есть
+        private String updated_at; //есть
+        private String vat; //есть
+        private Boolean visible; //есть
+        private Details visibility_details; //есть
+        private String price_index; //есть
+        private Object price_indexes; //есть
+        private List<String> images360; //есть
+        private Boolean is_kgt; //есть
+        private String color_image; //есть
+        private String primary_image; //есть
+        private Status status; //есть
+        private String service_type; //есть
+        private Long fbo_sku; //есть
+        private Long fbs_sku; //есть
+        private String rating; //есть
 
         @Data
         private static class Sources{

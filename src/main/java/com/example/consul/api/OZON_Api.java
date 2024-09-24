@@ -3,10 +3,7 @@ package com.example.consul.api;
 
 import com.example.consul.api.utils.OZON.FinanceReportRequest;
 import com.example.consul.api.utils.TransactionBody;
-import com.example.consul.dto.OZON.OZON_DetailReport;
-import com.example.consul.dto.OZON.OZON_FinanceReport;
-import com.example.consul.dto.OZON.OZON_SkuProductsReport;
-import com.example.consul.dto.OZON.OZON_TransactionReport;
+import com.example.consul.dto.OZON.*;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -178,19 +175,45 @@ public class OZON_Api {
      * @return
      */
     @Nullable
-    public OZON_SkuProductsReport getProductInfoByOfferId(String[] offerIds) {
+    public OZON_SkuProductsReport getProductInfoByOfferId(List<String> offerIds) {
         String url = "https://api-seller.ozon.ru/v2/product/info/list";
 
-        Map<String, String[]> map = new HashMap<>();
+        Map<String, List<String>> map = new HashMap<>();
         map.put("offer_id", offerIds);
 
-        HttpEntity<Map<String, String[]>> request = new HttpEntity<>(map, headers);
+        HttpEntity<Map<String, List<String>>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<String> response = restTemplate
                 .postForEntity(url, request, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), OZON_SkuProductsReport.class);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Загрузка и обновление товаров => Получить связанные SKU.
+     * Метод для получения всех SKU по старым идентификаторам SKU
+     *
+     * @param skus идентификатор товара в системе Ozon
+     * @return
+     */
+    @Nullable
+    public OZON_RelatedSku getRelatedSku(List<Long> skus) {
+        String url = "https://api-seller.ozon.ru/v1/product/related-sku/get";
+
+        Map<String, List<Long>> map = new HashMap<>();
+        map.put("sku", skus);
+
+        HttpEntity<Map<String, List<Long>>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<String> response = restTemplate
+                .postForEntity(url, request, String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return new Gson().fromJson(response.getBody(), OZON_RelatedSku.class);
         } else {
             return null;
         }

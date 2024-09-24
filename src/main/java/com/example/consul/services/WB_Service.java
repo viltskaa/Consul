@@ -72,6 +72,21 @@ public class WB_Service {
 
         Comparator<WB_TableRow> wbTableRowComparator = Comparator.comparing(WB_TableRow::getArticle);
 
+        List<Sheet<WB_TableRow>> listOfSheets = clusteredData.entrySet().stream()
+                .map(entry -> Sheet.<WB_TableRow>builder()
+                        .name(entry.getKey())
+                        .tables(Collections.singletonList(
+                                Table.<WB_TableRow>builder()
+                                        .name(entry.getKey())
+                                        .data(entry.getValue())
+                                        .build()
+                        ))
+                        .build()
+                )
+                .toList();
+
+        Sheet[] sheetsArray = listOfSheets.toArray(new Sheet[0]);
+
         return ExcelBuilderV2.<WB_TableRow>builder()
                 .setFilename("report_wb.xlsx")
                 .setSheets(

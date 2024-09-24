@@ -2,6 +2,7 @@ package com.example.consul.dto.OZON;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.List;
 import java.util.stream.Collectors;
