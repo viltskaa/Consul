@@ -61,6 +61,13 @@ public class ObjectDeepReflection {
             @NotNull Class<? extends Annotation> annotation
     ) {
         Class<?> cls = obj.getClass();
+        return getFieldsWithAnnotation(cls, annotation);
+    }
+
+    public static List<Field> getFieldsWithAnnotation(
+            @NotNull Class<?> cls,
+            @NotNull Class<? extends Annotation> annotation
+    ) {
         List<Field> fields = getFields(cls);
 
         return fields.stream()

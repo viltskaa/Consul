@@ -17,7 +17,14 @@ public class Table<T> {
     private String startCell;
 
     public int getHeight() {
-        return data.size() + (name != null ? 1 : 0) + 1;
+        return data.size() + (name != null ? 1 : 0) + 2;
+    }
+
+    public Class<?> getDataClass() {
+        if (data == null || data.isEmpty()) {
+            return null;
+        }
+        return data.get(0).getClass();
     }
 
     public int getDataSize() {

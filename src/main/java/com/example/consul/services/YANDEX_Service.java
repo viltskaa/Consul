@@ -11,7 +11,7 @@ import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.YANDEX_TableRow;
 import com.example.consul.dto.YANDEX.YANDEX_CreateReport;
 import com.example.consul.dto.YANDEX.YANDEX_ReportInfo;
-import com.example.consul.utils.Clustering;
+import com.example.consul.utils.ClassificationByArticle;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -29,14 +29,14 @@ import java.util.Map;
 public class YANDEX_Service {
     private final YANDEX_Api yandexApi;
     private final ConditionalWithDelayChecker reportChecker;
-    private final Clustering clustering;
+    private final ClassificationByArticle classificationByArticle;
     private final YANDEX_DataCreator yandexDataCreator;
 
     public YANDEX_Service(YANDEX_Api api,
-                          ConditionalWithDelayChecker reportChecker, Clustering clustering, YANDEX_DataCreator yandexDataCreator) {
+                          ConditionalWithDelayChecker reportChecker, ClassificationByArticle classificationByArticle, YANDEX_DataCreator yandexDataCreator) {
         this.yandexApi = api;
         this.reportChecker = reportChecker;
-        this.clustering = clustering;
+        this.classificationByArticle = classificationByArticle;
         this.yandexDataCreator = yandexDataCreator;
     }
 
@@ -53,7 +53,7 @@ public class YANDEX_Service {
                 month
         );
 
-        Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data);
+        Map<String, List<YANDEX_TableRow>> clusteredData = classificationByArticle.of(data);
 
         return ExcelBuilderV1.createDocumentToReportFile(
                 ExcelConfig.<YANDEX_TableRow>builder()

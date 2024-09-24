@@ -23,15 +23,6 @@ public class WB_ReportController {
         this.wbService = wbService;
     }
 
-    @PostMapping(path = "/get")
-    public List<WB_TableRow> getReport(@RequestBody WB_RequestBody body) {
-        return wbService.getData(
-                body.getApiKey(),
-                body.getYear(),
-                body.getMonth()
-        );
-    }
-
     @PostMapping(path = "/getExcel")
     public @ResponseBody ResponseEntity<Resource> getReportExcel(@RequestBody WB_RequestBody body) {
         ReportFile report = wbService.createReport(
