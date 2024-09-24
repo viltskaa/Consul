@@ -1,5 +1,6 @@
 package com.example.consul.document.v2;
 
+import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.v1.configurations.ExcelCellType;
@@ -18,6 +19,7 @@ import org.springframework.core.io.ByteArrayResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class ExcelBuilderV2<T> {
@@ -27,6 +29,10 @@ public class ExcelBuilderV2<T> {
     private String filename;
 
     private Map<ExcelCellType, CellStyle> cellStyles;
+
+    private String numbersToCellAddress(int row, int column) {
+        return CellReference.convertNumToColString(column) + row;
+    }
 
     public static <T> ExcelBuilderV2<T>.Builder builder() {
         return new ExcelBuilderV2<T>().new Builder();
@@ -50,6 +56,7 @@ public class ExcelBuilderV2<T> {
         CellStyle boldStyle = sheet.getWorkbook().createCellStyle();
         boldStyle.cloneStyleFrom(cellStyles.get(ExcelCellType.BASE));
         Font boldFont = sheet.getWorkbook().createFont();
+        boldFont.setFontHeightInPoints((short) 16);
         boldFont.setBold(true);
         boldStyle.setFont(boldFont);
         boldStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
@@ -85,7 +92,7 @@ public class ExcelBuilderV2<T> {
                             headerRow.getRowNum(),
                             headerRow.getRowNum(),
                             0,
-                            headerRow.getLastCellNum()-1)
+                            headerRow.getLastCellNum() - 1)
             );
         }
 
@@ -112,21 +119,20 @@ public class ExcelBuilderV2<T> {
 
                 Cell cell = tableRow.createCell(column);
                 cell.setCellStyle(cellStyles.get(cellWithParams.getType()));
+                sheet.autoSizeColumn(column);
 
                 if (formula != null) {
                     formula = formula.replace(
                             cellWithParams.getFieldName(),
-                            CellReference.convertNumToColString(column)+(tableRow.getRowNum()+1)
+                            numbersToCellAddress(startIndex, column)
                     );
                 }
 
                 if (cellWithParams.isTotal()) {
                     cell.setCellFormula(formula);
-                }
-                //todo: fix this condition
-                else if (cellWithParams.getValue() == null) {
-                    cell.setCellValue("");
-                } else if (cellWithParams.getValue().equals(0)) {
+                } else if (cellWithParams.getValue() == null
+                        || cellWithParams.getValue().equals(0)
+                        || cellWithParams.getValue().equals(0.00)) {
                     cell.setCellValue("");
                 } else if (cellWithParams.getValue().getClass().equals(String.class)) {
                     cell.setCellValue(cellWithParams.getValue().toString());
@@ -139,6 +145,29 @@ public class ExcelBuilderV2<T> {
                 }
                 column++;
             }
+        }
+        Row totalRow = sheet.createRow(startIndex);
+        List<Field> fields = ObjectDeepReflection.getFieldsWithAnnotation(
+                table.getDataClass(),
+                CellUnit.class
+        );
+        int column = 0;
+
+        for (Field field : fields) {
+            Cell cell = totalRow.createCell(column);
+            cell.setCellStyle(cellStyles.get(ExcelCellType.TOTAL));
+            sheet.autoSizeColumn(column);
+
+            if (!field.getType().equals(String.class)) {
+                cell.setCellFormula(
+                        "SUM(%s:%s)".formatted(
+                                numbersToCellAddress(totalRow.getRowNum() - table.getDataSize() + 1, column),
+                                numbersToCellAddress(totalRow.getRowNum(), column)
+                        )
+                );
+            }
+
+            column++;
         }
     }
 
@@ -165,7 +194,7 @@ public class ExcelBuilderV2<T> {
                     ExcelCellType.TOTAL, CellStyleValues.TOTAL.getCellStyle(workbook)
             );
 
-            for (Sheet<T> sheet: sheets) {
+            for (Sheet<T> sheet : sheets) {
                 createSheet(workbook, sheet);
             }
 
@@ -209,6 +238,11 @@ public class ExcelBuilderV2<T> {
         @SafeVarargs
         public final Builder setSheets(Sheet<T>... sheets) {
             ExcelBuilderV2.this.sheets = Arrays.stream(sheets).toList();
+            return this;
+        }
+
+        public Builder setSheets(List<Sheet<T>> sheets) {
+            ExcelBuilderV2.this.sheets = sheets;
             return this;
         }
 
