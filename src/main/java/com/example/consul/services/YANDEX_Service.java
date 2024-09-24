@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -55,21 +56,25 @@ public class YANDEX_Service {
 
         Map<String, List<YANDEX_TableRow>> clusteredData = clustering.of(data, "Нераспределенные");
 
+        List<Sheet<YANDEX_TableRow>> listOfSheets = clusteredData.entrySet().stream()
+                .map(entry -> Sheet.<YANDEX_TableRow>builder()
+                        .name(entry.getKey())
+                        .tables(Collections.singletonList(
+                                Table.<YANDEX_TableRow>builder()
+                                        .name(entry.getKey())
+                                        .data(entry.getValue())
+                                        .build()
+                        ))
+                        .build()
+                )
+                .toList();
+
+        Sheet[] sheetsArray = listOfSheets.toArray(new Sheet[0]);
+
+
         return ExcelBuilderV2.<YANDEX_TableRow>builder()
                 .setFilename("report_yandex.xlsx")
-                .setSheets(
-                        Sheet.<YANDEX_TableRow>builder()
-                                .name("1")
-                                .tables(
-                                        clusteredData.entrySet().stream()
-                                                .map(entry ->
-                                                        Table.<YANDEX_TableRow>builder()
-                                                                .name(entry.getKey())
-                                                                .data(entry.getValue())
-                                                                .build()
-                                                ).toList()
-                                ).build()
-                )
+                .setSheets(sheetsArray)
                 .build()
                 .createDocument();
     }

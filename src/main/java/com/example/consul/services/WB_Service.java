@@ -18,13 +18,11 @@ import com.example.consul.dto.WB.WB_SaleReport;
 import com.example.consul.mapping.WB_dataProcessing;
 import com.example.consul.utils.Clustering;
 import com.example.consul.utils.DateUtils;
-import org.antlr.v4.runtime.misc.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -54,23 +52,27 @@ public class WB_Service {
             @NotNull Integer month
     ) {
         List<WB_TableRow> data = getData(apiKey, year, month);
+
         Map<String, List<WB_TableRow>> clusteredData = clustering.of(data, "Нераспределенные");
+
+        List<Sheet<WB_TableRow>> listOfSheets = clusteredData.entrySet().stream()
+                .map(entry -> Sheet.<WB_TableRow>builder()
+                        .name(entry.getKey())
+                        .tables(Collections.singletonList(
+                                Table.<WB_TableRow>builder()
+                                        .name(entry.getKey())
+                                        .data(entry.getValue())
+                                        .build()
+                        ))
+                        .build()
+                )
+                .toList();
+
+        Sheet[] sheetsArray = listOfSheets.toArray(new Sheet[0]);
 
         return ExcelBuilderV2.<WB_TableRow>builder()
                 .setFilename("report_wb.xlsx")
-                .setSheets(
-                        Sheet.<WB_TableRow>builder()
-                                .name("1")
-                                .tables(
-                                        clusteredData.entrySet().stream()
-                                                .map(entry ->
-                                                        Table.<WB_TableRow>builder()
-                                                                .name(entry.getKey())
-                                                                .data(entry.getValue())
-                                                                .build()
-                                                ).toList()
-                                ).build()
-                )
+                .setSheets(sheetsArray)
                 .build()
                 .createDocument();
     }

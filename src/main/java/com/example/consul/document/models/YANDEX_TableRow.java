@@ -43,7 +43,7 @@ public class YANDEX_TableRow extends TableRow {
     private Double shelves;
     @CellUnit(name = "Услуга продвижения (плюс нам)")
     private Double promotionFavor;
-    @CellUnit(name="Итого", type = ExcelCellType.TOTAL)
+    @CellUnit(name= "Итого", type = ExcelCellType.TOTAL)
     private final Double total = 0.0;
 
     @Builder

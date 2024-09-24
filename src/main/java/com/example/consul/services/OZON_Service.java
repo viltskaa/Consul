@@ -61,21 +61,24 @@ public class OZON_Service {
         );
         Map<String, List<OZON_TableRow>> clusteredData = clustering.of(data, "Нераспределенные");
 
+        List<Sheet<OZON_TableRow>> listOfSheets = clusteredData.entrySet().stream()
+                .map(entry -> Sheet.<OZON_TableRow>builder()
+                        .name(entry.getKey())
+                        .tables(Collections.singletonList(
+                                Table.<OZON_TableRow>builder()
+                                        .name(entry.getKey())
+                                        .data(entry.getValue())
+                                        .build()
+                        ))
+                        .build()
+                )
+                .toList();
+
+        Sheet[] sheetsArray = listOfSheets.toArray(new Sheet[0]);
+
         return ExcelBuilderV2.<OZON_TableRow>builder()
                 .setFilename("report_ozon.xlsx")
-                .setSheets(
-                        Sheet.<OZON_TableRow>builder()
-                                .name("1")
-                                .tables(
-                                        clusteredData.entrySet().stream()
-                                                .map(entry ->
-                                                        Table.<OZON_TableRow>builder()
-                                                                .name(entry.getKey())
-                                                                .data(entry.getValue())
-                                                                .build()
-                                                ).toList()
-                                ).build()
-                )
+                .setSheets(sheetsArray)
                 .build()
                 .createDocument();
     }
