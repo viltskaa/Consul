@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class TestingMvcController {
     @GetMapping("")
     public String mainPage() {
-        return "reportDetail";
+        return "index";
     }
 }
