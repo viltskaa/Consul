@@ -117,7 +117,7 @@ const App = (): React.ReactElement => {
             try {
                 switch (market.type) {
                     case "Yandex":
-                        result = await axios.post(`${baseUrl}/yandexReport/getExcel`, {
+                        result = await axios.post(`${baseUrl}yandexReport/getExcel`, {
                             auth: market.yandex_auth,
                             campaignId: market.yandex_campaignId,
                             year,
@@ -127,7 +127,7 @@ const App = (): React.ReactElement => {
                         }, {responseType: 'blob'})
                         break;
                     case "OZON":
-                        result = await axios.post(`${baseUrl}/ozonReport/getExcel`, {
+                        result = await axios.post(`${baseUrl}ozonReport/getExcel`, {
                             apiKey: market.ozon_apikey,
                             clientId: market.ozon_clientId,
                             performanceClientId: market.ozon_performanceClientId,
@@ -137,7 +137,7 @@ const App = (): React.ReactElement => {
                         }, {responseType: 'blob'})
                         break;
                     case "WB":
-                        result = await axios.post(`${baseUrl}/wbReport/getExcel`, {
+                        result = await axios.post(`${baseUrl}wbReport/getExcel`, {
                             apiKey: market.wb_apikey,
                             year,
                             month
