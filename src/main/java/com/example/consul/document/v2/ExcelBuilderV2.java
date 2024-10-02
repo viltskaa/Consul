@@ -9,6 +9,8 @@ import com.example.consul.document.v2.models.CellWithParams;
 import com.example.consul.document.v2.models.Sheet;
 import com.example.consul.document.v2.models.Table;
 import com.example.consul.document.v2.utils.ObjectDeepReflection;
+import com.example.consul.utils.enumerate.Enumerate;
+import com.example.consul.utils.enumerate.Pair;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
@@ -108,14 +110,15 @@ public class ExcelBuilderV2<T> {
             List<CellWithParams> values = ObjectDeepReflection.getCells(obj);
             Collections.reverse(values);
 
-            int column = 0;
-            for (String head : tableHeader) {
+            for (Pair<String> head : Enumerate.of(tableHeader)) {
                 CellWithParams cellWithParams = values.stream()
-                        .filter(x -> x.getName().equals(head))
+                        .filter(x -> x.getName().equals(head.getValue()))
                         .findFirst().orElse(null);
                 if (cellWithParams == null) {
                     continue;
                 }
+
+                int column = head.getIndex();
 
                 Cell cell = tableRow.createCell(column);
                 cell.setCellStyle(cellStyles.get(cellWithParams.getType()));
@@ -133,17 +136,14 @@ public class ExcelBuilderV2<T> {
                 } else if (cellWithParams.getValue() == null
                         || cellWithParams.getValue().equals(0)
                         || cellWithParams.getValue().equals(0.00)) {
-                    cell.setCellValue("");
+                    cell.setCellValue(cellWithParams.getDefaultValue());
                 } else if (cellWithParams.getValue().getClass().equals(String.class)) {
                     cell.setCellValue(cellWithParams.getValue().toString());
                 } else if (cellWithParams.getValue().getClass().equals(Integer.class)) {
                     cell.setCellValue((Integer) cellWithParams.getValue());
                 } else if (cellWithParams.getValue().getClass().equals(Double.class)) {
                     cell.setCellValue((Double) cellWithParams.getValue());
-                } else {
-                    cell.setCellValue(cellWithParams.getDefaultValue());
                 }
-                column++;
             }
         }
         Row totalRow = sheet.createRow(startIndex);
@@ -151,14 +151,14 @@ public class ExcelBuilderV2<T> {
                 table.getDataClass(),
                 CellUnit.class
         );
-        int column = 0;
 
-        for (Field field : fields) {
+        for (Pair<Field> field : Enumerate.of(fields)) {
+            int column = field.getIndex();
             Cell cell = totalRow.createCell(column);
             cell.setCellStyle(cellStyles.get(ExcelCellType.TOTAL));
             sheet.autoSizeColumn(column);
 
-            if (!field.getType().equals(String.class)) {
+            if (!field.getValue().getType().equals(String.class)) {
                 cell.setCellFormula(
                         "SUM(%s:%s)".formatted(
                                 numbersToCellAddress(totalRow.getRowNum() - table.getDataSize() + 1, column),
@@ -166,8 +166,6 @@ public class ExcelBuilderV2<T> {
                         )
                 );
             }
-
-            column++;
         }
     }
 
