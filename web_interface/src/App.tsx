@@ -111,7 +111,7 @@ const App = (): React.ReactElement => {
 
         (async () => {
             setLoading(true);
-            const baseUrl = "http://localhost:8080";
+            const baseUrl = document.location.href;
             let result: AxiosResponse | null = null;
 
             try {
