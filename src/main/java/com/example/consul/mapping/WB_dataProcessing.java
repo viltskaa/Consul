@@ -7,25 +7,39 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.*;
+import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 public class WB_dataProcessing {
+    // Избавление от дублей
     private static String checkOnDouble(@NotNull String sku) {
         int center = sku.length() / 2;
         return sku.substring(0, center)
                 .equals(sku.substring(center)) ? sku.substring(center) : sku;
     }
 
+    // Собираем все ключи для будущего HashMap. Ключи - артикулы товаров.
+    public static List<String> getKeys(@NotNull List<WB_DetailReport> wbDetailReports){
+        return wbDetailReports.stream()
+                .filter(x -> !x.getSaName().isEmpty())
+                .peek(x -> {
+                    String sku = checkOnDouble(x.getSaName());
+                    x.setSaName(sku);
+                })
+                .map(WB_DetailReport::getSaName)
+                .collect(Collectors.toList());
+    }
+
     public static Map<String, List<WB_DetailReport>> groupBySaName(@NotNull List<WB_DetailReport> wbDetailReports) {
         return wbDetailReports.stream()
-                .filter(x -> x.getSa_name() != null && !x.getSa_name().isEmpty())
+                .filter(x -> x.getSaName() != null && !x.getSaName().isEmpty())
                 .peek(x -> {
-                    String sku = checkOnDouble(x.getSa_name());
-                    x.setSa_name(sku);
+                    String sku = checkOnDouble(x.getSaName());
+                    x.setSaName(sku);
                 })
                 .collect(Collectors.groupingBy(
-                        WB_DetailReport::getSa_name,
+                        WB_DetailReport::getSaName,
                         Collectors.toList()
                 ));
     }
@@ -36,7 +50,7 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.SALE.toString()))
                                 .mapToInt(WB_DetailReport::getQuantity)
                                 .sum()));
@@ -48,7 +62,7 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.RETURN.toString()))
                                 .mapToInt(WB_DetailReport::getQuantity)
                                 .sum()));
@@ -77,9 +91,9 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.SALE.toString()))
-                                .mapToDouble(WB_DetailReport::getRetail_amount)
+                                .mapToDouble(WB_DetailReport::getRetailAmount)
                                 .sum()));
     }
 
@@ -89,9 +103,9 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.RETURN.toString()))
-                                .mapToDouble(WB_DetailReport::getRetail_amount)
+                                .mapToDouble(WB_DetailReport::getRetailAmount)
                                 .sum()));
     }
 
@@ -106,11 +120,11 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(operationName.toString()))
                                 .mapToDouble(
-                                        x -> x.getPpvz_vw() + x.getPpvz_vw_nds()
-                                                + x.getAcquiring_fee() + x.getPpvz_reward()
+                                        x -> x.getPpvzVw() + x.getPpvzVwNds()
+                                                + x.getAcquiringFee() + x.getPpvzReward()
                                 )
                                 .sum()));
     }
@@ -125,10 +139,10 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(operationName.toString()))
                                 .mapToDouble(
-                                        x -> x.getPpvz_vw_nds() + x.getPpvz_for_pay()
+                                        x -> x.getPpvzVwNds() + x.getPpvzForPay()
                                 )
                                 .sum()));
     }
@@ -141,7 +155,7 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .mapToDouble(WB_DetailReport::getRebill_logistic_cost)
+                                .mapToDouble(WB_DetailReport::getRebillLogisticCost)
                                 .sum()));
     }
 
@@ -151,9 +165,9 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.RETURN.toString()))
-                                .mapToDouble(WB_DetailReport::getAdditional_payment)
+                                .mapToDouble(WB_DetailReport::getAdditionalPayment)
                                 .sum()));
     }
 
@@ -163,9 +177,9 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.LOGISTIC.toString()))
-                                .mapToDouble(WB_DetailReport::getDelivery_rub)
+                                .mapToDouble(WB_DetailReport::getDeliveryRub)
                                 .sum()));
     }
 
@@ -176,11 +190,11 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.RETURN.toString()))
                                 .mapToDouble(
-                                        x -> x.getPpvz_reward() + x.getAcquiring_fee() +
-                                                x.getPpvz_vw_nds() + x.getPpvz_vw()
+                                        x -> x.getPpvzReward() + x.getAcquiringFee() +
+                                                x.getPpvzVwNds() + x.getPpvzVw()
                                 )
                                 .sum()));
     }
@@ -191,7 +205,7 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.PENALTY.toString()))
                                 .mapToDouble(WB_DetailReport::getPenalty).sum()
                 ));
@@ -203,9 +217,9 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.COMPENSATION_REPlACED.toString()))
-                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
+                                .mapToDouble(WB_DetailReport::getPpvzForPay).sum()
                 ));
     }
 
@@ -215,9 +229,9 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.COMPENSATION_LOSTED.toString()))
-                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
+                                .mapToDouble(WB_DetailReport::getPpvzForPay).sum()
                 ));
     }
 
@@ -227,9 +241,9 @@ public class WB_dataProcessing {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
+                                .filter(report -> report.getSupplierOperName()
                                         .equals(WB_OperationName.COMPENSATION_DEFECT.toString()))
-                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
+                                .mapToDouble(WB_DetailReport::getPpvzForPay).sum()
                 ));
     }
 

@@ -1,5 +1,6 @@
 package com.example.consul.dto.WB;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,69 +10,134 @@ import lombok.Setter;
 @Setter
 @Data
 public class WB_DetailReport {
-    Integer realizationreport_id; //не надо
-    String date_from; //не надо
-    String date_to; //не надо
-    String create_dt; //не надо
-    String currency_name; //не надо
-    String suppliercontract_code; //не надо
-    Long rrd_id; //не надо
-    Integer gi_id; //не надо
-    String subject_name;
-    Integer nm_id;
-    String brand_name;
-    String sa_name;
-    String ts_name; //не надо
-    String barcode; //не надо
-    String doc_type_name;
+    @SerializedName("realizationreport_id")
+    Integer realizationReportId;
+    @SerializedName("date_from")
+    String dateFrom;
+    @SerializedName("date_to")
+    String dateTo;
+    @SerializedName("create_dt")
+    String createDt;
+    @SerializedName("currency_name")
+    String currencyName;
+    @SerializedName("suppliercontract_code")
+    String supplierContractCode;
+    @SerializedName("rrd_id")
+    Long rrdId;
+    @SerializedName("gi_id")
+    Integer giId;
+    @SerializedName("subject_name")
+    String subjectName;
+    @SerializedName("nm_id")
+    Integer nmId;
+    @SerializedName("brand_name")
+    String brandName;
+    @SerializedName("sa_name")
+    String saName;
+    @SerializedName("ts_name")
+    String tsName;
+    @SerializedName("barcode")
+    String barcode;
+    @SerializedName("doc_type_name")
+    String docTypeName;
+    @SerializedName("quantity")
     Integer quantity;
-    Double retail_price;
-    Double retail_amount;
-    Integer sale_percent;
-    Double commission_percent;
-    String office_name; //не надо
-    String supplier_oper_name;
-    String order_dt; //не надо
-    String sale_dt; //не надо
-    String rr_dt; //не надо
-    Long shk_id; //не надо
-    Double retail_price_withdisc_rub;
-    Integer delivery_amount;
-    Integer return_amount;
-    Double delivery_rub;
-    String gi_box_type_name; //не надо
-    Double product_discount_for_report;
-    Double supplier_promo;
-    Long rid; //не надо
-    Double ppvz_spp_prc;
-    Double ppvz_kvw_prc_base;
-    Double ppvz_kvw_prc;
-    Double sup_rating_prc_up;
-    Double is_kgvp_v2;
-    Double ppvz_sales_commission;
-    Double ppvz_for_pay;
-    Double ppvz_reward;
-    Double acquiring_fee;
-    String acquiring_bank; //не надо
-    Double ppvz_vw;
-    Double ppvz_vw_nds;
-    Integer ppvz_office_id; //не надо
-    String ppvz_office_name; //не надо
-    Integer ppvz_supplier_id; //не надо
-    String ppvz_supplier_name; //не надо
-    String ppvz_inn; //не надо
-    String declaration_number;
-    String bonus_type_name;
-    String sticker_id;
-    String site_country; //не надо
+    @SerializedName("retail_price")
+    Double retailPrice;
+    @SerializedName("retail_amount")
+    Double retailAmount;
+    @SerializedName("sale_percent")
+    Integer salePercent;
+    @SerializedName("commission_percent")
+    Double commissionPercent;
+    @SerializedName("office_name")
+    String officeName;
+    @SerializedName("supplier_oper_name")
+    String supplierOperName;
+    @SerializedName("order_dt")
+    String orderDt;
+    @SerializedName("sale_dt")
+    String saleDt;
+    @SerializedName("rr_dt")
+    String rrDt;
+    @SerializedName("shk_id")
+    Long shkId;
+    @SerializedName("retail_price_withdisc_rub")
+    Double retailPriceWithdiscRub;
+    @SerializedName("delivery_amount")
+    Integer deliveryAmount;
+    @SerializedName("return_amount")
+    Integer returnAmount;
+    @SerializedName("delivery_rub")
+    Double deliveryRub;
+    @SerializedName("gi_box_type_name")
+    String giBoxTypeName;
+    @SerializedName("product_discount_for_report")
+    Double productDiscountForReport;
+    @SerializedName("supplier_promo")
+    Double supplierPromo;
+    @SerializedName("rid")
+    Long rid;
+    @SerializedName("ppvz_spp_prc")
+    Double ppvzSppPrc;
+    @SerializedName("ppvz_kvw_prc_base")
+    Double ppvzKvwPrcBase;
+    @SerializedName("ppvz_kvw_prc")
+    Double ppvzKvwPrc;
+    @SerializedName("sup_rating_prc_up")
+    Double supRatingPrcUp;
+    @SerializedName("is_kgvp_v2")
+    Double isKgvpV2;
+    @SerializedName("ppvz_sales_commission")
+    Double ppvzSalesCommission;
+    @SerializedName("ppvz_for_pay")
+    Double ppvzForPay;
+    @SerializedName("ppvz_reward")
+    Double ppvzReward;
+    @SerializedName("acquiring_fee")
+    Double acquiringFee;
+    @SerializedName("acquiring_bank")
+    String acquiringBank;
+    @SerializedName("ppvz_vw")
+    Double ppvzVw;
+    @SerializedName("ppvz_vw_nds")
+    Double ppvzVwNds;
+    @SerializedName("ppvz_office_id")
+    Integer ppvzOfficeId;
+    @SerializedName("ppvz_office_name")
+    String ppvzOfficeName;
+    @SerializedName("ppvz_supplier_id")
+    Integer ppvzSupplierId;
+    @SerializedName("ppvz_supplier_name")
+    String ppvzSupplierName;
+    @SerializedName("ppvz_inn")
+    String ppvzInn;
+    @SerializedName("declaration_number")
+    String declarationNumber;
+    @SerializedName("bonus_type_name")
+    String bonusTypeName;
+    @SerializedName("sticker_id")
+    String stickerId;
+    @SerializedName("site_country")
+    String siteCountry;
+    @SerializedName("penalty")
     Double penalty;
-    Double additional_payment;
-    Double rebill_logistic_cost;
-    String rebill_logistic_org; //не надо
+    @SerializedName("additional_payment")
+    Double additionalPayment;
+    @SerializedName("rebill_logistic_cost")
+    Double rebillLogisticCost;
+    @SerializedName("rebill_logistic_org")
+    String rebillLogisticOrg;
+    @SerializedName("kiz")
     String kiz;
-    Double storage_fee;
+    @SerializedName("storage_fee")
+    Double storageFee;
+    @SerializedName("deduction")
     Double deduction;
+    @SerializedName("acceptance")
     Double acceptance;
-    String srid; //не надо
-    Integer report_type;
+    @SerializedName("srid")
+    String srid;
+    @SerializedName("report_type")
+    Integer reportType;
 }

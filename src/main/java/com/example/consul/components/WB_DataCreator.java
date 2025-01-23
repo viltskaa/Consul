@@ -54,15 +54,15 @@ public class WB_DataCreator {
 
         double deduction = Math.round(WB_dataProcessing.sumDoubleValuesByConditions(
                 detailReport,
-                x -> x.getSupplier_oper_name().equals(WB_OperationName.DEDUCTION.toString()),
+                x -> x.getSupplierOperName().equals(WB_OperationName.DEDUCTION.toString()),
                 WB_DetailReport::getDeduction
         ) / retaliatedProduct * 100.00) / 100.00;
 
         double storage = Math.round(WB_dataProcessing.sumDoubleValuesByConditions(
                 detailReport,
-                x -> x.getSupplier_oper_name().equals(WB_OperationName.STORAGE.toString())
-                        || x.getSupplier_oper_name().equals(WB_OperationName.STORAGE_REFUND.toString()),
-                WB_DetailReport::getStorage_fee
+                x -> x.getSupplierOperName().equals(WB_OperationName.STORAGE.toString())
+                        || x.getSupplierOperName().equals(WB_OperationName.STORAGE_REFUND.toString()),
+                WB_DetailReport::getStorageFee
         ) / retaliatedProduct * 10000.00) / 10000.00;
 
         Map<String, List<Object>> mergedMap = new HashMap<>(deliveryAmount.entrySet().stream()
