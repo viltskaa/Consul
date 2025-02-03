@@ -35,7 +35,7 @@ public class WB_DataCreator {
                         .saleSum(_process.checkSaleSum(line))
                         .returnCount(_process.checkReturnCount(line))
                         .returnSum(_process.checkReturnSum(line))
-                        .compensationLost(_process.checkСompensationLost(line))
+                        .compensationLost(_process.checkCompensationLost(line))
                         .countLost(_process.checkCountLost(line))
                         .commission(_process.checkCommission(line))
                         .returnCommission(_process.checkReturnCommission(line))
@@ -52,7 +52,7 @@ public class WB_DataCreator {
                 existingRow.setSaleSum(existingRow.getSaleSum() + _process.checkSaleSum(line));
                 existingRow.setReturnCount(existingRow.getReturnCount() + _process.checkReturnCount(line));
                 existingRow.setReturnSum(existingRow.getReturnSum() + _process.checkReturnSum(line));
-                existingRow.setCompensationLost(existingRow.getCompensationLost() + _process.checkСompensationLost(line));
+                existingRow.setCompensationLost(existingRow.getCompensationLost() + _process.checkCompensationLost(line));
                 existingRow.setCountLost(existingRow.getCountLost() + _process.checkCountLost(line));
                 existingRow.setCommission(existingRow.getCommission() + _process.checkCommission(line));
                 existingRow.setReturnCommission(existingRow.getReturnCommission() + _process.checkReturnCommission(line));

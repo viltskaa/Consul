@@ -79,7 +79,7 @@ public class WB_dataProcessing {
         }
     }
 
-    public Double checkСompensationLost(WB_DetailReport line) {
+    public Double checkCompensationLost(WB_DetailReport line) {
         if (Objects.equals(line.getDocTypeName(), WB_AccrualType.SALE.toString())) {
             if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.COMPENSATION_DAMAGE.toString())){
                 return line.getPpvzForPay();
