@@ -41,6 +41,7 @@ dependencies {
     implementation 'org.apache.poi:poi:5.2.5'
     implementation 'org.apache.poi:poi-ooxml:5.2.5'
     implementation 'sh.joinery:joinery-dataframe:1.10'
+    implementation 'org.hibernate.common:hibernate-commons-annotations:6.0.6.Final'
 }
 
 tasks.named('test') {
