@@ -1,57 +1,217 @@
 package com.example.consul.mapping;
 
 import com.example.consul.dto.WB.WB_DetailReport;
-import com.example.consul.dto.WB.WB_OperationName;
 import com.example.consul.dto.WB.WB_SaleReport;
+import com.example.consul.dto.WB.enums.WB_AccrualType;
+import com.example.consul.dto.WB.enums.WB_JustificationPayment;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.*;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Component
 public class WB_dataProcessing {
-    private static String checkOnDouble(@NotNull String sku) {
+    public String checkOnDouble(@NotNull String sku) {
         int center = sku.length() / 2;
         return sku.substring(0, center)
                 .equals(sku.substring(center)) ? sku.substring(center) : sku;
     }
 
-    public static Map<String, List<WB_DetailReport>> groupBySaName(@NotNull List<WB_DetailReport> wbDetailReports) {
-        return wbDetailReports.stream()
-                .filter(x -> x.getSa_name() != null && !x.getSa_name().isEmpty())
-                .peek(x -> {
-                    String sku = checkOnDouble(x.getSa_name());
-                    x.setSa_name(sku);
-                })
-                .collect(Collectors.groupingBy(
-                        WB_DetailReport::getSa_name,
-                        Collectors.toList()
-                ));
+    public Integer checkSaleCount(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.SALE.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALE.toString())){
+                return line.getQuantity();
+            }
+            else {
+                return 0;
+            }
+        }
+        else {
+            return 0;
+        }
     }
 
-    public static Map<String, Integer> sumDeliveryAmount(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.SALE.toString()))
-                                .mapToInt(WB_DetailReport::getQuantity)
-                                .sum()));
+    public Double checkSaleSum(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.SALE.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALES_ADJUSTMENT.toString())){
+                return line.getRetailAmount();
+            }
+            else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALE.toString())){
+                return line.getRetailAmount();
+            }
+            else {
+                return 0.0;
+            }
+        }
+        else {
+            return 0.0;
+        }
     }
 
-    public static Map<String, Integer> sumReturnAmount(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.RETURN.toString()))
-                                .mapToInt(WB_DetailReport::getQuantity)
-                                .sum()));
+    public Integer checkReturnCount(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.RETURN.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.RETURN.toString())){
+                return line.getQuantity();
+            }
+            else {
+                return 0;
+            }
+        }
+        else {
+            return 0;
+        }
+    }
+
+    public Double checkReturnSum(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.RETURN.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.RETURN.toString())){
+                return line.getRetailAmount();
+            }
+            else {
+                return 0.0;
+            }
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Double checkСompensationLost(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.SALE.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.COMPENSATION_DAMAGE.toString())){
+                return line.getPpvzForPay();
+            }
+            else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.VOLUNTARY_COMPENSATION_RETURN.toString())) {
+                return line.getPpvzForPay();
+            }
+            else {
+                return 0.0;
+            }
+        }
+        else if (Objects.equals(line.getDocTypeName(), WB_AccrualType.RETURN.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.COMPENSATION_DAMAGE.toString())){
+                return line.getPpvzForPay() * (-1);
+            }
+            else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.VOLUNTARY_COMPENSATION_RETURN.toString())) {
+                return line.getPpvzForPay() * (-1);
+            }
+            else {
+                return 0.0;
+            }
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Integer checkCountLost(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.SALE.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.COMPENSATION_DAMAGE.toString())){
+                return 1;
+            }
+            else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.VOLUNTARY_COMPENSATION_RETURN.toString())) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        }
+        else {
+            return 0;
+        }
+    }
+
+    public Double checkCommission(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.SALE.toString())) {
+            return commissionConditions(line);
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Double checkReturnCommission(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.RETURN.toString())) {
+            return commissionConditions(line);
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Double checkPenalty(WB_DetailReport line) {
+        if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.PENALTY.toString())) {
+            return line.getPenalty();
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Double checkDeduction(WB_DetailReport line) {
+        if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.DEDUCTION.toString())) {
+            return line.getDeduction();
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Double checkStorageFee(WB_DetailReport line) {
+        if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.STORAGE.toString())) {
+            return line.getStorageFee();
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Double checkLogistic(WB_DetailReport line) {
+        if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.LOGISTIC.toString())) {
+            return line.getDeliveryRub();
+        }
+        else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.LOGISTICS_ADJUSTMENT.toString())) {
+            return line.getDeliveryRub();
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    public Double checkLogisticStorno(WB_DetailReport line) {
+        if (Objects.equals(line.getDocTypeName(), WB_AccrualType.RETURN.toString())) {
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.LOGISTIC_STORNO.toString())) {
+                return line.getDeliveryRub();
+            }
+            else {
+                return 0.0;
+            }
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+    @NotNull
+    private Double commissionConditions(WB_DetailReport line) {
+        if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.COMPENSATION_DAMAGE.toString())){
+            return line.getPpvzForPay() - line.getRetailAmount();
+        }
+        else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.ACQUIRING_ADJUSTMENT.toString())) {
+            return line.getPpvzForPay() - line.getRetailAmount();
+        }
+        else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALES_ADJUSTMENT.toString())) {
+            return line.getPpvzForPay() - line.getRetailAmount();
+        }
+        else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALE.toString())) {
+            return line.getPpvzForPay() - line.getRetailAmount();
+        }
+        else {
+            return 0.0;
+        }
     }
 
     public static Map<String, Long> getSalesCount(@NotNull List<WB_SaleReport> list) {
@@ -67,175 +227,7 @@ public class WB_dataProcessing {
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .filter(report -> report.getOrderType()
-                                        .equals(WB_OperationName.SALE_TYPE.toString()))
+                                        .equals(WB_JustificationPayment.SALE.toString()))
                                 .count()));
-    }
-
-    public static Map<String, Double> sumRetail(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.SALE.toString()))
-                                .mapToDouble(WB_DetailReport::getRetail_amount)
-                                .sum()));
-    }
-
-    public static Map<String, Double> sumReturn(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.RETURN.toString()))
-                                .mapToDouble(WB_DetailReport::getRetail_amount)
-                                .sum()));
-    }
-
-    //поверенный (ПВЗ+эквайринг)
-    public static Map<String, Double> sumAttorney(
-            @NotNull Map<String,
-            @NotNull List<WB_DetailReport>> groupMap,
-            @NotNull WB_OperationName operationName
-    ) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(operationName.toString()))
-                                .mapToDouble(
-                                        x -> x.getPpvz_vw() + x.getPpvz_vw_nds()
-                                                + x.getAcquiring_fee() + x.getPpvz_reward()
-                                )
-                                .sum()));
-    }
-
-    public static Map<String, Double> sumCommission(
-            @NotNull Map<String,
-            @NotNull List<WB_DetailReport>> groupMap,
-            @NotNull WB_OperationName operationName
-    ) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(operationName.toString()))
-                                .mapToDouble(
-                                        x -> x.getPpvz_vw_nds() + x.getPpvz_for_pay()
-                                )
-                                .sum()));
-    }
-
-    public static Map<String, Double> sumRebill(
-            @NotNull Map<String, @NotNull List<WB_DetailReport>> groupMap
-    ) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .mapToDouble(WB_DetailReport::getRebill_logistic_cost)
-                                .sum()));
-    }
-
-    public static Map<String, Double> sumAdditional(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.RETURN.toString()))
-                                .mapToDouble(WB_DetailReport::getAdditional_payment)
-                                .sum()));
-    }
-
-    public static Map<String, Double> sumLogistic(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.LOGISTIC.toString()))
-                                .mapToDouble(WB_DetailReport::getDelivery_rub)
-                                .sum()));
-    }
-
-    //Возврат комиссии, поверенный
-    public static Map<String, Double> sumRefundCommission(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.RETURN.toString()))
-                                .mapToDouble(
-                                        x -> x.getPpvz_reward() + x.getAcquiring_fee() +
-                                                x.getPpvz_vw_nds() + x.getPpvz_vw()
-                                )
-                                .sum()));
-    }
-
-    public static Map<String, Double> sumPenalty(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.PENALTY.toString()))
-                                .mapToDouble(WB_DetailReport::getPenalty).sum()
-                ));
-    }
-
-    public static Map<String, Double> sumCompensationReplaced(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.COMPENSATION_REPlACED.toString()))
-                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
-                ));
-    }
-
-    public static Map<String, Double> sumCompensationLosted(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.COMPENSATION_LOSTED.toString()))
-                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
-                ));
-    }
-
-    public static Map<String, Double> sumCompensationDefected(@NotNull Map<String, List<WB_DetailReport>> groupMap) {
-        return groupMap
-                .entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(report -> report.getSupplier_oper_name()
-                                        .equals(WB_OperationName.COMPENSATION_DEFECT.toString()))
-                                .mapToDouble(WB_DetailReport::getPpvz_for_pay).sum()
-                ));
-    }
-
-    public static Double sumDoubleValuesByConditions(@NotNull List<WB_DetailReport> values,
-                                               Predicate<WB_DetailReport> predicate,
-                                               ToDoubleFunction<WB_DetailReport> supplier) {
-        return values.stream().filter(predicate).mapToDouble(supplier).sum();
     }
 }

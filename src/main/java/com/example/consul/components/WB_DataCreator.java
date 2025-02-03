@@ -2,12 +2,11 @@ package com.example.consul.components;
 
 import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.dto.WB.WB_DetailReport;
-import com.example.consul.dto.WB.WB_OperationName;
 import com.example.consul.mapping.WB_dataProcessing;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,96 +14,56 @@ import java.util.stream.Collectors;
 
 @Component
 public class WB_DataCreator {
+    private WB_dataProcessing _process;
+
+    public WB_DataCreator(WB_dataProcessing process) {
+        _process = process;
+    }
+
     public List<WB_TableRow> createTableRows(@NotNull List<WB_DetailReport> detailReport) {
-        Map<String, List<WB_DetailReport>> groupedDetail = WB_dataProcessing.groupBySaName(detailReport);
+        List<WB_TableRow> rows = new ArrayList<>();
+        Map<String, WB_TableRow> rowMap = new HashMap<>();
 
-        Map<String, Integer> deliveryAmount = WB_dataProcessing.sumDeliveryAmount(groupedDetail);
-        Map<String, Integer> returnAmount = WB_dataProcessing.sumReturnAmount(groupedDetail);
-        Map<String, Double> retailSum = WB_dataProcessing.sumRetail(groupedDetail);
-        Map<String, Double> returnSum = WB_dataProcessing.sumReturn(groupedDetail);
+        for (WB_DetailReport line : detailReport) {
+            String saName = _process.checkOnDouble(line.getSaName());
+            WB_TableRow existingRow = rowMap.get(saName);
 
-        Map<String, Double> saleCommission = WB_dataProcessing.sumCommission(
-                groupedDetail,
-                WB_OperationName.SALE
-        );
-
-        Map<String, Double> returnCommission = WB_dataProcessing.sumCommission(
-                groupedDetail,
-                WB_OperationName.RETURN
-        );
-
-        Map<String, Double> refundCommission = WB_dataProcessing.sumRefundCommission(groupedDetail);
-
-        Map<String, Double> attorney = WB_dataProcessing.sumAttorney(
-                groupedDetail,
-                WB_OperationName.SALE
-        );
-
-        Map<String, Double> sumRebill = WB_dataProcessing.sumRebill(groupedDetail);
-
-        Map<String, Double> logisticSum = WB_dataProcessing.sumLogistic(groupedDetail);
-        Map<String, Double> penaltySum = WB_dataProcessing.sumPenalty(groupedDetail);
-
-        Map<String, Double> compensationLost = WB_dataProcessing.sumCompensationLosted(groupedDetail);
-        Map<String, Double> compensationReplace = WB_dataProcessing.sumCompensationReplaced(groupedDetail);
-        Map<String, Double> compensationDefect = WB_dataProcessing.sumCompensationDefected(groupedDetail);
-
-        Double retaliatedProduct = deliveryAmount.values().stream().mapToDouble(x -> x).sum()
-                - returnAmount.values().stream().mapToDouble(x -> x).sum();
-
-        double deduction = Math.round(WB_dataProcessing.sumDoubleValuesByConditions(
-                detailReport,
-                x -> x.getSupplier_oper_name().equals(WB_OperationName.DEDUCTION.toString()),
-                WB_DetailReport::getDeduction
-        ) / retaliatedProduct * 100.00) / 100.00;
-
-        double storage = Math.round(WB_dataProcessing.sumDoubleValuesByConditions(
-                detailReport,
-                x -> x.getSupplier_oper_name().equals(WB_OperationName.STORAGE.toString())
-                        || x.getSupplier_oper_name().equals(WB_OperationName.STORAGE_REFUND.toString()),
-                WB_DetailReport::getStorage_fee
-        ) / retaliatedProduct * 10000.00) / 10000.00;
-
-        Map<String, List<Object>> mergedMap = new HashMap<>(deliveryAmount.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(
-                        entry.getValue(),
-                        retailSum.getOrDefault(entry.getKey(), 0.0), // 1
-                        returnAmount.getOrDefault(entry.getKey(), 0), // 2
-                        returnSum.getOrDefault(entry.getKey(), 0.0), // 3
-                        saleCommission.getOrDefault(entry.getKey(), 0.0), // 4
-                        returnCommission.getOrDefault(entry.getKey(), 0.0), // 5
-                        logisticSum.getOrDefault(entry.getKey(), 0.0), // 6
-                        sumRebill.getOrDefault(entry.getKey(), 0.0), // 7
-                        penaltySum.getOrDefault(entry.getKey(), 0.0), // 8
-                        attorney.getOrDefault(entry.getKey(), 0.0), // 9
-                        refundCommission.getOrDefault(entry.getKey(), 0.0), // 10
-                        deduction * (entry.getValue() - returnAmount.getOrDefault(entry.getKey(), 0)), // 11
-                        storage * (entry.getValue() - returnAmount.getOrDefault(entry.getKey(), 0)), // 12
-                        compensationLost.getOrDefault(entry.getKey(), 0.0), // 13
-                        compensationReplace.getOrDefault(entry.getKey(), 0.0), // 14
-                        compensationDefect.getOrDefault(entry.getKey(), 0.0) // 15
-                ))));
-
-        return mergedMap.entrySet().stream().map(x -> {
-            List<Object> values = x.getValue();
-            return WB_TableRow.builder()
-                    .article(x.getKey().toUpperCase())
-                    .retailAmount((Integer) values.get(0))
-                    .retailSum((Double) values.get(1))
-                    .returnAmount((Integer) values.get(2))
-                    .sumReturn((Double) values.get(3))
-                    .sumCompensationForLost((Double) values.get(13))
-                    .sumCompensationForReplace((Double) values.get(14))
-                    .sumCompensationForDefected((Double) values.get(15))
-                    .acquiringSale((Double) values.get(9))
-                    .acquiringReturn((Double) values.get(10))
-                    .additional(0.0)
-                    .penalty((Double) values.get(7))
-                    .deduction((Double) values.get(11))
-                    .storage((Double) values.get(12))
-                    .logistic((Double) values.get(6))
-                    .build();
-        }).collect(Collectors.toList());
+            if (existingRow == null) {
+                WB_TableRow newRow = WB_TableRow.builder()
+                        .article(saName)
+                        .saleCount(_process.checkSaleCount(line))
+                        .saleSum(_process.checkSaleSum(line))
+                        .returnCount(_process.checkReturnCount(line))
+                        .returnSum(_process.checkReturnSum(line))
+                        .compensationLost(_process.checkСompensationLost(line))
+                        .countLost(_process.checkCountLost(line))
+                        .commission(_process.checkCommission(line))
+                        .returnCommission(_process.checkReturnCommission(line))
+                        .penalty(_process.checkPenalty(line))
+                        .deduction(_process.checkDeduction(line))
+                        .storageFee(_process.checkStorageFee(line))
+                        .logistic(_process.checkLogistic(line))
+                        .storno(_process.checkLogisticStorno(line))
+                        .build();
+                rowMap.put(saName, newRow);
+                rows.add(newRow);
+            } else {
+                existingRow.setSaleCount(existingRow.getSaleCount() + _process.checkSaleCount(line));
+                existingRow.setSaleSum(existingRow.getSaleSum() + _process.checkSaleSum(line));
+                existingRow.setReturnCount(existingRow.getReturnCount() + _process.checkReturnCount(line));
+                existingRow.setReturnSum(existingRow.getReturnSum() + _process.checkReturnSum(line));
+                existingRow.setCompensationLost(existingRow.getCompensationLost() + _process.checkСompensationLost(line));
+                existingRow.setCountLost(existingRow.getCountLost() + _process.checkCountLost(line));
+                existingRow.setCommission(existingRow.getCommission() + _process.checkCommission(line));
+                existingRow.setReturnCommission(existingRow.getReturnCommission() + _process.checkReturnCommission(line));
+                existingRow.setPenalty(existingRow.getPenalty() + _process.checkPenalty(line));
+                existingRow.setDeduction(existingRow.getDeduction() + _process.checkDeduction(line));
+                existingRow.setStorageFee(existingRow.getStorageFee() + _process.checkStorageFee(line));
+                existingRow.setLogistic(existingRow.getLogistic() + _process.checkLogistic(line));
+                existingRow.setStorno(existingRow.getStorno() + _process.checkLogisticStorno(line));
+            }
+        }
+        return rows;
     }
 
     public Map<String, List<WB_TableRow>> createTableRows(@NotNull Map<String, List<WB_DetailReport>> detailReport) {

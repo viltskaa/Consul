@@ -3,83 +3,77 @@ package com.example.consul.document.models;
 import com.example.consul.document.annotations.CellUnit;
 import com.example.consul.document.annotations.TotalCell;
 import com.example.consul.document.v1.configurations.ExcelCellType;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TotalCell(
-        formula = "(retailSum - sumReturn + sumCompensationForLost + sumCompensationForReplace + sumCompensationForDefected" +
-                "- acquiringSale + acquiringReturn + additional - penalty " +
-                "- logistic - deduction) / IF(retailAmount - returnAmount=0,1,retailAmount - returnAmount)"
+        formula = "(saleSum - returnSum + compensationLost - commission + returnCommission" +
+                "- penalty - deduction - storageFee - logistic " +
+                "- storno) / IF(saleCount - returnCount=0,1,saleCount - returnCount)"
 )
 public class WB_TableRow extends TableRow {
     @CellUnit(name = "Кол-во")
-    private Integer retailAmount;
+    private Integer saleCount;
     @CellUnit(name = "Начислено")
-    private Double retailSum;
+    private Double saleSum;
     @CellUnit(name = "Возврат (Кол-во)", type = ExcelCellType.EXPENSIVE)
-    private Integer returnAmount;
+    private Integer returnCount;
     @CellUnit(name = "Возврат (Сумма)")
-    private Double sumReturn;
-    @CellUnit(name = "Компенсация потерянного товара")
-    private Double sumCompensationForLost;
-    @CellUnit(name = "Компенсация замененного товара")
-    private Double sumCompensationForReplace;
-    @CellUnit(name = "Компенсация испорченного товара")
-    private Double sumCompensationForDefected;
-    @CellUnit(name = "Поверенный (ПВЗ+эквайринг)")
-    private Double acquiringSale;
-    @CellUnit(name = "Вознаграждение ВБ")
-    private Double acquiringReplace;
-    @CellUnit(name = "Возврат комиссии, поверенный", type = ExcelCellType.EXPENSIVE)
-    private Double acquiringReturn;
-    @CellUnit(name = "Доплаты", type = ExcelCellType.EXPENSIVE)
-    private Double additional;
+    private Double returnSum;
+    @CellUnit(name = "Полная/частичная компенсация потерянного/замененного товара")
+    private Double compensationLost;
+    @CellUnit(name = "Количество потерянного/замененного товара")
+    private Integer countLost;
+    @CellUnit(name = "Комиссия маркетплейса (Вознаграждение ВБ/Возмещ.ПВЗ/эквайринг)")
+    private Double commission;
+    @CellUnit(name = "Возврат комиссии маркетплейса (вознаграждения ВБ/Возмещ.ПВЗ/эквайринг)")
+    private Double returnCommission;
     @CellUnit(name = "Штрафы")
     private Double penalty;
     @CellUnit(name = "Прочие удержания")
     private Double deduction;
     @CellUnit(name = "Хранение(дашб)")
-    private Double storage;
+    private Double storageFee;
     @CellUnit(name = "Логистика")
     private Double logistic;
     @CellUnit(name = "Логистика сторно (+ нам)")
-    private Double logisticStorno;
+    private Double storno;
     @CellUnit(name = "Итого", type = ExcelCellType.TOTAL, total = true)
     private final Double total = 0.0;
 
     @Builder
     public WB_TableRow(
             String article,
-            Integer retailAmount,
-            Double retailSum,
-            Integer returnAmount,
-            Double sumReturn,
-            Double sumCompensationForLost,
-            Double sumCompensationForReplace,
-            Double sumCompensationForDefected,
-            Double acquiringSale,
-            Double acquiringReturn,
-            Double additional,
+            Integer saleCount,
+            Double saleSum,
+            Integer returnCount,
+            Double returnSum,
+            Double compensationLost,
+            Integer countLost,
+            Double commission,
+            Double returnCommission,
             Double penalty,
             Double deduction,
-            Double storage,
-            Double logistic
+            Double storageFee,
+            Double logistic,
+            Double storno
     ) {
         super(article);
-        this.retailAmount = retailAmount;
-        this.retailSum = retailSum;
-        this.returnAmount = returnAmount;
-        this.sumReturn = sumReturn;
-        this.sumCompensationForLost = sumCompensationForLost;
-        this.sumCompensationForReplace = sumCompensationForReplace;
-        this.sumCompensationForDefected = sumCompensationForDefected;
-        this.acquiringSale = acquiringSale;
-        this.acquiringReturn = acquiringReturn;
-        this.additional = additional;
+        this.saleCount = saleCount;
+        this.saleSum = saleSum;
+        this.returnCount = returnCount;
+        this.returnSum = returnSum;
+        this.compensationLost = compensationLost;
+        this.countLost = countLost;
+        this.commission = commission;
+        this.returnCommission = returnCommission;
         this.penalty = penalty;
         this.deduction = deduction;
-        this.storage = storage;
+        this.storageFee = storageFee;
         this.logistic = logistic;
+        this.storno = storno;
     }
 }

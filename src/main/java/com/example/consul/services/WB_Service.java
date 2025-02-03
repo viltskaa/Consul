@@ -3,12 +3,12 @@ package com.example.consul.services;
 import com.example.consul.api.WB_Api;
 import com.example.consul.components.WB_DataCreator;
 import com.example.consul.conditions.ConditionalWithDelayChecker;
-import com.example.consul.document.v1.ExcelBuilderV1;
-import com.example.consul.document.v1.configurations.ExcelConfig;
-import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.models.ReportFile;
 import com.example.consul.document.models.WB_SaleRow;
 import com.example.consul.document.models.WB_TableRow;
+import com.example.consul.document.v1.ExcelBuilderV1;
+import com.example.consul.document.v1.configurations.ExcelConfig;
+import com.example.consul.document.v1.configurations.HeaderConfig;
 import com.example.consul.document.v2.ExcelBuilderV2;
 import com.example.consul.document.v2.models.Sheet;
 import com.example.consul.document.v2.models.Table;
@@ -164,7 +164,7 @@ public class WB_Service {
 
                     if (report.size() == 100_000) {
                         withDelayChecker.start(() -> {
-                            Long lastPageRrId = report.get(report.size() - 1).getRrd_id();
+                            Long lastPageRrId = report.get(report.size() - 1).getRrdId();
                             List<WB_DetailReport> nextPageReport = getDetailReportByYearAndMonthWithOffset(
                                     year,
                                     month,
@@ -178,7 +178,7 @@ public class WB_Service {
 
                     for (DateUtils.Week week: week4.getWeeks()) {
                         List<WB_DetailReport> weeklyReport = report.stream()
-                                .filter(wbDetailReport -> week.isInRange(wbDetailReport.getDate_from())).toList();
+                                .filter(wbDetailReport -> week.isInRange(wbDetailReport.getDateFrom())).toList();
                         weeksReport.put(week.toString(), weeklyReport);
                     }
 
@@ -201,7 +201,7 @@ public class WB_Service {
 
                     if (report.size() == 100_000) {
                         withDelayChecker.start(() -> {
-                            Long lastPageRrId = report.get(report.size() - 1).getRrd_id();
+                            Long lastPageRrId = report.get(report.size() - 1).getRrdId();
                             List<WB_DetailReport> nextPageReport = getDetailReportByWeekWithOffset(
                                     year,
                                     month,
