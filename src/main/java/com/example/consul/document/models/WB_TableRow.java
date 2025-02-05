@@ -10,9 +10,12 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TotalCell(
-        formula = "(saleSum - returnSum + compensationLost - commission + returnCommission" +
-                "- penalty - deduction - storageFee - logistic " +
-                "- storno) / IF(saleCount - returnCount=0,1,saleCount - returnCount)"
+        formula = "(IF(OR(saleSum=\"\", saleSum=0), 0, saleSum) - IF(OR(returnSum=\"\", returnSum=0), 0, returnSum)" +
+        "+ IF(OR(compensationLost=\"\", compensationLost=0), 0, compensationLost) - IF(OR(commission=\"\", commission=0), 0, commission)" +
+        "+ IF(OR(returnCommission=\"\", returnCommission=0), 0, returnCommission) - IF(OR(penalty=\"\", penalty=0), 0, penalty)" +
+        "- IF(OR(deduction=\"\", deduction=0), 0, deduction) - IF(OR(storageFee=\"\", storageFee=0), 0, storageFee)" +
+        "- IF(OR(logistic=\"\", logistic=0), 0, logistic) - IF(OR(storno=\"\", storno=0), 0, storno))" +
+        "/ MAX(1, (IF(OR(saleCount=\"\", saleCount=0), 0, saleCount) - IF(OR(returnCount=\"\", returnCount=0), 0, returnCount)))"
 )
 public class WB_TableRow extends TableRow {
     @CellUnit(name = "Кол-во")
