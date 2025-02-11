@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class WB_DataCreator {
-    private WB_dataProcessing _process;
+    private final WB_dataProcessing _process;
 
     public WB_DataCreator(WB_dataProcessing process) {
         _process = process;
@@ -22,12 +22,15 @@ public class WB_DataCreator {
 
     public List<WB_TableRow> createTableRows(@NotNull List<WB_DetailReport> detailReport) {
         List<WB_TableRow> rows = new ArrayList<>();
-        Map<String, WB_TableRow> rowMap = new HashMap<>();
+        Map<String, Map<String, WB_TableRow>> rowMap = new HashMap<>();
 
         for (WB_DetailReport line : detailReport) {
             String saName = _process.checkOnDouble(line.getSaName());
-            WB_TableRow existingRow = rowMap.get(saName);
+            String country = _process.checkOnCountry(line.getSiteCountry());
 
+            Map<String, WB_TableRow> existingRowMap = rowMap.computeIfAbsent(saName, k -> new HashMap<>());
+
+            WB_TableRow existingRow = existingRowMap.get(country);
             if (existingRow == null) {
                 WB_TableRow newRow = WB_TableRow.builder()
                         .article(saName)
@@ -44,8 +47,10 @@ public class WB_DataCreator {
                         .storageFee(_process.checkStorageFee(line))
                         .logistic(_process.checkLogistic(line))
                         .storno(_process.checkLogisticStorno(line))
+                        .country(country)
                         .build();
-                rowMap.put(saName, newRow);
+
+                existingRowMap.put(country, newRow);
                 rows.add(newRow);
             } else {
                 existingRow.setSaleCount(existingRow.getSaleCount() + _process.checkSaleCount(line));
@@ -63,8 +68,10 @@ public class WB_DataCreator {
                 existingRow.setStorno(existingRow.getStorno() + _process.checkLogisticStorno(line));
             }
         }
+
         return rows;
     }
+
 
     public Map<String, List<WB_TableRow>> createTableRows(@NotNull Map<String, List<WB_DetailReport>> detailReport) {
         return detailReport.entrySet().stream()

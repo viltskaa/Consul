@@ -62,9 +62,10 @@ public class WB_TableRow extends TableRow {
             Double deduction,
             Double storageFee,
             Double logistic,
-            Double storno
+            Double storno,
+            String country
     ) {
-        super(article);
+        super(article, country);
         this.saleCount = saleCount;
         this.saleSum = saleSum;
         this.returnCount = returnCount;

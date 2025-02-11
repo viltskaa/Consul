@@ -11,4 +11,9 @@ import lombok.NoArgsConstructor;
 public abstract class TableRow {
     @CellUnit(name = "Артикул")
     protected String article;
+    protected String country;
+
+    public TableRow(String article){
+        this.article = article;
+    }
 }

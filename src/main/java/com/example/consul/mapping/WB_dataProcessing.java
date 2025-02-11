@@ -20,6 +20,14 @@ public class WB_dataProcessing {
                 .equals(sku.substring(center)) ? sku.substring(center) : sku;
     }
 
+    public String checkOnCountry(@NotNull String country) {
+        if (country.equals("Россия")) {
+            return "Russia";
+        } else {
+            return "other";
+        }
+    }
+
     public Integer checkSaleCount(WB_DetailReport line) {
         if (Objects.equals(line.getDocTypeName(), WB_AccrualType.SALE.toString())) {
             if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALE.toString())){

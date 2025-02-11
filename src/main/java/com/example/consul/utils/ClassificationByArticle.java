@@ -37,9 +37,19 @@ public class ClassificationByArticle {
                 List<T> selected = dataCopy.stream()
                         .filter(x -> {
                             String value = x.getArticle();
-                            return rule.value.stream().anyMatch(
-                                    art -> art.equalsIgnoreCase(value)
-                            );
+                            String country = x.getCountry();
+
+                            if (country!=null) {
+                                boolean matchesArticle = rule.value.stream().anyMatch(
+                                        art -> art.equalsIgnoreCase(value)
+                                );
+                                boolean matchesCountry = rule.country.equalsIgnoreCase(country);
+                                return matchesArticle && matchesCountry;
+                            } else {
+                                return rule.value.stream().anyMatch(
+                                        art -> art.equalsIgnoreCase(value)
+                                );
+                            }
                         })
                         .toList();
 
@@ -60,6 +70,7 @@ public class ClassificationByArticle {
     @Data
     private static class SortRules {
         private String key;
+        private String country;
         private List<String> value;
     }
 }
