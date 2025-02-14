@@ -26,23 +26,23 @@ public class WB_TableRow extends TableRow {
     private Integer returnCount;
     @CellUnit(name = "Возврат (Сумма)")
     private Double returnSum;
-    @CellUnit(name = "Полная/частичная компенсация потерянного/замененного товара")
+    @CellUnit(name = "Полная/частичная компенсация потерянного/замененного товара", detailed = false)
     private Double compensationLost;
-    @CellUnit(name = "Количество потерянного/замененного товара")
+    @CellUnit(name = "Количество потерянного/замененного товара", detailed = false)
     private Integer countLost;
-    @CellUnit(name = "Комиссия маркетплейса (Вознаграждение ВБ/Возмещ.ПВЗ/эквайринг)")
+    @CellUnit(name = "Комиссия маркетплейса (Вознаграждение ВБ/Возмещ.ПВЗ/эквайринг)", detailed = false)
     private Double commission;
-    @CellUnit(name = "Возврат комиссии маркетплейса (вознаграждения ВБ/Возмещ.ПВЗ/эквайринг)")
+    @CellUnit(name = "Возврат комиссии маркетплейса (вознаграждения ВБ/Возмещ.ПВЗ/эквайринг)", detailed = false)
     private Double returnCommission;
-    @CellUnit(name = "Штрафы")
+    @CellUnit(name = "Штрафы", detailed = false)
     private Double penalty;
-    @CellUnit(name = "Прочие удержания")
+    @CellUnit(name = "Прочие удержания", detailed = false)
     private Double deduction;
-    @CellUnit(name = "Хранение(дашб)")
+    @CellUnit(name = "Хранение(дашб)", detailed = false)
     private Double storageFee;
-    @CellUnit(name = "Логистика")
+    @CellUnit(name = "Логистика", detailed = false)
     private Double logistic;
-    @CellUnit(name = "Логистика сторно (+ нам)")
+    @CellUnit(name = "Логистика сторно (+ нам)", detailed = false)
     private Double storno;
     @CellUnit(name = "Итого", type = ExcelCellType.TOTAL, total = true)
     private final Double total = 0.0;

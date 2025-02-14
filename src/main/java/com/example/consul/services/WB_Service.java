@@ -9,9 +9,9 @@ import com.example.consul.document.models.WB_TableRow;
 import com.example.consul.document.v1.ExcelBuilderV1;
 import com.example.consul.document.v1.configurations.ExcelConfig;
 import com.example.consul.document.v1.configurations.HeaderConfig;
-import com.example.consul.document.v2.ExcelBuilderV2;
 import com.example.consul.document.v2.models.Sheet;
 import com.example.consul.document.v2.models.Table;
+import com.example.consul.document.v3.util.ExcelBuilder;
 import com.example.consul.dto.WB.WB_AdReport;
 import com.example.consul.dto.WB.WB_DetailReport;
 import com.example.consul.dto.WB.WB_SaleReport;
@@ -72,7 +72,7 @@ public class WB_Service {
 
         Comparator<WB_TableRow> wbTableRowComparator = Comparator.comparing(WB_TableRow::getArticle);
 
-        return ExcelBuilderV2.<WB_TableRow>builder()
+        return ExcelBuilder.<WB_TableRow>builder()
                 .setFilename("report_wb.xlsx")
                 .setSheets(
                         clusteredData.entrySet().stream()

@@ -75,6 +75,40 @@ public class ObjectDeepReflection {
                 .toList();
     }
 
+    public static List<Field> getMainFieldsWithCellUnit(
+            @NotNull Class<?> cls
+    ) {
+        List<Field> fields = getFields(cls);
+
+        return fields.stream()
+                .filter(field -> field.isAnnotationPresent(CellUnit.class) && field.getAnnotation(CellUnit.class).detailed() && !field.getAnnotation(CellUnit.class).total())
+                .toList();
+    }
+
+    public static List<Field> getSubFieldsWithCellUnit(
+            @NotNull Object obj
+    ) {
+        Class<?> cls = obj.getClass();
+        return getSubFieldsWithCellUnit(cls);
+    }
+
+    public static List<Field> getSubFieldsWithCellUnit(
+            @NotNull Class<?> cls
+    ) {
+        List<Field> fields = getFields(cls);
+
+        return fields.stream()
+                .filter(field -> field.isAnnotationPresent(CellUnit.class) && !field.getAnnotation(CellUnit.class).detailed() && !field.getAnnotation(CellUnit.class).total())
+                .toList();
+    }
+
+    public static List<Field> getMainFieldsWithCellUnit(
+            @NotNull Object obj
+    ) {
+        Class<?> cls = obj.getClass();
+        return getMainFieldsWithCellUnit(cls);
+    }
+
     public static Map<Field, Object> get(@NotNull Object obj) {
         Class<?> cls = obj.getClass();
         final Map<Field, Object> map = new HashMap<>();
@@ -108,6 +142,48 @@ public class ObjectDeepReflection {
         final Map<Field, Object> map = get(obj);
         return new ArrayList<>(map.entrySet().stream()
                 .filter(entry -> entry.getKey().isAnnotationPresent(CellUnit.class))
+                .map(
+                        entry -> {
+                            CellUnit cellUnit = entry.getKey().getAnnotation(CellUnit.class);
+
+                            return CellWithParams.builder()
+                                    .name(cellUnit.name())
+                                    .fieldName(entry.getKey().getName())
+                                    .value(entry.getValue())
+                                    .width(cellUnit.width())
+                                    .type(cellUnit.type())
+                                    .total(cellUnit.total())
+                                    .defaultValue(cellUnit.defaultValue())
+                                    .build();
+                        }
+                ).toList());
+    }
+
+    public static List<CellWithParams> getMainCells(@NotNull Object obj) {
+        final Map<Field, Object> map = get(obj);
+        return new ArrayList<>(map.entrySet().stream()
+                .filter(entry -> entry.getKey().isAnnotationPresent(CellUnit.class) && entry.getKey().getAnnotation(CellUnit.class).detailed()&& !entry.getKey().getAnnotation(CellUnit.class).total())
+                .map(
+                        entry -> {
+                            CellUnit cellUnit = entry.getKey().getAnnotation(CellUnit.class);
+
+                            return CellWithParams.builder()
+                                    .name(cellUnit.name())
+                                    .fieldName(entry.getKey().getName())
+                                    .value(entry.getValue())
+                                    .width(cellUnit.width())
+                                    .type(cellUnit.type())
+                                    .total(cellUnit.total())
+                                    .defaultValue(cellUnit.defaultValue())
+                                    .build();
+                        }
+                ).toList());
+    }
+
+    public static List<CellWithParams> getSubCells(@NotNull Object obj) {
+        final Map<Field, Object> map = get(obj);
+        return new ArrayList<>(map.entrySet().stream()
+                .filter(entry -> entry.getKey().isAnnotationPresent(CellUnit.class) && !entry.getKey().getAnnotation(CellUnit.class).detailed()&& !entry.getKey().getAnnotation(CellUnit.class).total())
                 .map(
                         entry -> {
                             CellUnit cellUnit = entry.getKey().getAnnotation(CellUnit.class);

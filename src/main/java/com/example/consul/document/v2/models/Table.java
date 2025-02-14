@@ -48,4 +48,38 @@ public class Table<T> {
             }
         }).toList();
     }
+
+    public List<String> getMainHeader() {
+        if (data == null || data.isEmpty()) {
+            return null;
+        }
+
+        return ObjectDeepReflection.getMainFieldsWithCellUnit(
+                data.get(0)
+        ).stream().map(field -> {
+            CellUnit cellUnit = field.getAnnotation(CellUnit.class);
+            if (cellUnit != null && cellUnit.detailed() && !cellUnit.total()) {
+                return cellUnit.name();
+            } else {
+                return null;
+            }
+        }).toList();
+    }
+
+    public List<String> getSubHeader() {
+        if (data == null || data.isEmpty()) {
+            return null;
+        }
+
+        return ObjectDeepReflection.getSubFieldsWithCellUnit(
+                data.get(0)
+        ).stream().map(field -> {
+            CellUnit cellUnit = field.getAnnotation(CellUnit.class);
+            if (cellUnit != null && !cellUnit.detailed() && !cellUnit.total()) {
+                return cellUnit.name();
+            } else {
+                return null;
+            }
+        }).toList();
+    }
 }

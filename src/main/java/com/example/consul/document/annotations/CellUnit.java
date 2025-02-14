@@ -15,4 +15,5 @@ public @interface CellUnit {
     boolean total() default false;
     ExcelCellType type() default ExcelCellType.BASE;
     String defaultValue() default "";
+    boolean detailed() default true;
 }
