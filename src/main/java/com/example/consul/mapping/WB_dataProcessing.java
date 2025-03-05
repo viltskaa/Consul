@@ -21,7 +21,7 @@ public class WB_dataProcessing {
     }
 
     public String checkOnCountry(@NotNull String country) {
-        if (country.equals("Россия")) {
+        if (country.equals("Россия") || country.isEmpty()) {
             return "Russia";
         } else {
             return "other";
@@ -206,16 +206,16 @@ public class WB_dataProcessing {
     @NotNull
     private Double commissionConditions(WB_DetailReport line) {
         if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.COMPENSATION_DAMAGE.toString())){
-            return line.getPpvzForPay() - line.getRetailAmount();
+            return line.getRetailAmount() - line.getPpvzForPay();
         }
         else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.ACQUIRING_ADJUSTMENT.toString())) {
-            return line.getPpvzForPay() - line.getRetailAmount();
+            return line.getRetailAmount() - line.getPpvzForPay();
         }
         else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALES_ADJUSTMENT.toString())) {
-            return line.getPpvzForPay() - line.getRetailAmount();
+            return line.getRetailAmount() - line.getPpvzForPay();
         }
         else if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.SALE.toString())) {
-            return line.getPpvzForPay() - line.getRetailAmount();
+            return line.getRetailAmount() - line.getPpvzForPay();
         }
         else {
             return 0.0;
