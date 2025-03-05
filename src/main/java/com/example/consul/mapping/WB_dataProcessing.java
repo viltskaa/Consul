@@ -143,11 +143,13 @@ public class WB_dataProcessing {
 
     public Double checkReturnCommission(WB_DetailReport line) {
         if (Objects.equals(line.getDocTypeName(), WB_AccrualType.RETURN.toString())) {
-            return commissionConditions(line);
+            if (Objects.equals(line.getSupplierOperName(), WB_JustificationPayment.RETURN.toString()))
+                return line.getRetailAmount() - line.getPpvzForPay();
         }
         else {
             return 0.0;
         }
+        return 0.0;
     }
 
     public Double checkPenalty(WB_DetailReport line) {
