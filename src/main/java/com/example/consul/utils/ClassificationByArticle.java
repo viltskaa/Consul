@@ -9,7 +9,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,10 @@ public class ClassificationByArticle {
         try {
             ArrayList<T> dataCopy = new ArrayList<>(data);
 
-            String json = new String(Files.readAllBytes(sortingJson.getFile().toPath()));
+            String json;
+            try (InputStream inputStream = sortingJson.getInputStream()) {
+                json = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            }
 
             List<SortRules> sortingRules = List.of(new Gson().fromJson(json.trim(), SortRules[].class));
 
