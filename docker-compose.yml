@@ -1,0 +1,17 @@
+services:
+  spring:
+    build: .
+    container_name: spring_app
+    ports:
+      - "8000:8000"
+#  nginx:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.nginx
+#    container_name: nginx
+#    ports:
+#      - "443:443"
+#    depends_on:
+#      - spring
+#    volumes:
+#      - ./certs:/etc/nginx/certs

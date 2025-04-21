@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>Registration</title>
+    <style>
+        body {
+            background: linear-gradient(-45deg, #ffffff, #e3abbe, #e2fdde, #f9dcff);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            height: 100vh;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+    </style>
+</head>
+<body class="d-flex justify-content-center align-items-center" style="height: 100vh">
+<div class="p-3 rounded border bg-light shadow">
+    <form action="/report/detail" method="get" class="">
+        <div class="w-100 mb-4">
+            <p class="h3 text-center">Регистрация магазина Озон</p>
+        </div>
+        <div class="border rounded p-2">
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-white" id="basic-addon1">Имя магазина</span>
+                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
+            <a href="https://seller-edu.ozon.ru/api-ozon/how-to-api" target="_blank" class="badge border border-dark text-dark w-100 p-2 mb-3">Настройка SellerApi</a>
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-white" id="basic-addon1">Client Id</span>
+                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-white" id="basic-addon1">Api Key</span>
+                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
+            <hr>
+            <a href="https://seller-edu.ozon.ru/api-ozon/external-api" target="_blank" class="badge border border-dark text-dark w-100 p-2 mb-3">Настройка PerformanceApi</a>
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-white" id="basic-addon1">Client Id</span>
+                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-white" id="basic-addon1">Client Secret</span>
+                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
+        </div>
+        <hr>
+        <div class="w-100 d-flex">
+            <button type="submit" class="btn btn-light border-dark flex-grow-1 w-50">Продолжить</button>
+            <a href="#" class="btn btn-light border-dark flex-grow-1 w-50 ms-1">Назад</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
